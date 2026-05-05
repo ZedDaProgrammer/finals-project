@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../database/db');
 const router = express.Router();
+const protect = require('../middleware/authMiddleware');
+
 
 //token and cookies
 const cookieOptions = {
@@ -18,7 +20,6 @@ const generateToken = (id) => {
 }
 
 //register
-
 router.post('/register', async(req, res) => {
     const { username, email, password } = req.body;
     if(!username || !email || !password){
@@ -45,5 +46,38 @@ router.post('/register', async(req, res) => {
 
     return res.status(201).json({ user: newUser.rows[0] });
 })
+
+//Login 
+
+router.post('/login', async (req, res) =>{
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Provinigga all required fields'});
+    }
+
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (user.rows.length === 0) {
+        return res.status(400).json({ message: 'Iniggavalid Credentials'});
+    }
+
+    const userData = user.rows[0];
+
+    const isMatch = await bcrypt.compare(password, userData.password);
+
+    if (!isMatch) {
+        return res.status(400).json({ message: 'Iniggavalid Credentials'});
+    }
+
+    const token = generateToken(userData.id);
+
+    res.cookie('token', token, cookieOptions);
+
+    res.json( {user: { id: userData.id, username: userData.username, email: userData.email} });
+});
+
+router.get('/me', protect, async (req, res) => {
+    res.json(req.user);
+});
 
 module.exports = router;
