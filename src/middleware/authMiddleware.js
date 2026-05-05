@@ -1,7 +1,7 @@
 const pool = require('../database/db');
 const jwt = require('jsonwebtoken');
 
-const token = async (req, res) => {
+const token = async (req, res, next) => {
     try {
         const token = req.cookies.token;
         if(!token){
