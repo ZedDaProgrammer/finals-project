@@ -100,13 +100,13 @@ router.get('/history', async (req, res) =>{
         }
 });
 
+//deleting function
 router.delete('/:id', async (req, res) => {
     const reservation_id = req.params.id;
     const user_id = req.user.id;
     try{
         const deleteBooking = await pool.query(`
-                SELECT * FROM reservations
-                SET status = 'cancelled'
+                DELETE FROM reservations
                 WHERE reservation_id = $1 AND user_id = $2
                 RETURNING *`,
                 [reservation_id, user_id]
@@ -121,9 +121,57 @@ router.delete('/:id', async (req, res) => {
                 deleted: deleteBooking.rows[0]
             });
 
-    } catch (error){
+    } catch (err){
         console.error('Deletion error', err.message);
         res.status(500).json({ error: "Server error while canceling reservation"});
+    }
+});
+
+router.post('/filter', async (req, res) => {
+    try{
+        const { type, cpu, gpu, ram, min_hz } = req.body;
+        let baseQuery = `SELECT * FROM computers`;
+        const conditions = [];
+        const values = [];
+
+        if(type){
+            values.push(type);
+            conditions.push(`type = $${values.length}`);
+        }
+
+        if(cpu){
+            values.push(`%${cpu}%`);
+            conditions.push(`cpu ILIKE $${values.length}`);
+        }
+
+        if(gpu){
+            values.push(`%${gpu}%`);
+            conditions.push(`gpu ILIKE $${values.length}`);
+        }
+
+        if(ram){
+            values.push(ram)
+            conditions.push(`ram >= $${values.length}`);
+        }
+
+        if(min_hz){
+            values.push(min_hz)
+            conditions.push(`monitor_hz >= $${values.length}`);
+        }
+
+        if(conditions.length > 0){
+            baseQuery += ` WHERE ` + conditions.join(' AND ');
+        }
+
+        const filteredPCs = await pool.query(baseQuery, values);
+
+        res.status(200).json({
+                count : filteredPCs.rows.length,
+                results: filteredPCs.rows
+            });
+    } catch (err) {
+        console.error("Filter Error:", err.message);
+        res.status(500).json({ error: "Failed to filter computers."});
     }
 });
 
