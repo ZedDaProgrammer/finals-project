@@ -77,5 +77,27 @@ router.post('/', async (req, res) => {
     }
 });
 
+//get history
+router.get('/history', async (req, res) =>{
+        const user_id = req.user.id;
+
+        try{
+            const history = await pool.query(`
+                SELECT * FROM reservations
+                WHERE user_id = $1
+                ORDER BY start DESC`,
+                [user_id]
+            );
+
+            res.status(200).json({
+                count: history.rows.length,
+                bookings: history.rows
+            });
+
+        } catch (err){
+            console.error("History fetch error: ", err.message)
+            res.status(500).json({ error: "Could not fetch history."});
+        }
+});
 
 module.exports = router;
