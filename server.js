@@ -3,12 +3,12 @@ const pool = require('./src/database/db');
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const authRouter = require('./src/routes/auth');
+const authRouter = require('./src/routes/authRoute');
 const cookieParser = require('cookie-parser');
 
 app.use(express.json());
 app.use(cookieParser());
-app.use('/src/auth', authRouter);
+app.use('/src/authRoute', authRouter);
 
 app.get('/', async (req, res) =>{
     console.log("Start");

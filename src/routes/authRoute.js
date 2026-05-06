@@ -13,6 +13,7 @@ const cookieOptions = {
     maxAge: 30 * 24 * 60 * 60 * 1000
 }
 
+//generates token
 const generateToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn: '30d'
@@ -22,23 +23,27 @@ const generateToken = (id) => {
 //register
 router.post('/register', async(req, res) => {
     const { username, email, password } = req.body;
+    //checks if all details are inputted
     if(!username || !email || !password){
-        return res.status(400).json({message: 'Nigga provide all the details that are required'});
+        return res.status(400).json({message: 'provide all the details that are required'});
     }
 
+    //checks if user exist in the database
     const userExist = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
+    //returns an error message if user exists
     if(userExist.rows.length > 0){
         return res.status(400).json({message: 'This nigga exist already'});
     }
     
+    //password hashing 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    //Registers user in the database with the hashed password
     const newUser = await pool.query(
         'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
         [username, email, hashedPassword]
     );
-
 
     const token = generateToken(newUser.rows[0].id);
     
@@ -76,8 +81,15 @@ router.post('/login', async (req, res) =>{
     res.json( {user: { id: userData.id, username: userData.username, email: userData.email} });
 });
 
+//profile
 router.get('/profile', protect, async (req, res) => {
     res.json(req.user);
+});
+
+router.post('/logout', (req, res) => {
+    res.cookieOptions("auth_token", "", {
+        expires: new Date(0),
+    });
 });
 
 module.exports = router;
