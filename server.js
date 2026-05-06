@@ -5,10 +5,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const authRouter = require('./src/routes/authRoute');
 const cookieParser = require('cookie-parser');
+const authReservation = require('./src/routes/reservationRoute');
 
 app.use(express.json());
 app.use(cookieParser());
 app.use('/src/authRoute', authRouter);
+app.use('/src/reservationRoute', authReservation);
 
 app.get('/', async (req, res) =>{
     console.log("Start");
