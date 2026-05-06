@@ -78,7 +78,10 @@ router.post('/login', async (req, res) =>{
 
     res.cookie('token', token, cookieOptions);
 
-    res.json( {user: { id: userData.id, username: userData.username, email: userData.email} });
+    res.json({
+        token: token,
+        user: { id: userData.id, username: userData.username, email: userData.email} 
+    });
 });
 
 //profile
