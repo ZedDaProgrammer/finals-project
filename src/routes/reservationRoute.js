@@ -100,4 +100,32 @@ router.get('/history', async (req, res) =>{
         }
 });
 
+router.delete('/:id', async (req, res) => {
+    const reservation_id = req.params.id;
+    const user_id = req.user.id;
+    try{
+        const deleteBooking = await pool.query(`
+                SELECT * FROM reservations
+                SET status = 'cancelled'
+                WHERE reservation_id = $1 AND user_id = $2
+                RETURNING *`,
+                [reservation_id, user_id]
+            );
+
+            if (deleteBooking.rows.length === 0) {
+                return res.status(404).json({ error: 'reservation not found'});
+            }
+
+            res.status(200).json({
+                message : 'reservation successfully canceled',
+                deleted: deleteBooking.rows[0]
+            });
+
+    } catch (error){
+        console.error('Deletion error', err.message);
+        res.status(500).json({ error: "Server error while canceling reservation"});
+    }
+});
+
+
 module.exports = router;
