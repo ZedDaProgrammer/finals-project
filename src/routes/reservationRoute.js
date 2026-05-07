@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const protect = require('../middleware/authMiddleware');
+const { token, isAdmin } = require('../middleware/authMiddleware');
 const pool = require('../database/db');
 
-router.use(protect);
+router.use(token);
+router.use(isAdmin);
 
 router.get('/availability', async (req, res) => {
 try{
 const { start, end } = req.query;
-
 if(!start || !end){
     return res.status(401).json({ error: "Please provide the needed details."});
 }

@@ -3,7 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../database/db');
 const router = express.Router();
-const protect = require('../middleware/authMiddleware');
+const protect = require('../middleware/authMiddleware').token;
+
 
 
 //token and cookies
