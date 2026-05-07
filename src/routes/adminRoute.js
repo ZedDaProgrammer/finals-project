@@ -41,4 +41,42 @@ router.put('/admin/reservations/:status', token, isAdmin, async (req, res) => {
 }
 });
 
+router.get('/tickets', token, isAdmin, async (req, res) => {
+    try {
+        const tickets = await pool.query(`
+            SELECT t.id, t.issue, t.status, u.username
+            FROM tickets t
+            JOIN users u ON t.user_id = u.id
+            ORDER BY t.created_at DESC
+        `);
+        res.status(200).json({ tickets: tickets.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
+});  
+
+router.get('/tickets/:id/status', token, isAdmin, async (req, res) => {
+    const ticketId = req.params.id;
+    const { status } = req.body;
+
+    try {
+        const updateTicket = await pool.query(
+            `UPDATE tickets SET status = $1 WHERE id = $2 RETURNING *`,
+            [status, ticketId]
+        );
+        
+        if (updateTicket.rows.length === 0) {
+            return res.status(404).json({ message: "Ticket not found"});
+        }
+
+        res.status(200).json({
+             message: "Ticket status updated successfully", ticket: updateTicket.rows[0]
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Server error"});
+        }
+});
+
 module.exports = router;

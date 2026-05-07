@@ -281,5 +281,26 @@ router.post('/group-booking', async (req, res) => {
     }
 });
 
+router.post('/post', async (req, res) => {
+    const { station_id, subject, descript } = req.body;
+    const user_id = req.user.id;
+
+    try{
+        const newPost = await pool.query(`
+            INSERT INTO posts (user_id, station_id, subject, descript)
+            VALUES ($1, $2, $3, $4) RETURNING *`,
+            [user_id, station_id || null , subject, descript]
+        );
+
+        res.status(201).json({ 
+            message: "Post created successfully", 
+            post: newPost.rows[0] 
+        });
+    } catch (err) {
+        console.error("Post creation error", err.message);
+        res.status(500).json({ error: "Server error during post creation" });
+    }
+});
+
 
 module.exports = router;
