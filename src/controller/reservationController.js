@@ -204,10 +204,10 @@ const filterComputers = async (req, res) => {
     }
 };
 
-const upgradeBronze = async (req, res) => {
+const purchaseMembership = async (req, res) => {
     try{
         const upgradeQuery = await pool.query(
-            `UPDATE users SET membership = 'silver' WHERE id = $1 RETURNING *`,
+            `UPDATE users SET membership = 'member', rank = 'bronze' WHERE id = $1 RETURNING *`,
             [req.user.id]
         );
         if(upgradeQuery.rows.length === 0){
