@@ -65,9 +65,30 @@ router.post('/', async (req, res) => {
             VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
             [user_id, station_id, start, end]
         );
+        if(newBooking.rows.length >0){
+            const updatePoints = await pool.query(
+                `UPDATE users SET points = points + 1 WHERE id = $1 RETURNING points`,
+                [user_id]
+            );
+            const updatedPoints = updatePoints.rows[0].points;
+            const currentRank = updatePoints.rows[0].rank;
+
+            const earnnedRole = evaluateTier(updatePoints);
+            if(earnnedRole !== currentRank){
+                await pool.query(`UPDATE users SET rank = $1 WHERE id = $2`, [earnnedRole, user_id]);
+                console.log(`User ${user_id} leveled up to ${earnnedRole} rank!`);
+
+                currentRank = earnnedRole;
+            }
+        }
 
         await client.query('COMMIT');
-        res.status(201).json(newBooking.rows[0]);
+        res.status(202).json({
+            message: "Booking created successfully",
+            booking: newBooking.rows[0],
+            points: updatedPoints,
+            rank: currentRank
+        });
 
     } catch (err){
         await client.query('ROLLBACK');
