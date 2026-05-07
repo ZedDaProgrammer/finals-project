@@ -5,7 +5,7 @@ const pool = require('../database/db');
 
 router.use(token);
 
-router.get('/availability', async (req, res) => {
+const checkAvailability = async (req, res) => {
 try{
 const { start, end } = req.query;
 if(!start || !end){
@@ -40,10 +40,10 @@ const availableStation = await pool.query(`
     console.error("Availability checking error", err.message);
     res.status(500).json({ error: "Server checking availability error"});
 }
-});
+};
 
 //create booking
-router.post('/', async (req, res) => {
+const createBooking = async (req, res) => {
     const { station_id, start, end } = req.body;
     const user_id = req.user.id;
     const client = await pool.connect();
@@ -103,10 +103,10 @@ router.post('/', async (req, res) => {
     } finally {
         client.release();
     }
-});
+};
 
 //get history
-router.get('/history', async (req, res) =>{
+const getHistory = async (req, res) =>{
         const user_id = req.user.id;
 
         try{
@@ -126,10 +126,10 @@ router.get('/history', async (req, res) =>{
             console.error("History fetch error: ", err.message)
             res.status(500).json({ error: "Could not fetch history."});
         }
-});
+};
 
 //deleting function
-router.delete('/:id', async (req, res) => {
+const deleteBooking = async (req, res) => {
     const reservation_id = req.params.id;
     const user_id = req.user.id;
     try{
@@ -153,10 +153,10 @@ router.delete('/:id', async (req, res) => {
         console.error('Deletion error', err.message);
         res.status(500).json({ error: "Server error while canceling reservation"});
     }
-});
+};
 
 //filtering drop down
-router.post('/filter', async (req, res) => {
+const filterComputers = async (req, res) => {
     try{
         const { type, cpu, gpu, ram, min_hz } = req.body;
         let baseQuery = `SELECT * FROM computers`;
@@ -202,7 +202,7 @@ router.post('/filter', async (req, res) => {
         console.error("Filter Error:", err.message);
         res.status(500).json({ error: "Failed to filter computers."});
     }
-});
+};
 
 const upgradeBronze = async (req, res) => {
     try{
@@ -220,7 +220,7 @@ const upgradeBronze = async (req, res) => {
     }
 };
 
-router.post('/purchase', async (req, res) => {
+const upgradeMembership = async (req, res) => {
     try {
         const success = true;
         if(success){
@@ -232,9 +232,9 @@ router.post('/purchase', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error during upgrade"});
     }
-});
+};
 //group-booking
-router.post('/group-booking', async (req, res) => {
+const groupBooking = async (req, res) => {
     const { group_size, station_ids, start, end } = req.body;
     const user_id = req.user.id;
     const client = await pool.connect();
@@ -281,9 +281,9 @@ router.post('/group-booking', async (req, res) => {
         console.error("Group booking error", err.message);
         res.status(500).json({ error: "Server error during group booking"});
     }
-});
+};
 
-router.post('/post', async (req, res) => {
+const createTicket = async (req, res) => {
     const { station_id, subject, descript } = req.body;
     const user_id = req.user.id;
 
@@ -302,7 +302,7 @@ router.post('/post', async (req, res) => {
         console.error("Post creation error", err.message);
         res.status(500).json({ error: "Server error during post creation" });
     }
-});
+};
 
 
-module.exports = router;
+module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket };

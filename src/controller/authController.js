@@ -1,9 +1,7 @@
-const express = require('express');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../database/db');
-const router = express.Router();
-const protect = require('../middleware/authMiddleware').token;
 
 
 
@@ -22,7 +20,7 @@ const generateToken = (id) => {
 }
 
 //register
-router.post('/register', async(req, res) => {
+const userRegister = async(req, res) => {
     const { username, email, password } = req.body;
     //checks if all details are inputted
     if(!username || !email || !password){
@@ -51,11 +49,11 @@ router.post('/register', async(req, res) => {
     res.cookie('token', token, cookieOptions);
 
     return res.status(201).json({ user: newUser.rows[0] });
-})
+};
 
 //Login 
 
-router.post('/login', async (req, res) =>{
+const userLogin = async (req, res) =>{
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ message: 'Provinigga all required fields'});
@@ -83,17 +81,17 @@ router.post('/login', async (req, res) =>{
         token: token,
         user: { id: userData.id, username: userData.username, email: userData.email} 
     });
-});
+};
 
 //profile
-router.get('/profile', protect, async (req, res) => {
+const userProfile =  async (req, res) => {
     res.json(req.user);
-});
+};
 
-router.post('/logout', (req, res) => {
+const userLogout = async (req, res) => {
     res.cookieOptions("auth_token", "", {
         expires: new Date(0),
     });
-});
+};
 
-module.exports = router;
+module.exports = { userRegister, userLogin, userProfile, userLogout };
