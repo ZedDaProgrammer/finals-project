@@ -127,6 +127,7 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+//filtering drop down
 router.post('/filter', async (req, res) => {
     try{
         const { type, cpu, gpu, ram, min_hz } = req.body;
