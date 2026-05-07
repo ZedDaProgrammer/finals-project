@@ -4,7 +4,6 @@ const { token, isAdmin } = require('../middleware/authMiddleware');
 const pool = require('../database/db');
 
 router.use(token);
-router.use(isAdmin);
 
 router.get('/availability', async (req, res) => {
 try{
@@ -79,9 +78,9 @@ router.post('/', async (req, res) => {
                 [user_id]
             );
             const updatedPoints = updatePoints.rows[0].points;
-            const currentRank = updatePoints.rows[0].rank;
+            let currentRank = updatePoints.rows[0].rank;
 
-            const earnnedRole = evaluateTier(updatePoints);
+            const earnnedRole = evaluatePoints(updatePoints);
             if(earnnedRole !== currentRank){
                 await pool.query(`UPDATE users SET rank = $1 WHERE id = $2`, [earnnedRole, user_id]);
                 console.log(`User ${user_id} leveled up to ${earnnedRole} rank!`);
@@ -217,7 +216,7 @@ const upgradeBronze = async (req, res) => {
         return upgradeQuery.rows[0];
     } catch (error) {
         console.error("Database error during upgrade", error.message);
-        throw err;or;
+        throw error;
     }
 };
 
@@ -254,7 +253,10 @@ router.post('/group-booking', async (req, res) => {
     }
 
     try{
-        const discountCalculate = 0.10 ((group_size - 5) * 0.02);
+        const duration_ms = new Date(end) - new Date(start);
+        const duration_hours = duration_ms / (1000 * 60 * 60);
+
+        const discountCalculate = 0.10 + ((group_size - 5) * 0.02);
         const rawTotalPrice = group_size * STANDARD_HOURLY_RATE * duration_hours;
         const finalPrice = rawTotalPrice - discountCalculate;
 
