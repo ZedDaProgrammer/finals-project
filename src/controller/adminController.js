@@ -4,7 +4,7 @@ const isAdmin = require('../middleware/authMiddleware').isAdmin;
 const token = require('../middleware/authMiddleware').token;
 const pool = require('../database/db');
 
-router.get('/admin', token, isAdmin, async (req, res) => {
+const getBookings = async (req, res) => {
     try {
         const allBookings = await pool.query(`
             SELECT r.id, r.start, r.end, r.status, u.username, c.name AS station_name
@@ -18,9 +18,9 @@ router.get('/admin', token, isAdmin, async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Server error"});
     }
-});
+};
 
-router.put('/admin/reservations/:status', token, isAdmin, async (req, res) => {
+const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
     const { status } = req.body;
 
@@ -39,9 +39,9 @@ router.put('/admin/reservations/:status', token, isAdmin, async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error"});
 }
-});
+};
 
-router.get('/tickets', token, isAdmin, async (req, res) => {
+const getTicket = async (req, res) => {
     try {
         const tickets = await pool.query(`
             SELECT t.id, t.issue, t.status, u.username
@@ -54,9 +54,9 @@ router.get('/tickets', token, isAdmin, async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Server error"});
     }
-});  
+};  
 
-router.get('/tickets/:id/status', token, isAdmin, async (req, res) => {
+const updateTicketStatus = async (req, res) => {
     const ticketId = req.params.id;
     const { status } = req.body;
 
@@ -77,6 +77,6 @@ router.get('/tickets/:id/status', token, isAdmin, async (req, res) => {
             console.error(error);
             res.status(500).json({ message: "Server error"});
         }
-});
+};
 
-module.exports = router;
+module.exports = { getBookings, updateReservationStatus, getTicket, updateTicketStatus};
