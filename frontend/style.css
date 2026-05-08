@@ -5,7 +5,7 @@
 }
 
 body {
-	background: linear-gradient(180deg, #1b1b1b 0%, #121212 50%);
+	background: linear-gradient(180deg, #fff2df 0%, #ffe0b2 50%);
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
@@ -21,12 +21,12 @@ body {
 h1 {
 	font-weight: bold;
 	margin: 0;
-    color: white;
+
 }
 
 h2 {
 	text-align: center;
-    color: white
+
 }
 
 p {
@@ -35,12 +35,12 @@ p {
 	line-height: 20px;
 	letter-spacing: 0.5px;
 	margin: 20px 0 30px;
-    color: white
+
 }
 
 span {
 	font-size: 12px;
-    color: white
+
 }
 
 a {
@@ -52,7 +52,7 @@ a {
 
 button {
 	border-radius: 20px;
-	border: 1px solid #ffffff;
+	border: 1px solid #000000;
 	background-color: rgb(255, 255, 255);
 	color: #000000;
 	font-size: 12px;
@@ -73,11 +73,12 @@ button:focus {
 
 button.ghost {
 	background-color: transparent;
-	border-color: #FFFFFF;
+	border-color: #ffffff;
+    color: white;
 }
 
 form {
-	background-color: #0d0d0e;
+	background-color: #ffffff;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -97,7 +98,7 @@ input {
 }
 
 .container {
-	background-color: #0d0d0e;
+	background-color: #ffffff;
 	border-radius: 10px;
   	box-shadow: 0 14px 28px rgba(0,0,0,0.25), 
 			0 10px 10px rgba(0,0,0,0.22);
@@ -169,7 +170,7 @@ input {
 .overlay {
 	background: #FF416C;
 	background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-	background: linear-gradient(0deg, #dfe4cb 28%, #dbca9a 80%);
+	background: linear-gradient(0deg, #3e2522 28%, #8c6e63 80%);
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: 0 0;
