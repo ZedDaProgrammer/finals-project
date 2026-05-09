@@ -1,13 +1,18 @@
 import AuthPage from './components/authPage';
+import Dashboard from './components/dashboard';
+import Protected from './protectedRoute';
 import { Routes, Route } from 'react-router-dom';
 
 function App() {
     return (
         <Routes>
-            <Route path="/" element={<AuthPage />} >
-            </Route>       
+            <Route path="/login" element={<AuthPage />} /> 
+            
+            <Route element={<Protected />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+            </Route>   
         </Routes>
     );
-};
+}
 
 export default App;

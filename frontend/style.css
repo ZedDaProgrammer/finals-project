@@ -5,7 +5,8 @@
 }
 
 body {
-	background: linear-gradient(180deg, #fff2df 0%, #ffe0b2 50%);
+	/*background-color: whitesmoke;*/
+	background: linear-gradient(180deg, #FDFBF7 0%, #6B828F 50%);
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
@@ -170,7 +171,7 @@ input {
 .overlay {
 	background: #FF416C;
 	background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-	background: linear-gradient(0deg, #3e2522 28%, #8c6e63 80%);
+	background: linear-gradient(180deg, #6b828f 50%, #4a5d66 100%);
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: 0 0;

@@ -1,12 +1,45 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const AuthPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: ''
   });
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try{
+      const response = await fetch('http://localhost:3000/src/authRoute/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        navigate('/dashboard');
+        alert("Login Successful!");
+      } else {
+        alert(data.message || "Login failed");
+      }
+
+    } catch (error) {
+      console.error("Error connecting to API:", error);
+      alert("Server is down. Try again later.");
+    }
+  };
   const handleRegister = async (e) => {
     e.preventDefault(); 
 
@@ -47,7 +80,7 @@ const AuthPage = () => {
       
     
       <div className="form-container sign-up-container">
-        {/* FIXED: Attached onSubmit here */}
+
         <form onSubmit={handleRegister}>
           <h1>Create Account</h1>
           <span>or use your email for registration</span>
@@ -72,12 +105,20 @@ const AuthPage = () => {
 
  
       <div className="form-container sign-in-container">
-        <form action="loginform">
+        <form onSubmit={handleLogin}>
           <h1>Sign in</h1>
-          <input type="email" placeholder="Email" />
-          <input type="password" placeholder="Password" />
+          <input 
+            type="email" 
+            placeholder="Email" 
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
+          />
           <a href="#">Forgot your password?</a>
-          <button>Sign In</button>
+          <button type="submit">Sign In</button>
         </form>
       </div>
 
