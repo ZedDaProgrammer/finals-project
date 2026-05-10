@@ -1,18 +1,30 @@
 import { useState } from 'react';
+import { checkAvailability, getHistory } from '../../../backend/src/routes/reservationRoute';
+import { get } from '../../../backend/src/routes/authRoute';
 
 const Dashboard = () => {
+    const [token] = useState(localStorage.getItem('token'));
     const [message, setMessage] = useState('');
+    const [userData, setUserData] = useState({
+        username: '',
+        availablePc: checkAvailability(),
+        totalBookedPc: getHistory().length
+    });
     const fetchProtectedData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/src/protectedRoute/dashboard', {
+            if(!token) {
+                alert("No token found. Please log in.");
+                return;
+            }
+            const response = await fetch('http://localhost:3000/src/reservationRoute/dashboard', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             const data = await response.json();
-            setMessage(data.message);
+            console.log("Dashboard data:", data);      
         } catch (error) {
             console.error("Error fetching protected data:", error);
         }
