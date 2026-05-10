@@ -1,21 +1,45 @@
-import { useState } from 'react';
-import { checkAvailability, getHistory } from '../../../backend/src/routes/reservationRoute';
-import { get } from '../../../backend/src/routes/authRoute';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const [token] = useState(localStorage.getItem('token'));
     const [message, setMessage] = useState('');
     const [userData, setUserData] = useState({
-        username: '',
-        availablePc: checkAvailability(),
-        totalBookedPc: getHistory().length
+        username: 'User',
+        availablePc: 0,
+        totalBookedPc: 0
+    });
+    useEffect(() => {
+         if(!token) {
+                alert("No token found. Please log in.");
+                return;
+         }
+         try{
+            const historyResponse = await fetch('http://localhost:3000/src/reservationRoute/dashboard', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            let historyCount = 0;
+            if(historyResponse.ok) {
+                const data = await historyResponse.json();
+                setUserData(prevData => ({
+                    ...prevData,
+                    availablePc: data.availablePc,
+                    totalBookedPc: data.totalBookedPc
+                }));
+            } else if(historyResponse.status === 401 || historyResponse.status === 403) {
+                localStorage.removeItem('token');
+                Navigate('/login');
+            }
+         } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+         }
     });
     const fetchProtectedData = async () => {
         try {
-            if(!token) {
-                alert("No token found. Please log in.");
-                return;
-            }
             const response = await fetch('http://localhost:3000/src/reservationRoute/dashboard', {
                 method: 'GET',
                 headers: {
