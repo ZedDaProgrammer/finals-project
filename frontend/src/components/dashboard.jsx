@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Monitor,
+  CalendarCheck,
+  Bell,
+  Crown,
+} from "lucide-react";
+import { Sidebar } from "./components/Sidebar";
+import { StatCard } from "./components/StatCard";
+import { BookingHistory } from "./components/BookingHistory";
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [token] = useState(localStorage.getItem('token'));
     const [message, setMessage] = useState('');
     const [userData, setUserData] = useState({
@@ -10,10 +20,8 @@ const Dashboard = () => {
         totalBookedPc: 0
     });
     useEffect(() => {
-         if(!token) {
-                alert("No token found. Please log in.");
-                return;
-         }
+         if(!token) return;
+        const loadDashBoard = async () => {
          try{
             const historyResponse = await fetch('http://localhost:3000/src/reservationRoute/dashboard', {
                 method: 'GET',
@@ -22,7 +30,6 @@ const Dashboard = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            let historyCount = 0;
             if(historyResponse.ok) {
                 const data = await historyResponse.json();
                 setUserData(prevData => ({
@@ -37,7 +44,8 @@ const Dashboard = () => {
          } catch (error) {
             console.error("Error fetching dashboard data:", error);
          }
-    });
+        };
+    }, [token, navigate]);
     const fetchProtectedData = async () => {
         try {
             const response = await fetch('http://localhost:3000/src/reservationRoute/dashboard', {
