@@ -1,24 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    // We bring in 'token' here to authenticate our API requests
+    const { user, token, logout } = useAuth();
     
-    // Top widgets mock data
-    const [dashboardData] = useState({
-        availablePCs: 18,
-        availableVipPCs: 4,
-        userTotalBooked: 12,
-        orderHistory: 5
+    const [dashboardData, setDashboardData] = useState({
+        availablePCs: 0,
+        availableVipPCs: 0, // Your backend currently groups all PCs, so this will act as a placeholder until the backend splits it
+        userTotalBooked: 0,
+        orderHistory: 0
     });
 
-    // New mock data for the Order History Panel
-    const [recentOrders] = useState([
-        { id: '#RES-042', type: 'PC', details: 'VIP PC - 3 Hours', date: '2026-05-11', status: 'Active', amount: '₱150' },
-        { id: '#ORD-001', type: 'Food', details: 'Pancit Canton & Coke', date: '2026-05-11', status: 'Completed', amount: '₱120' },
-        { id: '#ORD-002', type: 'Food', details: 'Sisig Rice Bowl', date: '2026-05-09', status: 'Completed', amount: '₱95' },
-        { id: '#RES-038', type: 'PC', details: 'Standard PC - 5 Hours', date: '2026-05-08', status: 'Completed', amount: '₱100' },
-    ]);
+    const [recentOrders, setRecentOrders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                // Adjust this base URL to match whatever port your Node server runs on (e.g., 5000 or 3000)
+                const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+
+                // 1. Fetch Top-Level Stats (Available PCs and Total Booked)
+                const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
+                const stats = await statsRes.json();
+
+                // 2. Fetch Dashboard Table Data (Upcoming Reservations)
+                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
+                const dashboard = await dashboardRes.json();
+
+                // 3. Fetch User History (To get total past bookings count)
+                const historyRes = await fetch(`${BASE_URL}/history`, { headers });
+                const history = await historyRes.json();
+
+                // Inject the real database values into our widgets
+                setDashboardData({
+                    availablePCs: stats.availablePc || 0,
+                    availableVipPCs: 4, // Keeping static until VIP split is added to getDashboardStats backend
+                    userTotalBooked: stats.totalBookedPc || 0,
+                    orderHistory: history.count || 0 
+                });
+
+                // Format the backend data to fit our table columns perfectly
+                if (dashboard.upcomingReservations) {
+                    const formattedReservations = dashboard.upcomingReservations.map(res => ({
+                        id: `#RES-${res.reservation_id}`,
+                        type: 'PC',
+                        details: `${res.computer_type.toUpperCase()} PC`,
+                        // Clean up the timestamp format
+                        date: new Date(res.start).toLocaleDateString('en-PH', { 
+                            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        }),
+                        status: res.status,
+                        amount: '₱---' // You can update this later when payment columns are added to your table
+                    }));
+                    setRecentOrders(formattedReservations);
+                }
+
+                setIsLoading(false);
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                setIsLoading(false);
+            }
+        };
+
+        if (token) {
+            fetchDashboardData();
+        }
+    }, [token]);
 
     return (
         <div className="dashboard-layout">
@@ -62,7 +115,9 @@ const Dashboard = () => {
                         <div className="widget-icon standard-pc">🖥️</div>
                         <div className="widget-info">
                             <h3>Available PC</h3>
-                            <p className="widget-value">{dashboardData.availablePCs}</p>
+                            <p className="widget-value">
+                                {isLoading ? '...' : dashboardData.availablePCs}
+                            </p>
                             <span className="widget-desc">Standard Units</span>
                         </div>
                     </div>
@@ -70,7 +125,9 @@ const Dashboard = () => {
                         <div className="widget-icon vip-pc">⭐</div>
                         <div className="widget-info">
                             <h3>Available VIP PC</h3>
-                            <p className="widget-value">{dashboardData.availableVipPCs}</p>
+                            <p className="widget-value">
+                                {isLoading ? '...' : dashboardData.availableVipPCs}
+                            </p>
                             <span className="widget-desc">High-End Units</span>
                         </div>
                     </div>
@@ -78,7 +135,9 @@ const Dashboard = () => {
                         <div className="widget-icon booked">📅</div>
                         <div className="widget-info">
                             <h3>Total Booked</h3>
-                            <p className="widget-value">{dashboardData.userTotalBooked}</p>
+                            <p className="widget-value">
+                                {isLoading ? '...' : dashboardData.userTotalBooked}
+                            </p>
                             <span className="widget-desc">Your past sessions</span>
                         </div>
                     </div>
@@ -86,50 +145,59 @@ const Dashboard = () => {
                         <div className="widget-icon orders">🍔</div>
                         <div className="widget-info">
                             <h3>Order History</h3>
-                            <p className="widget-value">{dashboardData.orderHistory}</p>
-                            <span className="widget-desc">Food & Beverages</span>
+                            <p className="widget-value">
+                                {isLoading ? '...' : dashboardData.orderHistory}
+                            </p>
+                            <span className="widget-desc">Total Interactions</span>
                         </div>
                     </div>
                 </div>
 
-                {/* NEW: Order History Panel */}
+                {/* Order History Panel */}
                 <section className="recent-activity-panel">
                     <div className="panel-header">
-                        <h2>Recent History</h2>
+                        <h2>Upcoming Reservations</h2>
                         <button className="view-all-btn">View All</button>
                     </div>
                     
                     <div className="table-container">
-                        <table className="activity-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Type</th>
-                                    <th>Details</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentOrders.map((order, index) => (
-                                    <tr key={index}>
-                                        <td className="fw-bold">{order.id}</td>
-                                        <td>
-                                            <span className="type-badge">{order.type}</span>
-                                        </td>
-                                        <td>{order.details}</td>
-                                        <td>{order.date}</td>
-                                        <td className="fw-bold">{order.amount}</td>
-                                        <td>
-                                            <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
+                        {isLoading ? (
+                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading your reservations...</p>
+                        ) : recentOrders.length === 0 ? (
+                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no upcoming reservations.</p>
+                        ) : (
+                            <table className="activity-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Type</th>
+                                        <th>Details</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {recentOrders.map((order, index) => (
+                                        <tr key={index}>
+                                            <td className="fw-bold">{order.id}</td>
+                                            <td>
+                                                <span className="type-badge">{order.type}</span>
+                                            </td>
+                                            <td>{order.details}</td>
+                                            <td>{order.date}</td>
+                                            <td className="fw-bold">{order.amount}</td>
+                                            <td>
+                                                {/* Make sure the CSS class matches the database status (e.g., 'pending', 'confirmed') */}
+                                                <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </section>
 
