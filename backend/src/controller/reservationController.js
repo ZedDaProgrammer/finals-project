@@ -356,4 +356,4 @@ const dashboardData = async (req, res) => {
 };
 
 
-module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket, getDashboardStats};
+module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket, getDashboardStats, dashboardData };
