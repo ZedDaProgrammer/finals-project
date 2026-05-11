@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
 
 const Dashboard = () => {
-    // We bring in 'token' here to authenticate our API requests
+ 
     const { user, token, logout } = useAuth();
     
     const [dashboardData, setDashboardData] = useState({
         availablePCs: 0,
-        availableVipPCs: 0, // Your backend currently groups all PCs, so this will act as a placeholder until the backend splits it
+        availableVipPCs: 0, 
         userTotalBooked: 0,
         orderHistory: 0
     });
@@ -33,16 +33,16 @@ const Dashboard = () => {
                 if (!statsRes.ok) throw new Error("Stats fetch failed");
                 const stats = await statsRes.json();
 
-                // 2. Fetch Dashboard (Restored!)
+              
                 const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
                 const dashboard = await dashboardRes.json();
 
-                // 3. Fetch History (Restored!)
+         
                 const historyRes = await fetch(`${BASE_URL}/history`, { headers });
                 const history = await historyRes.json();
                 
                 setDashboardData({
-                    // Map Standard PCs
+           
                     availablePCs: Number(stats.availableStandardPc) || 0,
                     
                     availableVipPCs: Number(stats.availableVipPc) || 0,
@@ -51,18 +51,26 @@ const Dashboard = () => {
                     orderHistory: Number(history.count) || 0 
                 });
 
-                if (dashboard.upcomingReservations) {
-                    const formattedReservations = dashboard.upcomingReservations.map(res => ({
-                        id: `#RES-${res.reservation_id}`,
-                        type: 'PC',
-                        details: `${(res.computer_type || 'Unknown').toUpperCase()} PC`,
-                        date: new Date(res.start || Date.now()).toLocaleDateString('en-PH', { 
-                            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                        }),
-                        status: res.status || 'Pending',
-                        amount: '₱---'
-                    }));
-                    setRecentOrders(formattedReservations);
+                if (dashboard.activeSessions) {
+                    const formattedSessions = dashboard.activeSessions.map(res => {
+                        const endTime = new Date(res.end);
+                        const now = new Date();
+                        const diffMs = endTime - now; // Time left in milliseconds
+                        
+                        // Convert into Hours and Minutes
+                        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        const timeLeft = `${diffHrs}h ${diffMins}m`;
+
+                        return {
+                            id: `#RES-${res.reservation_id}`,
+                            pcDetails: `${(res.computer_type || 'Unknown').toUpperCase()} PC (Station ${res.station_id || 'N/A'})`,
+                            endTime: endTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }),
+                            timeLeft: diffMs > 0 ? timeLeft : 'Expired',
+                            status: 'In Use'
+                        };
+                    });
+                    setRecentOrders(formattedSessions);
                 }
 
                 setIsLoading(false);
@@ -77,10 +85,9 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-layout">
-            {/* Sidebar */}
             <aside className="sidebar">
                 <div className="sidebar-brand">
-                    <h2>LAN Spot</h2>
+                    <h2>BlackByte</h2>
                 </div>
                 
                 <nav className="sidebar-nav">
@@ -104,14 +111,14 @@ const Dashboard = () => {
                 </nav>
             </aside>
 
-            {/* Main Content */}
+
             <main className="dashboard-content">
                 <header className="dashboard-header">
-                    <h1>Welcome back, {user?.name || 'User'}!</h1>
+                    <h1>Welcome back, {user?.username || 'User'}!</h1>
                     <p>Here is the current status of the LAN center and your session history.</p>
                 </header>
 
-                {/* 4 Top Widgets */}
+
                 <div className="widgets-grid">
                     <div className="widget-card">
                         <div className="widget-icon standard-pc">🖥️</div>
@@ -155,44 +162,42 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Order History Panel */}
+
                 <section className="recent-activity-panel">
                     <div className="panel-header">
-                        <h2>Upcoming Reservations</h2>
-                        <button className="view-all-btn">View All</button>
+                        <h2>Your Active Sessions</h2>
+                        <button className="view-all-btn">Refresh</button>
                     </div>
                     
                     <div className="table-container">
                         {isLoading ? (
-                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading your reservations...</p>
+                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
                         ) : recentOrders.length === 0 ? (
-                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no upcoming reservations.</p>
+                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Type</th>
-                                        <th>Details</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
+                                        <th>Reservation ID</th>
+                                        <th>PC Details</th>
+                                        <th>Ends At</th>
+                                        <th>Time Left</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {recentOrders.map((order, index) => (
+                                    {recentOrders.map((session, index) => (
                                         <tr key={index}>
-                                            <td className="fw-bold">{order.id}</td>
-                                            <td>
-                                                <span className="type-badge">{order.type}</span>
+                                            <td className="fw-bold">{session.id}</td>
+                                            <td>{session.pcDetails}</td>
+                                            <td>{session.endTime}</td>
+                                            {/* Style the time left to look like an active timer */}
+                                            <td className="fw-bold" style={{ color: '#00e676' }}>
+                                                {session.timeLeft}
                                             </td>
-                                            <td>{order.details}</td>
-                                            <td>{order.date}</td>
-                                            <td className="fw-bold">{order.amount}</td>
                                             <td>
-                                                {/* Make sure the CSS class matches the database status (e.g., 'pending', 'confirmed') */}
-                                                <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                                    {order.status}
+                                                <span className="status-badge confirmed">
+                                                    {session.status}
                                                 </span>
                                             </td>
                                         </tr>

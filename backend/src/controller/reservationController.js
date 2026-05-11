@@ -278,17 +278,26 @@ const createTicket = async (req, res) => {
 };
 
 const dashboardData = async (req, res) => {
-    const user_id = req.user.id;
     try {
-        const upcomingReservations = await pool.query(`
-            SELECT r.*, c.type AS computer_type FROM reservations r
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "User session expired." });
+        }
+        const user_id = req.user.id;
+        const currentDate = new Date().toISOString();
+
+        const activeSessions = await pool.query(`
+            SELECT r.*, c.type AS computer_type 
+            FROM reservations r
             JOIN computers c ON r.station_id = c.id
-            WHERE r.user_id = $1 AND r.status != 'cancelled'
-            ORDER BY r.start DESC
+            WHERE r.user_id = $1 
+            AND r.status != 'cancelled'
+            AND r.start <= $2::timestamp
+            AND r."end" > $2::timestamp
+            ORDER BY r."end" ASC
             LIMIT 5`,
-            [user_id]
+            [user_id, currentDate]
         );
-        res.status(200).json({ upcomingReservations: upcomingReservations.rows });
+        res.status(200).json({ activeSessions: activeSessions.rows });
     } catch (err) {
         console.error("Dashboard data error", err.message);
         res.status(500).json({ error: "Server error during dashboard data retrieval" });
