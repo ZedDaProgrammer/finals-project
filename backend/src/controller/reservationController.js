@@ -9,16 +9,17 @@ const getDashboardStats = async (req, res) => {
     const user_id = req.user.id;
     
     try {
-  
         const historyQuery = await pool.query(
             `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
             [user_id]
         );
         const totalBookedPc = parseInt(historyQuery.rows[0].count);
 
+        // Simple query: Count all PCs NOT on maintenance and NOT currently reserved
         const availableQuery = await pool.query(
-            `SELECT COUNT(*) FROM computers
-             WHERE id NOT IN (
+            `SELECT COUNT(*) as count FROM computers
+             WHERE status != 'maintenance' 
+             AND id NOT IN (
                  SELECT station_id FROM reservations
                  WHERE status != 'cancelled'
                  AND start <= NOW()
@@ -27,6 +28,7 @@ const getDashboardStats = async (req, res) => {
         );
         const availablePc = parseInt(availableQuery.rows[0].count);
 
+        // Send exactly two clean numbers back to React
         res.status(200).json({
             totalBookedPc: totalBookedPc,
             availablePc: availablePc
@@ -355,5 +357,15 @@ const dashboardData = async (req, res) => {
     }
 };
 
-
-module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket, getDashboardStats, dashboardData };
+module.exports = { 
+    checkAvailability, 
+    createBooking, 
+    getHistory, 
+    deleteBooking, 
+    filterComputers, 
+    upgradeMembership, 
+    groupBooking, 
+    createTicket, 
+    getDashboardStats, 
+    dashboardData 
+};

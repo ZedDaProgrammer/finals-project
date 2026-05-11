@@ -37,12 +37,15 @@ const Dashboard = () => {
                 const historyRes = await fetch(`${BASE_URL}/history`, { headers });
                 const history = await historyRes.json();
 
-                // Inject the real database values into our widgets
                 setDashboardData({
-                    availablePCs: stats.availablePc || 0,
-                    availableVipPCs: 4, // Keeping static until VIP split is added to getDashboardStats backend
-                    userTotalBooked: stats.totalBookedPc || 0,
-                    orderHistory: history.count || 0 
+                    
+                    availablePCs: Number(stats.availablePc) || 0,
+                    
+                    
+                    availableVipPCs: 4, 
+                    
+                    userTotalBooked: Number(stats.totalBookedPc) || 0,
+                    orderHistory: Number(history.count) || 0 
                 });
 
                 // Format the backend data to fit our table columns perfectly
