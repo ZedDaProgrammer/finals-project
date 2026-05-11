@@ -3,19 +3,18 @@ const jwt = require('jsonwebtoken');
 
 const token = async (req, res, next) => {
     try {
-        // 1. Check for the token in cookies OR in the Authorization header
+
         let token = req.cookies.token;
 
         if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-            // Extracts the token from "Bearer <token>"
+  
             token = req.headers.authorization.split(' ')[1]; 
         }
 
         if(!token){
             return res.status(401).json({ message: "Not authorized, No token"});
         }
-        
-        // 2. Verify the token
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         const user = await pool.query('SELECT id, username, email FROM users WHERE id = $1',

@@ -2,7 +2,6 @@ const pool = require('../database/db');
 
 const getDashboardStats = async (req, res) => {
     try {
-        // Safe check: Ensure user exists before trying to read their ID
         if (!req.user || !req.user.id) {
             return res.status(401).json({ error: "User session expired." });
         }
@@ -14,23 +13,34 @@ const getDashboardStats = async (req, res) => {
         );
         const totalBookedPc = parseInt(historyQuery.rows[0].count) || 0;
 
-        // FIXED: Added ::timestamp to NOW() so PostgreSQL doesn't crash!
+        const currentDate = new Date().toISOString();
+
         const availableQuery = await pool.query(
-            `SELECT COUNT(*) as count FROM computers
-             WHERE status = 'active' 
+            `SELECT type, COUNT(*) as count FROM computers
+             WHERE availability = 'available' 
              AND id NOT IN (
                  SELECT station_id FROM reservations
                  WHERE status != 'cancelled'
                  AND station_id IS NOT NULL
-                 AND start <= NOW()::timestamp
-                 AND "end" >= NOW()::timestamp
-             )`
+                 AND start <= $1
+                 AND "end" >= $1
+             )
+             GROUP BY type`, [currentDate]
         );
-        const availablePc = parseInt(availableQuery.rows[0].count) || 0;
+
+     
+        let availableStandardPc = 0;
+        let availableVipPc = 0;
+
+        availableQuery.rows.forEach(row => {
+            if (row.type === 'standard') availableStandardPc = parseInt(row.count);
+            if (row.type === 'vip') availableVipPc = parseInt(row.count);
+        });
 
         res.status(200).json({
-            totalBookedPc: totalBookedPc,
-            availablePc: availablePc
+            totalBookedPc,
+            availableStandardPc,
+            availableVipPc
         });
     } catch (err) {
         console.error("Dashboard Stats Error:", err.message);

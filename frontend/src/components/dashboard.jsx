@@ -16,46 +16,64 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-    const fetchDashboardData = async () => {
-        try {
-            const BASE_URL = 'http://localhost:3000/src/reservationRoute';
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
+        const fetchDashboardData = async () => {
+            try {
+                const BASE_URL = 'http://localhost:3000/src/reservationRoute';
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
 
-            const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
-            
-            // IF THE SERVER RETURNS 401 (UNAUTHORIZED)
-            if (statsRes.status === 401) {
-                console.warn("Token expired or invalid. Logging out...");
-                logout(); // This clears localStorage and redirects the user
-                return;
+  
+                const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
+                if (statsRes.status === 401) {
+                    logout(); 
+                    return;
+                }
+                if (!statsRes.ok) throw new Error("Stats fetch failed");
+                const stats = await statsRes.json();
+
+                // 2. Fetch Dashboard (Restored!)
+                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
+                const dashboard = await dashboardRes.json();
+
+                // 3. Fetch History (Restored!)
+                const historyRes = await fetch(`${BASE_URL}/history`, { headers });
+                const history = await historyRes.json();
+                
+                setDashboardData({
+                    // Map Standard PCs
+                    availablePCs: Number(stats.availableStandardPc) || 0,
+                    
+                    availableVipPCs: Number(stats.availableVipPc) || 0,
+                    
+                    userTotalBooked: Number(stats.totalBookedPc) || 0,
+                    orderHistory: Number(history.count) || 0 
+                });
+
+                if (dashboard.upcomingReservations) {
+                    const formattedReservations = dashboard.upcomingReservations.map(res => ({
+                        id: `#RES-${res.reservation_id}`,
+                        type: 'PC',
+                        details: `${(res.computer_type || 'Unknown').toUpperCase()} PC`,
+                        date: new Date(res.start || Date.now()).toLocaleDateString('en-PH', { 
+                            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        }),
+                        status: res.status || 'Pending',
+                        amount: '₱---'
+                    }));
+                    setRecentOrders(formattedReservations);
+                }
+
+                setIsLoading(false);
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                setIsLoading(false);
             }
+        };
 
-            if (!statsRes.ok) throw new Error("Stats fetch failed");
-            const stats = await statsRes.json();
-
-            // ... repeat similar check for your other fetch calls (dashboardRes, historyRes)
-            
-            setDashboardData({
-                availablePCs: Number(stats.availablePc) || 0,
-                availableVipPCs: 4,
-                userTotalBooked: Number(stats.totalBookedPc) || 0,
-                orderHistory: Number(history.count) || 0 
-            });
-
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    if (token) {
-        fetchDashboardData();
-    }
-}, [token, logout]);
+        if (token) fetchDashboardData();
+    }, [token, logout]);
 
     return (
         <div className="dashboard-layout">
