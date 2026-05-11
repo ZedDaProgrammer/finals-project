@@ -115,7 +115,7 @@ const Dashboard = () => {
             <main className="dashboard-content">
                 <header className="dashboard-header">
                     <h1>Welcome back, {user?.username || 'User'}!</h1>
-                    <p>Here is the current status of the LAN center and your session history.</p>
+                    <p>Live status of BlackByte.</p>
                 </header>
 
 
