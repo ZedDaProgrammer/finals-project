@@ -5,6 +5,39 @@ const pool = require('../database/db');
 
 router.use(token);
 
+const getDashboardStats = async (req, res) => {
+    const user_id = req.user.id;
+    
+    try {
+  
+        const historyQuery = await pool.query(
+            `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
+            [user_id]
+        );
+        const totalBookedPc = parseInt(historyQuery.rows[0].count);
+
+        const availableQuery = await pool.query(
+            `SELECT COUNT(*) FROM computers
+             WHERE id NOT IN (
+                 SELECT station_id FROM reservations
+                 WHERE status != 'cancelled'
+                 AND start <= NOW()
+                 AND "end" >= NOW()
+             )`
+        );
+        const availablePc = parseInt(availableQuery.rows[0].count);
+
+        res.status(200).json({
+            totalBookedPc: totalBookedPc,
+            availablePc: availablePc
+        });
+
+    } catch (err) {
+        console.error("Dashboard Stats Error:", err.message);
+        res.status(500).json({ error: "Failed to load dashboard stats." });
+    }
+};
+
 const checkAvailability = async (req, res) => {
 try{
 const { start, end } = req.query;
@@ -304,5 +337,23 @@ const createTicket = async (req, res) => {
     }
 };
 
+const dashboardData = async (req, res) => {
+    const user_id = req.user.id;
+    try {
+        const upcomingReservations = await pool.query(`
+            SELECT r.*, c.type AS computer_type FROM reservations r
+            JOIN computers c ON r.station_id = c.id
+            WHERE r.user_id = $1 AND r.start > NOW() AND r.status != 'cancelled'
+            ORDER BY r.start ASC
+            LIMIT 5`,
+            [user_id]
+        );
+        res.status(200).json({ upcomingReservations: upcomingReservations.rows });
+    } catch (err) {
+        console.error("Dashboard data error", err.message);
+        res.status(500).json({ error: "Server error during dashboard data retrieval" });
+    }
+};
 
-module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket };
+
+module.exports = { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket, getDashboardStats};
