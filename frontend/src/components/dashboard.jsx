@@ -18,6 +18,7 @@ const Dashboard = () => {
     useEffect(() => {
     const fetchDashboardData = async () => {
         try {
+            // Ensure this port matches your backend (default is 3000 in your server.js)
             const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
             const headers = {
                 'Authorization': `Bearer ${token}`,
@@ -36,7 +37,7 @@ const Dashboard = () => {
 
             setDashboardData({
                 availablePCs: Number(stats.availablePc) || 0,
-                availableVipPCs: 4,
+                availableVipPCs: 4, // Placeholder
                 userTotalBooked: Number(stats.totalBookedPc) || 0,
                 orderHistory: Number(history.count) || 0 
             });
