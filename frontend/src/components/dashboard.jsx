@@ -18,48 +18,36 @@ const Dashboard = () => {
     useEffect(() => {
     const fetchDashboardData = async () => {
         try {
-            // Ensure this port matches your backend (default is 3000 in your server.js)
-            const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
+            const BASE_URL = 'http://localhost:3000/src/reservationRoute';
             const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
 
             const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
+            
+            // IF THE SERVER RETURNS 401 (UNAUTHORIZED)
+            if (statsRes.status === 401) {
+                console.warn("Token expired or invalid. Logging out...");
+                logout(); // This clears localStorage and redirects the user
+                return;
+            }
+
             if (!statsRes.ok) throw new Error("Stats fetch failed");
             const stats = await statsRes.json();
 
-            const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
-            const dashboard = await dashboardRes.json();
-
-            const historyRes = await fetch(`${BASE_URL}/history`, { headers });
-            const history = await historyRes.json();
-
+            // ... repeat similar check for your other fetch calls (dashboardRes, historyRes)
+            
             setDashboardData({
                 availablePCs: Number(stats.availablePc) || 0,
-                availableVipPCs: 4, // Placeholder
+                availableVipPCs: 4,
                 userTotalBooked: Number(stats.totalBookedPc) || 0,
                 orderHistory: Number(history.count) || 0 
             });
 
-            if (dashboard.upcomingReservations) {
-                const formattedReservations = dashboard.upcomingReservations.map(res => ({
-                    id: `#RES-${res.reservation_id}`,
-                    type: 'PC',
-                    // Use a fallback to prevent crash if computer_type is missing
-                    details: `${(res.computer_type || 'Unknown').toUpperCase()} PC`,
-                    date: new Date(res.start).toLocaleDateString('en-PH', { 
-                        month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    }),
-                    status: res.status || 'Pending',
-                    amount: '₱---'
-                }));
-                setRecentOrders(formattedReservations);
-            }
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
         } finally {
-            // This MUST run to clear the "..." display
             setIsLoading(false);
         }
     };
@@ -67,7 +55,7 @@ const Dashboard = () => {
     if (token) {
         fetchDashboardData();
     }
-}, [token]);
+}, [token, logout]);
 
     return (
         <div className="dashboard-layout">

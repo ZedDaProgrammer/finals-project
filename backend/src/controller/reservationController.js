@@ -14,7 +14,7 @@ const getDashboardStats = async (req, res) => {
         );
         const totalBookedPc = parseInt(historyQuery.rows[0].count) || 0;
 
-        // Added 'station_id IS NOT NULL' to prevent SQL from breaking
+        // FIXED: Added ::timestamp to NOW() so PostgreSQL doesn't crash!
         const availableQuery = await pool.query(
             `SELECT COUNT(*) as count FROM computers
              WHERE status = 'active' 
@@ -22,15 +22,15 @@ const getDashboardStats = async (req, res) => {
                  SELECT station_id FROM reservations
                  WHERE status != 'cancelled'
                  AND station_id IS NOT NULL
-                 AND start <= NOW()
-                 AND "end" >= NOW()
+                 AND start <= NOW()::timestamp
+                 AND "end" >= NOW()::timestamp
              )`
         );
         const availablePc = parseInt(availableQuery.rows[0].count) || 0;
 
         res.status(200).json({
-            totalBookedPc,
-            availablePc
+            totalBookedPc: totalBookedPc,
+            availablePc: availablePc
         });
     } catch (err) {
         console.error("Dashboard Stats Error:", err.message);

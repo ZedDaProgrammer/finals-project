@@ -89,9 +89,11 @@ const userProfile =  async (req, res) => {
 };
 
 const userLogout = async (req, res) => {
-    res.cookieOptions("auth_token", "", {
-        expires: new Date(0),
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
     });
+    res.status(200).json({ message: "Logged out successfully" });
 };
 
 module.exports = { userRegister, userLogin, userProfile, userLogout };

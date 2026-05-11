@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+// 1. IMPORT USEAUTH
+import { useAuth } from '../../context/AuthContext'; 
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); 
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,9 +31,9 @@ const AuthPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
+        login(data.token); 
         alert("Login Successful!");
+        navigate('/dashboard');
       } else {
         alert(data.message || "Login failed");
       }
