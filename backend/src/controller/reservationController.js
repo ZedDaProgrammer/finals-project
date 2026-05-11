@@ -7,18 +7,17 @@ router.use(token);
 
 const getDashboardStats = async (req, res) => {
     const user_id = req.user.id;
-    
     try {
         const historyQuery = await pool.query(
             `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
             [user_id]
         );
-        const totalBookedPc = parseInt(historyQuery.rows[0].count);
+        const totalBookedPc = parseInt(historyQuery.rows[0].count) || 0;
 
-        // Simple query: Count all PCs NOT on maintenance and NOT currently reserved
+        // Counts PCs that are 'active' and NOT currently within a reservation time slot
         const availableQuery = await pool.query(
             `SELECT COUNT(*) as count FROM computers
-             WHERE status != 'maintenance' 
+             WHERE status = 'active' 
              AND id NOT IN (
                  SELECT station_id FROM reservations
                  WHERE status != 'cancelled'
@@ -26,14 +25,12 @@ const getDashboardStats = async (req, res) => {
                  AND "end" >= NOW()
              )`
         );
-        const availablePc = parseInt(availableQuery.rows[0].count);
+        const availablePc = parseInt(availableQuery.rows[0].count) || 0;
 
-        // Send exactly two clean numbers back to React
         res.status(200).json({
-            totalBookedPc: totalBookedPc,
-            availablePc: availablePc
+            totalBookedPc,
+            availablePc
         });
-
     } catch (err) {
         console.error("Dashboard Stats Error:", err.message);
         res.status(500).json({ error: "Failed to load dashboard stats." });

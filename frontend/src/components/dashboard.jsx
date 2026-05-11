@@ -16,65 +16,57 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                // Adjust this base URL to match whatever port your Node server runs on (e.g., 5000 or 3000)
-                const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
-                const headers = {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                };
+    const fetchDashboardData = async () => {
+        try {
+            const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
 
-                // 1. Fetch Top-Level Stats (Available PCs and Total Booked)
-                const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
-                const stats = await statsRes.json();
+            const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
+            if (!statsRes.ok) throw new Error("Stats fetch failed");
+            const stats = await statsRes.json();
 
-                // 2. Fetch Dashboard Table Data (Upcoming Reservations)
-                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
-                const dashboard = await dashboardRes.json();
+            const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
+            const dashboard = await dashboardRes.json();
 
-                // 3. Fetch User History (To get total past bookings count)
-                const historyRes = await fetch(`${BASE_URL}/history`, { headers });
-                const history = await historyRes.json();
+            const historyRes = await fetch(`${BASE_URL}/history`, { headers });
+            const history = await historyRes.json();
 
-                setDashboardData({
-                    
-                    availablePCs: Number(stats.availablePc) || 0,
-                    
-                    
-                    availableVipPCs: 4, 
-                    
-                    userTotalBooked: Number(stats.totalBookedPc) || 0,
-                    orderHistory: Number(history.count) || 0 
-                });
+            setDashboardData({
+                availablePCs: Number(stats.availablePc) || 0,
+                availableVipPCs: 4,
+                userTotalBooked: Number(stats.totalBookedPc) || 0,
+                orderHistory: Number(history.count) || 0 
+            });
 
-                // Format the backend data to fit our table columns perfectly
-                if (dashboard.upcomingReservations) {
-                    const formattedReservations = dashboard.upcomingReservations.map(res => ({
-                        id: `#RES-${res.reservation_id}`,
-                        type: 'PC',
-                        details: `${res.computer_type.toUpperCase()} PC`,
-                        // Clean up the timestamp format
-                        date: new Date(res.start).toLocaleDateString('en-PH', { 
-                            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                        }),
-                        status: res.status,
-                        amount: '₱---' // You can update this later when payment columns are added to your table
-                    }));
-                    setRecentOrders(formattedReservations);
-                }
-
-                setIsLoading(false);
-            } catch (error) {
-                console.error("Error fetching dashboard data:", error);
-                setIsLoading(false);
+            if (dashboard.upcomingReservations) {
+                const formattedReservations = dashboard.upcomingReservations.map(res => ({
+                    id: `#RES-${res.reservation_id}`,
+                    type: 'PC',
+                    // Use a fallback to prevent crash if computer_type is missing
+                    details: `${(res.computer_type || 'Unknown').toUpperCase()} PC`,
+                    date: new Date(res.start).toLocaleDateString('en-PH', { 
+                        month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    }),
+                    status: res.status || 'Pending',
+                    amount: '₱---'
+                }));
+                setRecentOrders(formattedReservations);
             }
-        };
-
-        if (token) {
-            fetchDashboardData();
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+        } finally {
+            // This MUST run to clear the "..." display
+            setIsLoading(false);
         }
-    }, [token]);
+    };
+
+    if (token) {
+        fetchDashboardData();
+    }
+}, [token]);
 
     return (
         <div className="dashboard-layout">
