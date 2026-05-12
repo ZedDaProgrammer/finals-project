@@ -42,6 +42,7 @@ const Dashboard = () => {
                 if (!statsRes.ok) throw new Error("Stats fetch failed");
                 const stats = await statsRes.json();
 
+                
               
                 const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
                 const dashboard = await dashboardRes.json();
@@ -176,20 +177,15 @@ const Dashboard = () => {
                                         let statusStr = "";
                                         let timeLeftStr = "";
 
-                                        // Calculate the Live Status and Time
-                                        if (currentTime < start) {
+                                        if (res.status === 'pending') {
+                                            statusStr = "Pending";
+                                            timeLeftStr = "Waiting to start in cafe";
+                                        } 
+                                        else if (currentTime < start) {
                                             statusStr = "Upcoming";
                                             const diffMs = start - currentTime;
                                             const diffMins = Math.ceil(diffMs / 60000);
                                             timeLeftStr = `Starts in ${diffMins} min`;
-                                        } 
-                                        else if (currentTime >= start && currentTime < end) {
-                                            statusStr = "Ongoing";
-                                            const diffMs = end - currentTime;
-                                            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                                            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                                            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-                                            timeLeftStr = `${hours}h ${minutes}m ${seconds}s`;
                                         } 
                                         else {
                                             statusStr = "Expired";
