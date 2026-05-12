@@ -8,7 +8,7 @@ const ReservationPage = () => {
     const [allComputers, setAllComputers] = useState([]);
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
-    const [selectedRoom, setSelectedRoom] = useState(null); // Added for room booking
+    const [selectedRoom, setSelectedRoom] = useState(null); 
     const [activeTab, setActiveTab] = useState('standard'); 
     
     const [startTime, setStartTime] = useState(() => {
@@ -58,22 +58,26 @@ const ReservationPage = () => {
     const standardPcs = allComputers.filter(pc => pc.type === 'standard');
     const allVipPcs = allComputers.filter(pc => pc.type === 'vip');
     
-    // Slicing VIPs into categories
     const vipRoomPcs = allVipPcs.slice(0, 25); 
     const privateVipPcs = allVipPcs.slice(25, 35); 
-    const generalVipPcs = allVipPcs.slice(35); // This shows the lounge if you have >35 VIPs
+    const generalVipPcs = allVipPcs.slice(35); 
 
     const handleBooking = async () => {
         const isRoom = !!selectedRoom;
         const endpoint = isRoom ? '/group-booking' : '/book';
+        
+        const startTimestamp = new Date(startTime);
+        const endTimestamp = new Date(startTimestamp.getTime() + duration * 36e5);
+
         const payload = isRoom ? {
             stations: selectedRoom.pcs.map(p => p.id),
-            start: new Date(startTime).toISOString(),
-            end: new Date(new Date(startTime).getTime() + duration * 36e5).toISOString()
+            start: startTimestamp.toISOString(),
+            end: endTimestamp.toISOString()
         } : {
             station_id: selectedPC.id,
-            start: new Date(startTime).toISOString(),
-            end: new Date(new Date(startTime).getTime() + duration * 36e5).toISOString()
+            start: startTimestamp.toISOString(),
+            end: endTimestamp.toISOString(),
+            total_price: (Number(selectedPC.pc_rate) || 0) * duration 
         };
 
         try {
@@ -89,15 +93,17 @@ const ReservationPage = () => {
             } else {
                 alert(`Booking failed: ${data.error}`);
             }
-        } catch (error) { alert("An error occurred."); }
+        } catch (error) { 
+            alert("An error occurred while booking."); 
+        }
     };
 
     const renderPc = (pc) => {
         const isAvailable = availableIds.includes(pc.id);
         return (
             <div key={pc.id} className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                 onClick={() => setSelectedPC(pc)}>
-                <span className="pc-name">{pc.pcname}</span><br/>
+                 onClick={() => { if(isAvailable) setSelectedPC(pc); }}>
+                <span className="pc-name">{pc.pcname || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
             </div>
         );
@@ -112,6 +118,15 @@ const ReservationPage = () => {
                         <span className="nav-section-title">Main Menu</span>
                         <a href="/dashboard" className="nav-item">Dashboard</a>
                         <a href="/booking" className="nav-item active">Reservation</a>
+                        {user?.role === 'admin' && (
+                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
+                        )}
+                    </div>
+                    <div className="nav-section account-section">
+                        <span className="nav-section-title">Account</span>
+                        <a href="/profile" className="nav-item">Profile</a>
+                        <a href="/settings" className="nav-item">Settings</a>
+                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
                     </div>
                 </nav>
             </aside>
@@ -120,7 +135,7 @@ const ReservationPage = () => {
                 <div className="reservation-container">
                     <h2>Reservations</h2>
                     <div className="category-tabs">
-                        <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}>Standard</button>
+                        <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}>Standard Lounge</button>
                         <button className={`tab-btn ${activeTab === 'vip_lounge' ? 'active' : ''}`} onClick={() => setActiveTab('vip_lounge')}>VIP Lounge</button>
                         <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}>VIP Rooms (5-PC)</button>
                         <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>Private (2-PC)</button>
@@ -130,7 +145,7 @@ const ReservationPage = () => {
                     
                     {activeTab === 'vip_lounge' && (
                         <div className="pc-grid">
-                            {generalVipPcs.length > 0 ? generalVipPcs.map(renderPc) : <p>Lounge is currently empty. Add more VIP PCs in database!</p>}
+                            {generalVipPcs.length > 0 ? generalVipPcs.map(renderPc) : <p style={{textAlign: "center", gridColumn: "1 / -1"}}>The VIP Lounge is currently empty. Check back later!</p>}
                         </div>
                     )}
 
@@ -143,24 +158,24 @@ const ReservationPage = () => {
                                 
                                 if (pcs.length === 0) return null;
                                 const isRoomAvailable = pcs.every(p => availableIds.includes(p.id));
-                                const roomRate = pcs.reduce((sum, p) => sum + p.pc_rate, 0);
+                                const roomRate = pcs.reduce((sum, p) => sum + (p.pc_rate || 0), 0);
 
                                 return (
                                     <div key={idx} className={`room-box ${isRoomAvailable ? '' : 'room-occupied'}`}>
-                                        <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private'} {idx + 1}</h4>
-                                        <div className="pc-grid room-grid">
+                                        <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} {idx + 1}</h4>
+                                        <div className="room-grid">
                                             {pcs.map(p => (
                                                 <div key={p.id} className={`pc-mini ${availableIds.includes(p.id) ? 'free' : 'busy'}`}>
-                                                    {p.pcname}
+                                                    {p.pcname || `PC-${p.id}`}
                                                 </div>
                                             ))}
                                         </div>
                                         <button 
                                             className="book-room-btn" 
                                             disabled={!isRoomAvailable}
-                                            onClick={() => setSelectedRoom({ name: `Room ${idx+1}`, pcs, rate: roomRate })}
+                                            onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
                                         >
-                                            {isRoomAvailable ? `Book Room (${roomRate} CR/hr)` : 'Room Unavailable'}
+                                            {isRoomAvailable ? `Book Full Room (${roomRate} CR/hr)` : 'Room Unavailable'}
                                         </button>
                                     </div>
                                 );
@@ -172,18 +187,59 @@ const ReservationPage = () => {
                 {/* Unified Booking Modal */}
                 {(selectedPC || selectedRoom) && (
                     <div className="modal-overlay">
-                        <div className="modal-content">
-                            <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : selectedPC.pcname}</h3>
-                            <div className="modal-time-selector">
-                                <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                                <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
+                        <div className="modal-content modal-large">
+                            <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : (selectedPC.pcname || `PC-${selectedPC.id}`)}</h3>
+                            
+                            {selectedPC && (
+                                <div className="pc-dynamic-details">
+                                    <h4>Specifications:</h4>
+                                    <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
+                                    <p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p>
+                                    <p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p>
+                                    <p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
+                                </div>
+                            )}
+
+                            {selectedRoom && (
+                                <div className="pc-dynamic-details">
+                                    <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                </div>
+                            )}
+
+                            <div className="modal-time-selector" style={{ marginTop: '20px' }}>
+                                <div className="input-group">
+                                    <label>Start Time:</label>
+                                    <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                                </div>
+                                <div className="input-group">
+                                    <label>Duration (Hours):</label>
+                                    <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
+                                </div>
                             </div>
+
                             <div className="booking-summary">
-                                <p><strong>Total Cost:</strong> {(selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration} CR</p>
-                                <p><strong>Your Credits:</strong> {user?.credits} CR</p>
+                                <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                    <strong>Total Cost:</strong> 
+                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{(selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration} CR</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                    <strong>Your Credits:</strong> 
+                                    <span style={{ color: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                        {user?.credits || 0} CR
+                                    </span>
+                                </div>
                             </div>
+
                             <div className="modal-actions">
-                                <button className="confirm-btn" onClick={handleBooking}>Confirm</button>
+                                <button 
+                                    className="confirm-btn" 
+                                    onClick={handleBooking}
+                                    disabled={(user?.credits || 0) < ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration)}
+                                    style={{ opacity: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? 1 : 0.5 }}
+                                >
+                                    Confirm
+                                </button>
                                 <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
                             </div>
                         </div>
