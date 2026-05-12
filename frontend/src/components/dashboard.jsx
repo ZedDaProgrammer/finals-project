@@ -11,7 +11,7 @@ const Dashboard = () => {
         userTotalBooked: 0,
         orderHistory: 0
     });
-
+    const [recentOrders, setRecentOrders] = useState([]);
     const [rawSessions, setRawSessions] = useState([]); 
     const [currentTime, setCurrentTime] = useState(new Date()); 
     const [isLoading, setIsLoading] = useState(true);
