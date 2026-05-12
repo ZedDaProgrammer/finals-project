@@ -92,7 +92,8 @@ const ReservationPage = () => {
                 body: JSON.stringify({
                     station_id: selectedPC.id,
                     start: startTimestamp.toISOString(),
-                    end: endTimestamp.toISOString()
+                    end: endTimestamp.toISOString(),
+                    total_price: (Number(selectedPC.pc_rate) || 0) * duration  // <-- Add this line
                 })
             });
 
@@ -190,6 +191,21 @@ const ReservationPage = () => {
                             <div className="booking-summary">
                                 <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
                                 <p><strong>Total Duration:</strong> {duration} hour(s)</p>
+                                
+                                {/* New Price Calculation block */}
+                                <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #ffcc80' }}/>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <p style={{ margin: 0 }}><strong>Rate per Hour:</strong></p>
+                                    {/* Assuming your database column is named pc_rate */}
+                                    <p style={{ margin: 0 }}>{selectedPC.pc_rate || 0} CR</p>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '1.1em' }}>
+                                    <p style={{ margin: 0 }}><strong>Total Price:</strong></p>
+                                    <p style={{ margin: 0, color: '#d84315', fontWeight: 'bold' }}>
+                                        {/* Multiplies the rate by the hours */}
+                                        {(Number(selectedPC.pc_rate) || 0) * duration} CR
+                                    </p>
+                                </div>
                             </div>
                         )}
 

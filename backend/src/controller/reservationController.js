@@ -77,7 +77,7 @@ const checkAvailability = async (req, res) => {
 };
 
 const createBooking = async (req, res) => {
-    const { station_id, start, end } = req.body;
+    const { station_id, start, end, total_price } = req.body;
     const user_id = req.user.id;
     const client = await pool.connect();
 
@@ -103,9 +103,9 @@ const createBooking = async (req, res) => {
         if(overlapChecking.rows.length > 0) throw new Error("Time slot unavailable");
 
         const newBooking = await client.query(`
-            INSERT INTO reservations (user_id, station_id, start, "end", status)
-            VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
-            [user_id, station_id, start, end]
+            INSERT INTO reservations (user_id, station_id, start, "end", status, total_price)
+            VALUES ($1, $2, $3, $4, 'pending', $5) returning *`,
+            [user_id, station_id, start, end, total_price]
         );
 
         await client.query('COMMIT');
