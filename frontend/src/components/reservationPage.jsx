@@ -58,9 +58,10 @@ const ReservationPage = () => {
     const standardPcs = allComputers.filter(pc => pc.type === 'standard');
     const allVipPcs = allComputers.filter(pc => pc.type === 'vip');
     
-    const vipRoomPcs = allVipPcs.slice(0, 25); 
-    const privateVipPcs = allVipPcs.slice(25, 35); 
-    const generalVipPcs = allVipPcs.slice(35); 
+    // Distributing the 20 VIP PCs:
+    const generalVipPcs = allVipPcs.slice(0, 6);
+    const vipRoomPcs = allVipPcs.slice(6, 16);     
+    const privateVipPcs = allVipPcs.slice(16, 20);
 
     const handleBooking = async () => {
         const isRoom = !!selectedRoom;
