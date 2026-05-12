@@ -55,22 +55,17 @@ const checkAvailability = async (req, res) => {
             return res.status(401).json({ error: "Please provide the needed details."});
         }
 
-        const evaluatePoints = (points) => {
-            if(points >= 100) return 'radiant';
-            if(points >= 60) return 'platinum';
-            if(points >= 30) return 'gold';
-            if(points >= 10) return 'silver';
-            return 'bronze';
-        }
-
+        // Updated query with the 15-minute expiration rule
         const availableStation = await pool.query(`
                 SELECT * FROM computers
                 WHERE id NOT IN (
-                SELECT station_id FROM reservations
-                WHERE status != 'cancelled'
-                AND start < $2::timestamp
-                AND "end" > $1::timestamp
+                    SELECT station_id FROM reservations
+                    WHERE status != 'cancelled'
+                    AND start < $2::timestamp
+                    AND "end" > $1::timestamp
+                    AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))
                 )
+                ORDER BY id ASC
             `, [start, end]);
             
         res.status(200).json({ availableStation: availableStation.rows });
@@ -96,10 +91,12 @@ const createBooking = async (req, res) => {
 
         if(checkStation.rows.length === 0) throw new Error("Station not found.");
 
+        // Updated overlap query with the 15-minute expiration rule
         const overlapChecking = await client.query(
             `SELECT * FROM reservations
             WHERE station_id = $1 AND status != 'cancelled'
-            AND start < $3 AND "end" > $2`,
+            AND start < $3 AND "end" > $2
+            AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))`,
             [station_id, start, end]          
         );
 
@@ -112,7 +109,7 @@ const createBooking = async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(200).json({ message: "Booking has been confirmed niggas", booking: newBooking.rows[0]});
+        res.status(200).json({ message: "Booking has been confirmed", booking: newBooking.rows[0]});
     } catch(err) {
         await client.query('ROLLBACK');
         console.error("Booking Error", err.message);

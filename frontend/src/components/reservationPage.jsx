@@ -9,10 +9,9 @@ const ReservationPage = () => {
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
     
-    // Time and Date selection states
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
-        now.setHours(now.getHours() + 1, 0, 0, 0);
+        // REMOVED: now.setHours(...) so it defaults to the exact current time
         const tzOffset = now.getTimezoneOffset() * 60000; 
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
     });

@@ -644,6 +644,51 @@ input {
     font-weight: bold;
 }
 
+/* Modal Tweaks for Inputs */
+.modal-large {
+    width: 95%;
+    max-width: 480px; /* Slightly wider to fit inputs nicely */
+}
+
+.modal-time-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-time-selector .input-group {
+    flex: 1;
+    margin: 0;
+}
+
+.modal-time-selector label {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.modal-time-selector input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+}
+
+/* Error warning if PC is booked */
+.booking-error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #ef9a9a;
+}
+
 .confirm-btn { background-color: #4CAF50; color: white; }
 .confirm-btn:hover { background-color: #45a049; }
 
