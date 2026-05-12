@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const ReservationPage = () => {
-    const { token } = useAuth();
+    const { token, user, logout } = useAuth();
     const BASE_URL = 'http://localhost:3000/src/reservationRoute'; // Update to /api if needed based on our previous fix
 
     const [allComputers, setAllComputers] = useState([]);
@@ -116,116 +116,146 @@ const ReservationPage = () => {
     const isSelectedPcAvailable = selectedPC ? availableIds.includes(selectedPC.id) : false;
 
     return (
-        <div className="reservation-container">
-            
-            <h2>Station Reservations</h2>
-            <p style={{marginBottom: "30px", color: "#555"}}>Select a station below to view specs and book your time.</p>
-
-            {/* PC Grid Layout */}
-            <div className="pc-grid">
-                {allComputers.map((pc) => {
-                    const isAvailable = availableIds.includes(pc.id);
-                    return (
-                        <div 
-                            key={pc.id} 
-                            className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                            onClick={() => handlePcClick(pc)}
-                            title={isAvailable ? "Click to Book" : "Currently Occupied for the default time"}
-                        >
-                            <span className="pc-name">{pc.pcname || `PC ${pc.id}`}</span>
-                            <br/>
-                            <span className="pc-rate">{pc.type ? pc.type.toUpperCase() : ''}</span>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Pop-up Modal */}
-            {selectedPC && (
-                <div className="modal-overlay">
-                    <div className="modal-content modal-large">
-                        <h3>Book {selectedPC.pcname || `PC #${selectedPC.id}`}</h3>
-                        
-                        {/* Specifications Block */}
-                        <div className="pc-dynamic-details">
-                            <h4>PC Specifications:</h4>
-                            {Object.entries(selectedPC).map(([key, value]) => {
-                                if (value === null || value === '' || key === 'id' || key === 'status') return null;
-                                const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-                                return (
-                                    <p key={key} className="specs-text">
-                                        <strong>{key.replace(/_/g, ' ').toUpperCase()}:</strong> {displayValue}
-                                    </p>
-                                );
-                            })}
-                        </div>
-                        
-                        {/* Time Selectors MOVED INSIDE MODAL */}
-                        <div className="modal-time-selector">
-                            <div className="input-group">
-                                <label>Select Date & Start Time:</label>
-                                <input 
-                                    type="datetime-local" 
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Duration (Hours):</label>
-                                <input 
-                                    type="number" 
-                                    min="1" 
-                                    step="1"
-                                    value={duration}
-                                    onChange={(e) => setDuration(Number(e.target.value))}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Validation: Check if available */}
-                        {!isSelectedPcAvailable ? (
-                            <div className="booking-error">
-                                ⚠️ This PC is already booked for the selected time. Please choose a different time or PC.
-                            </div>
-                        ) : (
-                            <div className="booking-summary">
-                                <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
-                                <p><strong>Total Duration:</strong> {duration} hour(s)</p>
-                                
-                                {/* New Price Calculation block */}
-                                <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #ffcc80' }}/>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <p style={{ margin: 0 }}><strong>Rate per Hour:</strong></p>
-                                    {/* Assuming your database column is named pc_rate */}
-                                    <p style={{ margin: 0 }}>{selectedPC.pc_rate || 0} CR</p>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '1.1em' }}>
-                                    <p style={{ margin: 0 }}><strong>Total Price:</strong></p>
-                                    <p style={{ margin: 0, color: '#d84315', fontWeight: 'bold' }}>
-                                        {/* Multiplies the rate by the hours */}
-                                        {(Number(selectedPC.pc_rate) || 0) * duration} CR
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="modal-actions">
-                            <button 
-                                className="confirm-btn" 
-                                onClick={handleReservation}
-                                disabled={!isSelectedPcAvailable}
-                                style={{
-                                    opacity: isSelectedPcAvailable ? 1 : 0.5,
-                                    cursor: isSelectedPcAvailable ? 'pointer' : 'not-allowed'
-                                }}
-                            >
-                                Confirm Booking
-                            </button>
-                            <button className="cancel-btn" onClick={() => setSelectedPC(null)}>Cancel</button>
-                        </div>
-                    </div>
+        <div className="dashboard-layout">
+            {/* --- SIDEBAR --- */}
+            <aside className="sidebar">
+                <div className="sidebar-brand">
+                    <h2>BlackByte</h2>
                 </div>
-            )}
+                
+                <nav className="sidebar-nav">
+                    <div className="nav-section">
+                        <span className="nav-section-title">Main Menu</span>
+                        <a href="/dashboard" className="nav-item">Dashboard</a>
+                        {/* Note: the active class is now on Reservation */}
+                        <a href="/reserve" className="nav-item active">Reservation</a>
+                        <a href="/order-foods" className="nav-item">Order Foods</a>
+                        
+                        {user?.role === 'admin' && (
+                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
+                        )}
+                    </div>
+
+                    <div className="nav-section account-section">
+                        <span className="nav-section-title">Account</span>
+                        <a href="/profile" className="nav-item">Profile</a>
+                        <a href="/settings" className="nav-item">Settings</a>
+                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                    </div>
+                </nav>
+            </aside>
+
+            {/* --- MAIN CONTENT AREA --- */}
+            <main className="dashboard-content">
+                <div className="reservation-container">
+                    <h2>Station Reservations</h2>
+                    <p style={{marginBottom: "30px", color: "#555"}}>Select a station below to view specs and book your time.</p>
+
+                    {/* PC Grid Layout */}
+                    <div className="pc-grid">
+                        {allComputers.map((pc) => {
+                            const isAvailable = availableIds.includes(pc.id);
+                            return (
+                                <div 
+                                    key={pc.id} 
+                                    className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
+                                    onClick={() => handlePcClick(pc)}
+                                    title={isAvailable ? "Click to Book" : "Currently Occupied for the default time"}
+                                >
+                                    <span className="pc-name">{pc.pcname || `PC ${pc.id}`}</span>
+                                    <br/>
+                                    <span className="pc-rate">{pc.type ? pc.type.toUpperCase() : ''}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pop-up Modal */}
+                    {selectedPC && (
+                        <div className="modal-overlay">
+                            <div className="modal-content modal-large">
+                                <h3>Book {selectedPC.pcname || `PC #${selectedPC.id}`}</h3>
+                                
+                                {/* Specifications Block */}
+                                <div className="pc-dynamic-details">
+                                    <h4>PC Specifications:</h4>
+                                    {Object.entries(selectedPC).map(([key, value]) => {
+                                        if (value === null || value === '' || key === 'id' || key === 'status') return null;
+                                        const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                                        return (
+                                            <p key={key} className="specs-text">
+                                                <strong>{key.replace(/_/g, ' ').toUpperCase()}:</strong> {displayValue}
+                                            </p>
+                                        );
+                                    })}
+                                </div>
+                                
+                                {/* Time Selectors */}
+                                <div className="modal-time-selector">
+                                    <div className="input-group">
+                                        <label>Select Date & Start Time:</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            value={startTime}
+                                            onChange={(e) => setStartTime(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Duration (Hours):</label>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            step="1"
+                                            value={duration}
+                                            onChange={(e) => setDuration(Number(e.target.value))}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Validation: Check if available */}
+                                {!isSelectedPcAvailable ? (
+                                    <div className="booking-error">
+                                        ⚠️ This PC is already booked for the selected time. Please choose a different time or PC.
+                                    </div>
+                                ) : (
+                                    <div className="booking-summary">
+                                        <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
+                                        <p><strong>Total Duration:</strong> {duration} hour(s)</p>
+                                        
+                                        {/* Total Price Calculation */}
+                                        <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #ffcc80' }}/>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <p style={{ margin: 0 }}><strong>Rate per Hour:</strong></p>
+                                            <p style={{ margin: 0 }}>{selectedPC.pc_rate || 0} CR</p>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '1.1em' }}>
+                                            <p style={{ margin: 0 }}><strong>Total Price:</strong></p>
+                                            <p style={{ margin: 0, color: '#d84315', fontWeight: 'bold' }}>
+                                                {(Number(selectedPC.pc_rate) || 0) * duration} CR
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="modal-actions">
+                                    <button 
+                                        className="confirm-btn" 
+                                        onClick={handleReservation}
+                                        disabled={!isSelectedPcAvailable}
+                                        style={{
+                                            opacity: isSelectedPcAvailable ? 1 : 0.5,
+                                            cursor: isSelectedPcAvailable ? 'pointer' : 'not-allowed'
+                                        }}
+                                    >
+                                        Confirm Booking
+                                    </button>
+                                    <button className="cancel-btn" onClick={() => setSelectedPC(null)}>Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
     );
 };
