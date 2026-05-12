@@ -211,7 +211,6 @@ const ReservationPage = () => {
                                 </div>
 
                                 {/* Validation: Check if available */}
-                                {/* Validation: Check if available */}
                                 {!isSelectedPcAvailable ? (
                                     <div className="booking-error">
                                         ⚠️ This PC is already booked for the selected time. Please choose a different time or PC.
@@ -237,9 +236,10 @@ const ReservationPage = () => {
                                         </div>
 
                                         {/* Show Remaining Balance */}
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '0.95em', color: (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? '#4CAF50' : '#f44336' }}>
+                                        {/* Show Remaining Balance */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '0.95em', color: (user?.credits || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? '#4CAF50' : '#f44336' }}>
                                             <p style={{ margin: 0 }}><strong>Your Current Balance:</strong></p>
-                                            <p style={{ margin: 0 }}>{user?.membership_points || 0} CR</p>
+                                            <p style={{ margin: 0 }}>{user?.credits || 0} CR</p>
                                         </div>
                                     </div>
                                 )}
@@ -247,23 +247,21 @@ const ReservationPage = () => {
                                 <div className="modal-actions">
                                     <button 
                                         className="confirm-btn" 
-                                        // We pass true/false directly here based on availability AND balance
                                         onClick={() => {
                                             const totalCost = (Number(selectedPC.pc_rate) || 0) * duration;
-                                            if ((user?.membership_points || 0) < totalCost) {
+                                            if ((user?.credits || 0) < totalCost) {
                                                 alert("You do not have enough credits!");
                                                 return;
                                             }
                                             handleReservation();
                                         }}
-                                        disabled={!isSelectedPcAvailable || (user?.membership_points || 0) < ((Number(selectedPC.pc_rate) || 0) * duration)}
+                                        disabled={!isSelectedPcAvailable || (user?.credits || 0) < ((Number(selectedPC.pc_rate) || 0) * duration)}
                                         style={{
-                                            opacity: isSelectedPcAvailable && (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 1 : 0.5,
-                                            cursor: isSelectedPcAvailable && (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'pointer' : 'not-allowed'
+                                            opacity: isSelectedPcAvailable && (user?.credits || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 1 : 0.5,
+                                            cursor: isSelectedPcAvailable && (user?.credits || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'pointer' : 'not-allowed'
                                         }}
                                     >
-                                        {/* Button Text changes based on balance */}
-                                        {(user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'Confirm Booking' : 'Insufficient Credits'}
+                                        {(user?.credits || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'Confirm Booking' : 'Insufficient Credits'}
                                     </button>
                                     <button className="cancel-btn" onClick={() => setSelectedPC(null)}>Cancel</button>
                                 </div>
