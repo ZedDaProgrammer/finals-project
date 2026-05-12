@@ -517,3 +517,135 @@ input {
     background: #fff3cd; 
     color: #856404; 
 }
+
+/* PC Grid Layout */
+.reservation-container {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    max-width: 800px;
+}
+
+/* PC "Seat" Styling */
+.pc-seat {
+    padding: 20px 10px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    user-select: none;
+}
+
+.pc-rate {
+    font-size: 0.8em;
+    font-weight: normal;
+}
+
+.pc-seat.available {
+    background-color: #e0f7fa;
+    color: #006064;
+    border-color: #00bcd4;
+}
+
+.pc-seat.available:hover {
+    background-color: #b2ebf2;
+    transform: scale(1.05);
+}
+
+.pc-seat.occupied {
+    background-color: #ffebee;
+    color: #c62828;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Modal Popup Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.specs-text {
+    font-size: 0.9em;
+    color: #555;
+}
+
+.input-group {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group input {
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.credits-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #fdfbf7;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.credits-amount {
+    color: #e65100;
+    font-size: 1.2em;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.confirm-btn { background-color: #4CAF50; color: white; }
+.confirm-btn:hover { background-color: #45a049; }
+
+.cancel-btn { background-color: #f44336; color: white; }
+.cancel-btn:hover { background-color: #da190b; }
