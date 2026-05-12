@@ -102,12 +102,23 @@ const ReservationPage = () => {
         const isAvailable = availableIds.includes(pc.id);
         return (
             <div key={pc.id} className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                 onClick={() => { if(isAvailable) setSelectedPC(pc); }}>
+                 // FIX: Removed the "if(isAvailable)" lock so you can always click it to open the modal
+                 onClick={() => setSelectedPC(pc)}>
                 <span className="pc-name">{pc.pcname || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
             </div>
         );
     };
+
+    // Calculate if the specifically selected PC/Room is available for the active modal time
+    const isSelectedAvailable = selectedRoom 
+        ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
+        : (selectedPC ? availableIds.includes(selectedPC.id) : false);
+
+    const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
+    const totalCost = targetRate * duration;
+    const hasEnoughCredits = (user?.credits || 0) >= totalCost;
+    const canBook = isSelectedAvailable && hasEnoughCredits;
 
     return (
         <div className="dashboard-layout">
@@ -170,12 +181,12 @@ const ReservationPage = () => {
                                                 </div>
                                             ))}
                                         </div>
+                                        {/* FIX: Removed 'disabled' property so you can select occupied rooms to check future times */}
                                         <button 
                                             className="book-room-btn" 
-                                            disabled={!isRoomAvailable}
                                             onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
                                         >
-                                            {isRoomAvailable ? `Book Full Room (${roomRate} CR/hr)` : 'Room Unavailable'}
+                                            Select Room ({roomRate} CR/hr)
                                         </button>
                                     </div>
                                 );
@@ -188,7 +199,7 @@ const ReservationPage = () => {
                 {(selectedPC || selectedRoom) && (
                     <div className="modal-overlay">
                         <div className="modal-content modal-large">
-                            <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : (selectedPC.pcname || `PC-${selectedPC.id}`)}</h3>
+                            <h3>Configure Booking for {selectedRoom ? selectedRoom.name : (selectedPC.pcname || `PC-${selectedPC.id}`)}</h3>
                             
                             {selectedPC && (
                                 <div className="pc-dynamic-details">
@@ -202,7 +213,7 @@ const ReservationPage = () => {
 
                             {selectedRoom && (
                                 <div className="pc-dynamic-details">
-                                    <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                    <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are configuring a booking for all {selectedRoom.pcs.length} PCs in this room.</p>
                                 </div>
                             )}
 
@@ -217,15 +228,22 @@ const ReservationPage = () => {
                                 </div>
                             </div>
 
+                            {/* Dynamic Warning if the selected time is occupied */}
+                            {!isSelectedAvailable && (
+                                <div className="booking-error" style={{marginTop: '10px', marginBottom: '0'}}>
+                                    ⚠️ Currently occupied for the selected time. Please adjust the Start Time or Duration to find an open slot.
+                                </div>
+                            )}
+
                             <div className="booking-summary">
                                 <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                     <strong>Total Cost:</strong> 
-                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{(selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration} CR</strong>
+                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{totalCost} CR</strong>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                                     <strong>Your Credits:</strong> 
-                                    <span style={{ color: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                    <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
                                         {user?.credits || 0} CR
                                     </span>
                                 </div>
@@ -235,10 +253,10 @@ const ReservationPage = () => {
                                 <button 
                                     className="confirm-btn" 
                                     onClick={handleBooking}
-                                    disabled={(user?.credits || 0) < ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration)}
-                                    style={{ opacity: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? 1 : 0.5 }}
+                                    disabled={!canBook}
+                                    style={{ opacity: canBook ? 1 : 0.5, cursor: canBook ? 'pointer' : 'not-allowed' }}
                                 >
-                                    Confirm
+                                    {hasEnoughCredits ? 'Confirm' : 'Insufficient Credits'}
                                 </button>
                                 <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
                             </div>
