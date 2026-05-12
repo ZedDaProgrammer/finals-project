@@ -283,7 +283,8 @@ const dashboardData = async (req, res) => {
         const currentDate = new Date().toISOString();
 
         const activeSessions = await pool.query(`
-            SELECT r.*, c.type AS computer_type 
+            SELECT r.*, c.type AS computer_type,
+                   TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as formatted_end
             FROM reservations r
             JOIN computers c ON r.station_id = c.id
             WHERE r.user_id = $1 

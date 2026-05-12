@@ -53,7 +53,9 @@ const Dashboard = () => {
 
                 if (dashboard.activeSessions) {
                     const formattedSessions = dashboard.activeSessions.map(res => {
-                        const endTime = new Date(res.end);
+                        // Use the timezone-safe formatted string from the database
+                        const endTimeStr = res.formatted_end || res.end;
+                        const endTime = new Date(endTimeStr);
                         const now = new Date();
                         const diffMs = endTime - now; // Time left in milliseconds
                         
@@ -65,6 +67,7 @@ const Dashboard = () => {
                         return {
                             id: `#RES-${res.reservation_id}`,
                             pcDetails: `${(res.computer_type || 'Unknown').toUpperCase()} PC (Station ${res.station_id || 'N/A'})`,
+                            // Show time properly in local timezone
                             endTime: endTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }),
                             timeLeft: diffMs > 0 ? timeLeft : 'Expired',
                             status: 'In Use'
