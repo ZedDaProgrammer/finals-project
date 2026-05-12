@@ -834,3 +834,48 @@ input {
     margin-bottom: 15px;
     color: #333;
 }
+
+.rooms-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+.room-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #eee;
+    text-align: center;
+}
+.room-occupied {
+    opacity: 0.7;
+    background: #f9f9f9;
+}
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.pc-mini {
+    font-size: 10px;
+    padding: 5px;
+    border-radius: 4px;
+}
+.pc-mini.free { background: #e6ffe6; color: #28a745; }
+.pc-mini.busy { background: #ffe6e6; color: #dc3545; }
+
+.book-room-btn {
+    width: 100%;
+    padding: 10px;
+    background: #4da6ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.book-room-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

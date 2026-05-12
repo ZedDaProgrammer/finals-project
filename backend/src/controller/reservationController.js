@@ -252,34 +252,70 @@ const groupBooking = async (req, res) => {
 
     try {
         await client.query('BEGIN');
+
+        // 1. Calculate Total Hourly Rate for all PCs in the room
+        const checkStations = await client.query(
+            `SELECT pc_rate FROM computers WHERE id = ANY($1)`,
+            [stations]
+        );
+
+        if (checkStations.rows.length === 0) throw new Error("Stations not found.");
         
+        const totalHourlyRate = checkStations.rows.reduce((sum, row) => sum + (row.pc_rate || 0), 0);
+
+        // 2. Calculate Total Cost based on duration
+        const startTime = new Date(start);
+        const endTime = new Date(end);
+        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
+        const totalCost = totalHourlyRate * durationHours;
+
+        // 3. Check User Credits
+        const userQuery = await client.query(
+            `SELECT credits FROM users WHERE id = $1 FOR UPDATE`,
+            [user_id]
+        );
+        const userCredits = userQuery.rows[0].credits || 0;
+
+        if (userCredits < totalCost) {
+            throw new Error(`Insufficient credits. You need ${totalCost} CR, but only have ${userCredits} CR.`);
+        }
+
+        // 4. Check Availability for ALL stations in the group
+        const overlapChecking = await client.query(
+            `SELECT station_id FROM reservations
+            WHERE station_id = ANY($1) AND status != 'cancelled'
+            AND start < $3::timestamp AND "end" > $2::timestamp
+            AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))`,
+            [stations, start, end]          
+        );
+
+        if (overlapChecking.rows.length > 0) {
+            throw new Error("One or more stations in this room are already booked for this time.");
+        }
+
+        // 5. Deduct Credits
+        await client.query(
+            `UPDATE users SET credits = credits - $1 WHERE id = $2`,
+            [totalCost, user_id]
+        );
+
+        // 6. Create the Bookings
         const bookedStations = [];
-        
         for (const station_id of stations) {
-            const overlapChecking = await client.query(
-                `SELECT * FROM reservations
-                WHERE station_id = $1 AND status != 'cancelled'
-                AND start < $3 AND "end" > $2`,
-                [station_id, start, end]          
-            );
-
-            if(overlapChecking.rows.length > 0) throw new Error(`Station ${station_id} is unavailable`);
-
             const newBooking = await client.query(`
                 INSERT INTO reservations (user_id, station_id, start, "end", status)
-                VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
+                VALUES ($1, $2, $3, $4, 'pending') returning *`,
                 [user_id, station_id, start, end]
             );
-            
             bookedStations.push(newBooking.rows[0]);
         }
 
         await client.query('COMMIT');
-        res.status(200).json({ message: "Group booking confirmed", bookings: bookedStations});
+        res.status(200).json({ message: "Room booking confirmed!", bookings: bookedStations });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error("Group Booking Error:", err.message);
-        res.status(500).json({ error: err.message || "Failed to make group booking" });
+        res.status(400).json({ error: err.message || "Failed to make group booking" });
     } finally {
         client.release();
     }
