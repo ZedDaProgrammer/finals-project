@@ -55,18 +55,22 @@ const ReservationPage = () => {
     }, [token, startTime, duration]);
 
                             // Grouping Logic
-    const standardPcs = allComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
+    const allStandardPcs = allComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
+    const standardPcs = allStandardPcs.slice(0, 20); // Limit standard lounge to exactly 20 Standard PCs
+    
     const allVipPcs = allComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
     
-    // Distributing the 35 VIP PCs exactly as originally planned:
-    const vipRoomPcs = allVipPcs.slice(0, 25);     // First 25 fill the 5 VIP Rooms (5 PCs each)
-    const privateVipPcs = allVipPcs.slice(25, 35); // Next 10 fill the 5 Private Suites (2 PCs each)
-    const generalVipPcs = allVipPcs.slice(35);     // Any extras (36+) will go to the VIP Lounge // Last 4 go to Private Suites (Fills 2 Suites of 2)  // Left empty since all VIPs are in the lounge
+    // Distributing the VIP PCs:
+    const generalVipPcs = allVipPcs.slice(0, 20);      // First 20 go to the VIP Lounge
+    const vipRoomPcs = allVipPcs.slice(20, 45);        // Next 25 fill the 5 VIP Rooms (5 rooms x 5 PCs each)
+    const privateVipPcs = allVipPcs.slice(45, 55);     // Next 10 fill the 5 Private Suites (5 rooms x 2 PCs each)
 
     // Logging to console to debug:
     console.log("All computers loaded:", allComputers.length);
-    console.log("Standard PCs:", standardPcs.length);
-    console.log("VIP PCs:", allVipPcs.length);  // Left empty since all VIPs are in the lounge  // Left empty since all VIPs are in the lounge // Last 4 go to Private Rooms (2 rooms x 2 PCs) 
+    console.log("Standard PCs displayed:", standardPcs.length);
+    console.log("VIP Lounge PCs:", generalVipPcs.length); 
+    console.log("VIP Room PCs:", vipRoomPcs.length); 
+    console.log("Private Suite PCs:", privateVipPcs.length);  // Left empty since all VIPs are in the lounge  // Left empty since all VIPs are in the lounge // Last 4 go to Private Rooms (2 rooms x 2 PCs) 
 
     const handleBooking = async () => {
         const isRoom = !!selectedRoom;
