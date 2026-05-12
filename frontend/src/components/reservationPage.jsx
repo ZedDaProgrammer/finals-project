@@ -103,6 +103,7 @@ const ReservationPage = () => {
                 alert(`Successfully booked ${selectedPC.pcname || `PC #${selectedPC.id}`}!`);
                 setSelectedPC(null); // Close Modal
                 setAvailableIds(prev => prev.filter(id => id !== selectedPC.id)); // Update Grid
+                window.location.reload(); 
             } else {
                 alert(`Booking failed: ${data.error}`);
             }
@@ -210,6 +211,7 @@ const ReservationPage = () => {
                                 </div>
 
                                 {/* Validation: Check if available */}
+                                {/* Validation: Check if available */}
                                 {!isSelectedPcAvailable ? (
                                     <div className="booking-error">
                                         ⚠️ This PC is already booked for the selected time. Please choose a different time or PC.
@@ -219,17 +221,25 @@ const ReservationPage = () => {
                                         <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
                                         <p><strong>Total Duration:</strong> {duration} hour(s)</p>
                                         
-                                        {/* Total Price Calculation */}
+                                        {/* Total Price & Balance Calculation */}
                                         <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #ffcc80' }}/>
+                                        
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <p style={{ margin: 0 }}><strong>Rate per Hour:</strong></p>
                                             <p style={{ margin: 0 }}>{selectedPC.pc_rate || 0} CR</p>
                                         </div>
+                                        
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '1.1em' }}>
                                             <p style={{ margin: 0 }}><strong>Total Price:</strong></p>
                                             <p style={{ margin: 0, color: '#d84315', fontWeight: 'bold' }}>
                                                 {(Number(selectedPC.pc_rate) || 0) * duration} CR
                                             </p>
+                                        </div>
+
+                                        {/* Show Remaining Balance */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '0.95em', color: (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? '#4CAF50' : '#f44336' }}>
+                                            <p style={{ margin: 0 }}><strong>Your Current Balance:</strong></p>
+                                            <p style={{ margin: 0 }}>{user?.membership_points || 0} CR</p>
                                         </div>
                                     </div>
                                 )}
@@ -237,14 +247,23 @@ const ReservationPage = () => {
                                 <div className="modal-actions">
                                     <button 
                                         className="confirm-btn" 
-                                        onClick={handleReservation}
-                                        disabled={!isSelectedPcAvailable}
+                                        // We pass true/false directly here based on availability AND balance
+                                        onClick={() => {
+                                            const totalCost = (Number(selectedPC.pc_rate) || 0) * duration;
+                                            if ((user?.membership_points || 0) < totalCost) {
+                                                alert("You do not have enough credits!");
+                                                return;
+                                            }
+                                            handleReservation();
+                                        }}
+                                        disabled={!isSelectedPcAvailable || (user?.membership_points || 0) < ((Number(selectedPC.pc_rate) || 0) * duration)}
                                         style={{
-                                            opacity: isSelectedPcAvailable ? 1 : 0.5,
-                                            cursor: isSelectedPcAvailable ? 'pointer' : 'not-allowed'
+                                            opacity: isSelectedPcAvailable && (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 1 : 0.5,
+                                            cursor: isSelectedPcAvailable && (user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'pointer' : 'not-allowed'
                                         }}
                                     >
-                                        Confirm Booking
+                                        {/* Button Text changes based on balance */}
+                                        {(user?.membership_points || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? 'Confirm Booking' : 'Insufficient Credits'}
                                     </button>
                                     <button className="cancel-btn" onClick={() => setSelectedPC(null)}>Cancel</button>
                                 </div>

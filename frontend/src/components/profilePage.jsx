@@ -9,7 +9,8 @@ const ProfilePage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     // Default to 0 if membership_points isn't loaded yet
-    const points = user?.membership_points || 0;
+    const points = user?.points || 0;
+    const credits = user?.credits || 0;
 
     // Use your backend logic to evaluate rank
     const evaluatePoints = (points) => {
@@ -91,7 +92,7 @@ const ProfilePage = () => {
                                 <strong>Rank:</strong> <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
                             </div>
                             <div className="credits-badge">
-                                <strong>Credits:</strong> {points} CR
+                                <strong>Credits:</strong> {credits} CR
                             </div>
                         </div>
                     </div>

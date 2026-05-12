@@ -77,35 +77,62 @@ const checkAvailability = async (req, res) => {
 };
 
 const createBooking = async (req, res) => {
-    const { station_id, start, end, total_price } = req.body;
+    const { station_id, start, end } = req.body;
     const user_id = req.user.id;
     const client = await pool.connect();
 
-    try{
+    try {
         await client.query('BEGIN');
 
+        // 1. Find the PC and its Hourly Rate
         const checkStation = await client.query(
             `SELECT * FROM computers WHERE id = $1 FOR UPDATE`,
             [station_id]
         );
 
-        if(checkStation.rows.length === 0) throw new Error("Station not found.");
+        if (checkStation.rows.length === 0) throw new Error("Station not found.");
+        const pcRate = checkStation.rows[0].pc_rate || 0;
 
-        // Updated overlap query with the 15-minute expiration rule
+        // 2. Check for Overlaps (15 min rule)
         const overlapChecking = await client.query(
             `SELECT * FROM reservations
             WHERE station_id = $1 AND status != 'cancelled'
-            AND start < $3 AND "end" > $2
+            AND start < $3::timestamp AND "end" > $2::timestamp
             AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))`,
             [station_id, start, end]          
         );
 
-        if(overlapChecking.rows.length > 0) throw new Error("Time slot unavailable");
+        if (overlapChecking.rows.length > 0) throw new Error("Time slot unavailable");
 
+        // 3. Calculate Total Cost
+        const startTime = new Date(start);
+        const endTime = new Date(end);
+        // Calculates duration in whole hours
+        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
+        const totalCost = pcRate * durationHours;
+
+        // 4. Check User Balance
+        const userQuery = await client.query(
+            `SELECT credits FROM users WHERE id = $1 FOR UPDATE`,
+            [user_id]
+        );
+        const userPoints = userQuery.rows[0].credits || 0;
+
+        if (userPoints < totalCost) {
+            throw new Error(`Insufficient credits. You need ${totalCost} CR, but only have ${userPoints} CR.`);
+        }
+
+        // 5. Deduct Credits from User
+        await client.query(
+            `UPDATE users SET credits = credits - $1 WHERE id = $2`,
+            [totalCost, user_id]
+        );
+
+        // 6. Create the Booking
         const newBooking = await client.query(`
-            INSERT INTO reservations (user_id, station_id, start, "end", status, total_price)
-            VALUES ($1, $2, $3, $4, 'pending', $5) returning *`,
-            [user_id, station_id, start, end, total_price]
+            INSERT INTO reservations (user_id, station_id, start, "end", status)
+            VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
+            [user_id, station_id, start, end]
         );
 
         await client.query('COMMIT');
@@ -113,7 +140,8 @@ const createBooking = async (req, res) => {
     } catch(err) {
         await client.query('ROLLBACK');
         console.error("Booking Error", err.message);
-        res.status(500).json({ error: err.message || "Failed to make booking"});
+        // Returns 400 Bad Request if they don't have enough money or overlap
+        res.status(400).json({ error: err.message || "Failed to make booking"});
     } finally {
         client.release();
     }
@@ -136,6 +164,7 @@ const getHistory = async (req, res) => {
             `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
             [user_id]
         );
+        
 
         res.status(200).json({ 
             history: historyQuery.rows,
