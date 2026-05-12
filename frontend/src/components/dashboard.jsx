@@ -61,27 +61,7 @@ const Dashboard = () => {
                 });
 
                 if (dashboard.activeSessions) {
-                    const formattedSessions = dashboard.activeSessions.map(res => {
-                        // Use the timezone-safe formatted string from the database
-                        const endTimeStr = res.formatted_end || res.end;
-                        const endTime = new Date(endTimeStr);
-                        const now = new Date();
-                        const diffMs = endTime - now; // Time left in milliseconds
-                        
-                        // Convert into Hours and Minutes
-                        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-                        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                        const timeLeft = `${diffHrs}h ${diffMins}m`;
-
-                        return {
-                            id: `#RES-${res.reservation_id}`,
-                            pcDetails: `${(res.computer_type || 'Unknown').toUpperCase()} PC (Station ${res.station_id || 'N/A'})`,
-                            // Show time properly in local timezone
-                            endTime: endTime.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }),
-                            timeLeft: diffMs > 0 ? timeLeft : 'Expired',
-                            status: 'In Use'
-                        };
-                    });
+                    setRawSessions(dashboard.activeSessions); // Just save it straight to state!
                 }
 
                 setIsLoading(false);
@@ -172,7 +152,7 @@ const Dashboard = () => {
                     <div className="table-container">
                         {isLoading ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
-                        ) : recentOrders.length === 0 ? (
+                        ) : rawSessions.length === 0 ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
@@ -186,22 +166,54 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {recentOrders.map((session, index) => (
-                                        <tr key={index}>
-                                            <td className="fw-bold">{session.id}</td>
-                                            <td>{session.pcDetails}</td>
-                                            <td>{session.endTime}</td>
-                                            {/* Style the time left to look like an active timer */}
-                                            <td className="fw-bold" style={{ color: '#00e676' }}>
-                                                {session.timeLeft}
-                                            </td>
-                                            <td>
-                                                <span className="status-badge confirmed">
-                                                    {session.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {rawSessions.map((res) => {
+                                        // Setup times securely using the formatted string
+                                        const startTimeStr = res.formatted_start || res.start;
+                                        const endTimeStr = res.formatted_end || res.end;
+                                        const start = new Date(startTimeStr);
+                                        const end = new Date(endTimeStr);
+
+                                        let statusStr = "";
+                                        let timeLeftStr = "";
+
+                                        // Calculate the Live Status and Time
+                                        if (currentTime < start) {
+                                            statusStr = "Upcoming";
+                                            const diffMs = start - currentTime;
+                                            const diffMins = Math.ceil(diffMs / 60000);
+                                            timeLeftStr = `Starts in ${diffMins} min`;
+                                        } 
+                                        else if (currentTime >= start && currentTime < end) {
+                                            statusStr = "Ongoing";
+                                            const diffMs = end - currentTime;
+                                            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                                            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+                                            timeLeftStr = `${hours}h ${minutes}m ${seconds}s`;
+                                        } 
+                                        else {
+                                            statusStr = "Expired";
+                                            timeLeftStr = "0h 0m 0s";
+                                        }
+
+                                        return (
+                                            <tr key={res.reservation_id}>
+                                                <td className="fw-bold">#RES-{res.reservation_id}</td>
+                                                <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
+                                                <td>{end.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
+                                                <td className="fw-bold" style={{ 
+                                                    color: statusStr === 'Expired' ? '#f44336' : statusStr === 'Ongoing' ? '#00e676' : 'gray'
+                                                }}>
+                                                    {timeLeftStr}
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${statusStr === 'Ongoing' ? 'confirmed' : 'pending'}`}>
+                                                        {statusStr}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         )}
