@@ -181,7 +181,7 @@ const filterComputers = async (req, res) => {
     try {
         const { type } = req.body;
         
-        let query = 'SELECT * FROM computers WHERE status = $1';
+        let query = 'SELECT * FROM computers WHERE availability = $1';
         let values = ['available'];
         
         if (type && type !== 'all') {

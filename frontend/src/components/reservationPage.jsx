@@ -9,14 +9,14 @@ const ReservationPage = () => {
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
     
-    // Time and Date selection states
+
     const [startTime, setStartTime] = useState(() => {
-        // Default to the next nearest hour
-        const now = new Date();
-        now.setHours(now.getHours() + 1, 0, 0, 0);
-        // Format to YYYY-MM-DDTHH:mm for datetime-local input
-        return now.toISOString().slice(0, 16); 
-    });
+    const now = new Date();
+    now.setHours(now.getHours() + 1, 0, 0, 0);
+    const tzOffset = now.getTimezoneOffset() * 60000; 
+    const localISOTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+    return localISOTime;
+});
     
     // Duration in 1-hour increments
     const [duration, setDuration] = useState(1); 
@@ -174,11 +174,14 @@ const ReservationPage = () => {
                         <div className="pc-dynamic-details">
                             <h4>PC Specifications:</h4>
                             {Object.entries(selectedPC).map(([key, value]) => {
-                                // Skip empty values, system IDs, or status flags to keep the modal clean
                                 if (value === null || value === '' || key === 'id' || key === 'status') return null;
+                                
+                                // Safely parse objects/arrays if they exist in the DB column
+                                const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+
                                 return (
                                     <p key={key} className="specs-text">
-                                        <strong>{key.replace(/_/g, ' ').toUpperCase()}:</strong> {String(value)}
+                                        <strong>{key.replace(/_/g, ' ').toUpperCase()}:</strong> {displayValue}
                                     </p>
                                 );
                             })}
