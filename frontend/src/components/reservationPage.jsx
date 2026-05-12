@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import '../../style.css'; 
 
 const ReservationPage = () => {
     const { token } = useAuth();
-    const BASE_URL = 'http://localhost:3000/src/reservationRoute';
+    const BASE_URL = 'http://localhost:3000/src/reservationRoute'; // Ensure this matches your backend URL
 
     const [allComputers, setAllComputers] = useState([]);
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
     
-    // Time selection states
+    // Time and Date selection states
     const [startTime, setStartTime] = useState(() => {
+        // Default to the next nearest hour
         const now = new Date();
         now.setHours(now.getHours() + 1, 0, 0, 0);
+        // Format to YYYY-MM-DDTHH:mm for datetime-local input
         return now.toISOString().slice(0, 16); 
     });
+    
+    // Duration in 1-hour increments
     const [duration, setDuration] = useState(1); 
 
-    // 1. Fetch all computers
+    // Fetch all computers from the database on page load
     useEffect(() => {
         const fetchAllComputers = async () => {
             try {
@@ -43,7 +46,7 @@ const ReservationPage = () => {
         if (token) fetchAllComputers();
     }, [token]);
 
-    // 2. Check Availability based on time
+    // Check which computers are available based on the selected date/time
     useEffect(() => {
         const checkAvailability = async () => {
             if (!startTime || !duration) return;
@@ -102,8 +105,10 @@ const ReservationPage = () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert(`Successfully booked ${selectedPC.pcname || `PC #${selectedPC.id}`} for ${duration} hour(s)!`);
-                setSelectedPC(null); 
+                alert(`Successfully booked ${selectedPC.pcname || `PC #${selectedPC.id}`}!`);
+                setSelectedPC(null); // Close Modal
+                
+                // Optimistically update the UI by removing the booked PC from available IDs
                 setAvailableIds(prev => prev.filter(id => id !== selectedPC.id));
             } else {
                 alert(`Booking failed: ${data.error}`);
@@ -116,11 +121,12 @@ const ReservationPage = () => {
 
     return (
         <div className="reservation-container">
-            <h2>Reserve a PC</h2>
+            <h2>Station Reservations</h2>
             
+            {/* Top Bar for selecting Date, Time and Duration */}
             <div className="time-selector">
                 <div className="input-group">
-                    <label>Start Date & Time:</label>
+                    <label>Select Date & Start Time:</label>
                     <input 
                         type="datetime-local" 
                         value={startTime}
@@ -128,17 +134,18 @@ const ReservationPage = () => {
                     />
                 </div>
                 <div className="input-group">
-                    <label>Duration (Hours):</label>
+                    <label>Duration (1 Hour Increments):</label>
                     <input 
                         type="number" 
                         min="1" 
+                        step="1"
                         value={duration}
                         onChange={(e) => setDuration(Number(e.target.value))}
                     />
                 </div>
             </div>
 
-            {/* Render PC Grid */}
+            {/* PC Grid Layout */}
             <div className="pc-grid">
                 {allComputers.map((pc) => {
                     const isAvailable = availableIds.includes(pc.id);
@@ -147,9 +154,9 @@ const ReservationPage = () => {
                             key={pc.id} 
                             className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
                             onClick={() => handlePcClick(pc)}
+                            title={isAvailable ? "Click to Book" : "Currently Occupied"}
                         >
-                            {/* Uses the pcname from your database, fallback to ID if empty */}
-                            {pc.pcname || `PC ${pc.id}`}
+                            <span className="pc-name">{pc.pcname || `PC ${pc.id}`}</span>
                             <br/>
                             <span className="pc-rate">{pc.type ? pc.type.toUpperCase() : ''}</span>
                         </div>
@@ -157,29 +164,32 @@ const ReservationPage = () => {
                 })}
             </div>
 
-            {/* Pop-up Modal */}
+            {/* Pop-up Modal with Database Specifications */}
             {selectedPC && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h3>Book {selectedPC.pcname || `PC #${selectedPC.id}`}</h3>
                         
-                        <div className="pc-dynamic-details" style={{ marginBottom: '15px', padding: '10px', background: '#f5f5f5', borderRadius: '5px' }}>
-                            {/* Dynamically loops through EVERY column your DB returned for this PC */}
+                        {/* Dynamic Specifications Block */}
+                        <div className="pc-dynamic-details">
+                            <h4>PC Specifications:</h4>
                             {Object.entries(selectedPC).map(([key, value]) => {
-                                // You can hide redundant IDs if you want, but this maps all details
-                                if (value === null || value === '') return null;
+                                // Skip empty values, system IDs, or status flags to keep the modal clean
+                                if (value === null || value === '' || key === 'id' || key === 'status') return null;
                                 return (
-                                    <p key={key} className="specs-text" style={{ margin: '4px 0' }}>
-                                        <strong style={{ textTransform: 'capitalize' }}>{key.replace('_', ' ')}:</strong> {String(value)}
+                                    <p key={key} className="specs-text">
+                                        <strong>{key.replace(/_/g, ' ').toUpperCase()}:</strong> {String(value)}
                                     </p>
                                 );
                             })}
                         </div>
                         
-                        <p><strong>Start:</strong> {new Date(startTime).toLocaleString()}</p>
-                        <p><strong>Duration:</strong> {duration} hour(s)</p>
+                        <div className="booking-summary">
+                            <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
+                            <p><strong>Total Duration:</strong> {duration} hour(s)</p>
+                        </div>
 
-                        <div className="modal-actions" style={{ marginTop: '20px' }}>
+                        <div className="modal-actions">
                             <button className="confirm-btn" onClick={handleReservation}>Confirm Booking</button>
                             <button className="cancel-btn" onClick={() => setSelectedPC(null)}>Cancel</button>
                         </div>
