@@ -161,7 +161,7 @@ const Dashboard = () => {
                                     <tr>
                                         <th>Reservation ID</th>
                                         <th>PC Details</th>
-                                        <th>Ends At</th>
+                                        <th>Reserved Time</th>
                                         <th>Time Left</th>
                                         <th>Status</th>
                                     </tr>
@@ -196,7 +196,7 @@ const Dashboard = () => {
                                             <tr key={res.reservation_id}>
                                                 <td className="fw-bold">#RES-{res.reservation_id}</td>
                                                 <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
-                                                <td>{end.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
+                                                <td>{start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
                                                 <td className="fw-bold" style={{ 
                                                     color: statusStr === 'Expired' ? '#f44336' : statusStr === 'Ongoing' ? '#00e676' : 'gray'
                                                 }}>

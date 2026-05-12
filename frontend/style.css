@@ -533,6 +533,80 @@ input {
     margin-top: 20px;
     max-width: 800px;
 }
+/* --- Reservation Page Tabs & Rooms --- */
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    color: #555;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background-color: #f0f4f8;
+    border-color: #4da6ff;
+}
+
+.tab-btn.active {
+    background-color: #4da6ff;
+    color: white;
+    border-color: #4da6ff;
+}
+
+.tab-content {
+    width: 100%;
+    animation: show 0.4s ease-in-out;
+}
+
+.tab-content h3 {
+    text-align: left;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.rooms-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.room-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.room-box h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #4da6ff;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
+
+.room-grid {
+    grid-template-columns: repeat(3, 1fr); /* Makes smaller grids inside rooms */
+    gap: 10px;
+}
+
+.private-room .room-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 PCs for private rooms */
+}
 
 /* PC "Seat" Styling */
 .pc-seat {
@@ -728,7 +802,7 @@ input {
 }
 
 .profile-details h2 {
-    margin: 0 0 5px 0;
+    margin: 0 250px 5px 0;
     font-size: 1.8em;
     color: #333;
 }

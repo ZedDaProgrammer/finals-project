@@ -3,22 +3,21 @@ import { useAuth } from '../../context/AuthContext';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
-    const BASE_URL = 'http://localhost:3000/src/reservationRoute'; // Update to /api if needed based on our previous fix
+    const BASE_URL = 'http://localhost:3000/src/reservationRoute'; 
 
     const [allComputers, setAllComputers] = useState([]);
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
+    const [activeTab, setActiveTab] = useState('standard'); // Tabs: standard, vip, vip_rooms, private_vip
     
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
-        // REMOVED: now.setHours(...) so it defaults to the exact current time
         const tzOffset = now.getTimezoneOffset() * 60000; 
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
     });
     
     const [duration, setDuration] = useState(1); 
 
-    // Fetch all computers from the database on page load
     useEffect(() => {
         const fetchAllComputers = async () => {
             try {
@@ -43,7 +42,6 @@ const ReservationPage = () => {
         if (token) fetchAllComputers();
     }, [token]);
 
-    // Check availability dynamically whenever time/duration changes
     useEffect(() => {
         const checkAvailability = async () => {
             if (!startTime || !duration) return;
@@ -73,7 +71,6 @@ const ReservationPage = () => {
         if (token) checkAvailability();
     }, [token, startTime, duration]);
 
-
     const handlePcClick = (pc) => {
         setSelectedPC(pc);
     };
@@ -93,7 +90,7 @@ const ReservationPage = () => {
                     station_id: selectedPC.id,
                     start: startTimestamp.toISOString(),
                     end: endTimestamp.toISOString(),
-                    total_price: (Number(selectedPC.pc_rate) || 0) * duration  // <-- Add this line
+                    total_price: (Number(selectedPC.pc_rate) || 0) * duration 
                 })
             });
 
@@ -101,8 +98,8 @@ const ReservationPage = () => {
 
             if (response.ok) {
                 alert(`Successfully booked ${selectedPC.pcname || `PC #${selectedPC.id}`}!`);
-                setSelectedPC(null); // Close Modal
-                setAvailableIds(prev => prev.filter(id => id !== selectedPC.id)); // Update Grid
+                setSelectedPC(null); 
+                setAvailableIds(prev => prev.filter(id => id !== selectedPC.id)); 
                 window.location.reload(); 
             } else {
                 alert(`Booking failed: ${data.error}`);
@@ -113,12 +110,40 @@ const ReservationPage = () => {
         }
     };
 
-    // Determine if the currently viewed PC in the modal is free
     const isSelectedPcAvailable = selectedPC ? availableIds.includes(selectedPC.id) : false;
+
+    // --- CATEGORIZATION LOGIC ---
+    const standardPcs = allComputers.filter(pc => pc.type === 'standard');
+    
+    // If your DB doesn't have "private_vip" or "vip_room", we slice the regular VIP PCs to simulate the rooms.
+    // Ideally, update your DB so type='private_vip', etc., but this makes it work immediately.
+    const allVipPcs = allComputers.filter(pc => pc.type === 'vip');
+    
+    // 5 VIP Rooms x 5 PCs = 25 PCs
+    const vipRoomPcs = allVipPcs.slice(0, 25); 
+    // 5 Private VIP Rooms x 2 PCs = 10 PCs
+    const privateVipPcs = allVipPcs.slice(25, 35); 
+    // The rest go to the General VIP Lounge
+    const generalVipPcs = allVipPcs.slice(35); 
+
+    // Helper to render PC Box
+    const renderPcBox = (pc) => {
+        const isAvailable = availableIds.includes(pc.id);
+        return (
+            <div 
+                key={pc.id} 
+                className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
+                onClick={() => handlePcClick(pc)}
+                title={isAvailable ? "Click to Book" : "Currently Occupied"}
+            >
+                <span className="pc-name">{pc.pcname || `PC ${pc.id}`}</span><br/>
+                <span className="pc-rate">{pc.type ? pc.type.toUpperCase() : ''}</span>
+            </div>
+        );
+    };
 
     return (
         <div className="dashboard-layout">
-            {/* --- SIDEBAR --- */}
             <aside className="sidebar">
                 <div className="sidebar-brand">
                     <h2>BlackByte</h2>
@@ -143,38 +168,81 @@ const ReservationPage = () => {
                 </nav>
             </aside>
 
-            {/* --- MAIN CONTENT AREA --- */}
             <main className="dashboard-content">
                 <div className="reservation-container">
                     <h2>Station Reservations</h2>
-                    <p style={{marginBottom: "30px", color: "#555"}}>Select a station below to view specs and book your time.</p>
+                    <p style={{marginBottom: "20px", color: "#555"}}>Select a category and book your preferred station.</p>
 
-                    {/* PC Grid Layout */}
-                    <div className="pc-grid">
-                        {allComputers.map((pc) => {
-                            const isAvailable = availableIds.includes(pc.id);
-                            return (
-                                <div 
-                                    key={pc.id} 
-                                    className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                                    onClick={() => handlePcClick(pc)}
-                                    title={isAvailable ? "Click to Book" : "Currently Occupied for the default time"}
-                                >
-                                    <span className="pc-name">{pc.pcname || `PC ${pc.id}`}</span>
-                                    <br/>
-                                    <span className="pc-rate">{pc.type ? pc.type.toUpperCase() : ''}</span>
-                                </div>
-                            );
-                        })}
+                    {/* Category Tabs */}
+                    <div className="category-tabs">
+                        <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}>Standard Lounge</button>
+                        <button className={`tab-btn ${activeTab === 'vip' ? 'active' : ''}`} onClick={() => setActiveTab('vip')}>General VIP Lounge</button>
+                        <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}>5-PC VIP Rooms</button>
+                        <button className={`tab-btn ${activeTab === 'private_vip' ? 'active' : ''}`} onClick={() => setActiveTab('private_vip')}>Private VIP (2-PC)</button>
                     </div>
 
-                    {/* Pop-up Modal */}
+                    {/* Standard PCs */}
+                    {activeTab === 'standard' && (
+                        <div className="tab-content">
+                            <h3>Standard PCs</h3>
+                            <div className="pc-grid">
+                                {standardPcs.map(renderPcBox)}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* General VIP Lounge */}
+                    {activeTab === 'vip' && (
+                        <div className="tab-content">
+                            <h3>General VIP PCs</h3>
+                            <div className="pc-grid">
+                                {generalVipPcs.length > 0 ? generalVipPcs.map(renderPcBox) : <p>No PCs left for General VIP.</p>}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 5 VIP Rooms (5 PCs Each) */}
+                    {activeTab === 'vip_rooms' && (
+                        <div className="tab-content rooms-layout">
+                            {[0, 1, 2, 3, 4].map(roomIndex => {
+                                // Extract 5 PCs per room
+                                const pcsInRoom = vipRoomPcs.slice(roomIndex * 5, (roomIndex + 1) * 5);
+                                return (
+                                    <div key={`vip-room-${roomIndex}`} className="room-box">
+                                        <h4>VIP Room {roomIndex + 1}</h4>
+                                        <div className="pc-grid room-grid">
+                                            {pcsInRoom.length > 0 ? pcsInRoom.map(renderPcBox) : <p>Empty Room</p>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* 5 Private VIP Rooms (2 PCs Each) */}
+                    {activeTab === 'private_vip' && (
+                        <div className="tab-content rooms-layout">
+                            {[0, 1, 2, 3, 4].map(roomIndex => {
+                                // Extract 2 PCs per room
+                                const pcsInRoom = privateVipPcs.slice(roomIndex * 2, (roomIndex + 1) * 2);
+                                return (
+                                    <div key={`private-room-${roomIndex}`} className="room-box private-room">
+                                        <h4>Private VIP {roomIndex + 1}</h4>
+                                        <div className="pc-grid room-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                                            {pcsInRoom.length > 0 ? pcsInRoom.map(renderPcBox) : <p>Empty Room</p>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Pop-up Modal Code (Unchanged) */}
                     {selectedPC && (
                         <div className="modal-overlay">
                             <div className="modal-content modal-large">
                                 <h3>Book {selectedPC.pcname || `PC #${selectedPC.id}`}</h3>
                                 
-                                {/* Specifications Block */}
                                 <div className="pc-dynamic-details">
                                     <h4>PC Specifications:</h4>
                                     {Object.entries(selectedPC).map(([key, value]) => {
@@ -188,7 +256,6 @@ const ReservationPage = () => {
                                     })}
                                 </div>
                                 
-                                {/* Time Selectors */}
                                 <div className="modal-time-selector">
                                     <div className="input-group">
                                         <label>Select Date & Start Time:</label>
@@ -210,7 +277,6 @@ const ReservationPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Validation: Check if available */}
                                 {!isSelectedPcAvailable ? (
                                     <div className="booking-error">
                                         ⚠️ This PC is already booked for the selected time. Please choose a different time or PC.
@@ -220,7 +286,6 @@ const ReservationPage = () => {
                                         <p><strong>Booking Start:</strong> {new Date(startTime).toLocaleString()}</p>
                                         <p><strong>Total Duration:</strong> {duration} hour(s)</p>
                                         
-                                        {/* Total Price & Balance Calculation */}
                                         <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #ffcc80' }}/>
                                         
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -235,8 +300,6 @@ const ReservationPage = () => {
                                             </p>
                                         </div>
 
-                                        {/* Show Remaining Balance */}
-                                        {/* Show Remaining Balance */}
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '0.95em', color: (user?.credits || 0) >= ((Number(selectedPC.pc_rate) || 0) * duration) ? '#4CAF50' : '#f44336' }}>
                                             <p style={{ margin: 0 }}><strong>Your Current Balance:</strong></p>
                                             <p style={{ margin: 0 }}>{user?.credits || 0} CR</p>
