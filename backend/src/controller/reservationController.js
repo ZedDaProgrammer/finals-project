@@ -282,16 +282,17 @@ const dashboardData = async (req, res) => {
         const user_id = req.user.id;
         const currentDate = new Date().toISOString();
 
+        // Removed the "start < currentDate" rule so it fetches upcoming bookings too!
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type,
+                   TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as formatted_start,
                    TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as formatted_end
             FROM reservations r
             JOIN computers c ON r.station_id = c.id
             WHERE r.user_id = $1 
             AND r.status != 'cancelled'
-            AND r.start <= $2::timestamp
             AND r."end" > $2::timestamp
-            ORDER BY r."end" ASC
+            ORDER BY r.start ASC
             LIMIT 5`,
             [user_id, currentDate]
         );

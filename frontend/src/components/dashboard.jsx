@@ -12,8 +12,17 @@ const Dashboard = () => {
         orderHistory: 0
     });
 
-    const [recentOrders, setRecentOrders] = useState([]);
+    const [rawSessions, setRawSessions] = useState([]); 
+    const [currentTime, setCurrentTime] = useState(new Date()); 
     const [isLoading, setIsLoading] = useState(true);
+
+   
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -73,7 +82,6 @@ const Dashboard = () => {
                             status: 'In Use'
                         };
                     });
-                    setRecentOrders(formattedSessions);
                 }
 
                 setIsLoading(false);
@@ -98,7 +106,6 @@ const Dashboard = () => {
                         <span className="nav-section-title">Main Menu</span>
                         <a href="/dashboard" className="nav-item active">Dashboard</a>
                         <a href="/booking" className="nav-item">Reservation</a>
-                        <a href="/order-foods" className="nav-item">Order Foods</a>
                         
                         {user?.role === 'admin' && (
                             <a href="/admin" className="nav-item admin-item">Admin Panel</a>
@@ -151,16 +158,6 @@ const Dashboard = () => {
                                 {isLoading ? '...' : dashboardData.userTotalBooked}
                             </p>
                             <span className="widget-desc">Your past sessions</span>
-                        </div>
-                    </div>
-                    <div className="widget-card">
-                        <div className="widget-icon orders">🍔</div>
-                        <div className="widget-info">
-                            <h3>Order History</h3>
-                            <p className="widget-value">
-                                {isLoading ? '...' : dashboardData.orderHistory}
-                            </p>
-                            <span className="widget-desc">Total Interactions</span>
                         </div>
                     </div>
                 </div>
