@@ -81,7 +81,7 @@ button.ghost {
 	border-color: #FFFFFF;
 }
 
-form {
+.auth-container form {
 	background-color: #FFFFFF;
 	display: flex;
 	align-items: center;
