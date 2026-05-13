@@ -96,4 +96,35 @@ const userLogout = async (req, res) => {
     res.status(200).json({ message: "Logged out successfully" });
 };
 
-module.exports = { userRegister, userLogin, userProfile, userLogout };
+const updateProfile = async (req, res) => {
+    const { username, email } = req.body;
+    try {
+        await pool.query('UPDATE users SET username = $1, email = $2 WHERE id = $3', [username, email, req.user.id]);
+        res.status(200).json({ message: "Profile updated" });
+    } catch (error) { res.status(500).json({ message: "Server error" }); }
+};
+
+const changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    try {
+        const user = await pool.query('SELECT password FROM users WHERE id = $1', [req.user.id]);
+        const isMatch = await bcrypt.compare(currentPassword, user.rows[0].password);
+        if (!isMatch) return res.status(400).json({ message: "Incorrect current password" });
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.user.id]);
+        res.status(200).json({ message: "Password updated" });
+    } catch (error) { res.status(500).json({ message: "Server error" }); }
+};
+
+const addCredits = async (req, res) => {
+    const { amount } = req.body;
+    try {
+        await pool.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amount, req.user.id]);
+        res.status(200).json({ message: "Credits added" });
+    } catch (error) { res.status(500).json({ message: "Server error" }); }
+};
+
+
+
+module.exports = { userRegister, userLogin, userProfile, userLogout, updateProfile, changePassword, addCredits };

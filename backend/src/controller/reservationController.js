@@ -348,6 +348,13 @@ const dashboardData = async (req, res) => {
     }
 };
 
+const getUserTickets = async (req, res) => {
+    try {
+        const tickets = await pool.query('SELECT * FROM tickets WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+        res.status(200).json({ tickets: tickets.rows });
+    } catch (error) { res.status(500).json({ message: "Server error" }); }
+};
+
 module.exports = { 
     checkAvailability, 
     createBooking, 
@@ -358,5 +365,6 @@ module.exports = {
     groupBooking, 
     createTicket, 
     getDashboardStats, 
-    dashboardData 
+    dashboardData,
+    getUserTickets
 };
