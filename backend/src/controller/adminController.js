@@ -6,8 +6,6 @@ const pool = require('../database/db');
 
 const getBookings = async (req, res) => {
     try {
-        // REMOVED the aggressive DELETE query to stop it from wiping out your DB
-
         const allBookings = await pool.query(`
             SELECT 
                 r.reservation_id, 

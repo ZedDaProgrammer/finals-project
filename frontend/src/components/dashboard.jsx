@@ -128,7 +128,10 @@ const Dashboard = () => {
                     <div className="table-container">
                         {isLoading ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
-                        ) : rawSessions.filter(res => new Date(res.end) > currentTime).length === 0 ? (
+                        ) : rawSessions.filter(res => {
+                            const end = new Date(res.formatted_end || res.end);
+                            return isNaN(end.getTime()) || end > currentTime;
+                        }).length === 0 ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
@@ -143,13 +146,16 @@ const Dashboard = () => {
                                 </thead>
                                 <tbody>
                                     {rawSessions
-                                        // FIXED: Uses res.end directly to avoid timezone stripping
-                                        .filter(res => new Date(res.end) > currentTime)
+                                        // SAFE FILTER: Auto-deletes itself from UI ONLY when time truly passes
+                                        .filter(res => {
+                                            const end = new Date(res.formatted_end || res.end);
+                                            if (isNaN(end.getTime())) return true; // Prevents crash-hiding
+                                            return end > currentTime; 
+                                        })
                                         .map((res) => {
                                         
-                                        // FIXED: Uses raw start/end times
-                                        const start = new Date(res.start);
-                                        const end = new Date(res.end);
+                                        const start = new Date(res.formatted_start || res.start);
+                                        const end = new Date(res.formatted_end || res.end);
 
                                         let statusStr = "";
                                         let badgeClass = "";
@@ -176,7 +182,6 @@ const Dashboard = () => {
                                             badgeClass = "active";   
                                             timeColor = "#28a745"; 
                                             
-                                            // Live Countdown
                                             const diffMs = end - currentTime;
                                             const hours = Math.floor(diffMs / 3600000);
                                             const mins = Math.floor((diffMs % 3600000) / 60000);

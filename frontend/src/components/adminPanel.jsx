@@ -112,8 +112,12 @@ const AdminPanel = () => {
                         </thead>
                         <tbody>
                             {bookings
-                                // Hides row from Admin UI when its end time naturally expires
-                                .filter(b => new Date(b.end) > currentTime)
+                                // SAFE FILTER: Deletes itself from UI when time passes
+                                .filter(b => {
+                                    const end = new Date(b.end);
+                                    if (isNaN(end.getTime())) return true;
+                                    return end > currentTime;
+                                })
                                 .map(b => (
                                 <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '45px' }}>
                                     <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
