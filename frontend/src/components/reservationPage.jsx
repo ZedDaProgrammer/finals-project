@@ -10,13 +10,12 @@ const ReservationPage = () => {
     const [selectedPC, setSelectedPC] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null); 
     const [activeTab, setActiveTab] = useState('standard'); 
-    
+            
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
         const tzOffset = now.getTimezoneOffset() * 60000; 
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
-    });
-    
+    });   
     const [duration, setDuration] = useState(1); 
 
     useEffect(() => {
@@ -121,6 +120,30 @@ const ReservationPage = () => {
             </div>
         );
     };
+    const [cpuFilter, setCpuFilter] = useState('all');
+    const [gpuFilter, setGpuFilter] = useState('all');
+    const [monitorFilter, setMonitorFilter] = useState('all');
+    const applyFilters = (pcs) => {
+     return pcs.filter(pc => {
+         let match = true;
+         if (cpuFilter !== 'all') {
+             if (cpuFilter === 'Intel' && (!pc.cpu || !pc.cpu.toLowerCase().includes('i'))) match = false;
+             if (cpuFilter === 'Ryzen' && (!pc.cpu || !pc.cpu.toLowerCase().includes('ryzen'))) match = false;
+         }
+         if (gpuFilter !== 'all') {
+             if (gpuFilter === 'GTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('gtx'))) match = false;
+             if (gpuFilter === 'RTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('rtx'))) match = false;
+         }
+         if (monitorFilter !== 'all') {
+             if (monitorFilter === '144' && parseInt(pc.monitor_hz) !== 144) match = false;
+             if (monitorFilter === '240' && parseInt(pc.monitor_hz) !== 240) match = false;
+         }
+         return match;
+     });
+ };
+
+ const displayedStandardPcs = applyFilters(standardPcs);
+ const displayedGeneralVipPcs = applyFilters(generalVipPcs);
 
     return (
         <div className="dashboard-layout">
@@ -153,6 +176,27 @@ const ReservationPage = () => {
                         <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}>VIP Rooms (5-PC)</button>
                         <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>Private (2-PC)</button>
                     </div>
+                    {(activeTab === 'standard' || activeTab === 'vip_lounge') && (
+                        <div className="filters-container" style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <select value={cpuFilter} onChange={e => setCpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
+                                <option value="all">All CPUs</option>
+                                <option value="Intel">Intel</option>
+                                <option value="Ryzen">Ryzen</option>
+                            </select>
+
+                            <select value={gpuFilter} onChange={e => setGpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
+                                <option value="all">All GPUs</option>
+                                <option value="GTX">GTX</option>
+                                <option value="RTX">RTX</option>
+                            </select>
+
+                            <select value={monitorFilter} onChange={e => setMonitorFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
+                                <option value="all">All Monitors</option>
+                                <option value="144">144Hz</option>
+                                <option value="240">240Hz</option>
+                            </select>
+                        </div>
+                    )}
 
                     {activeTab === 'standard' && <div className="pc-grid">{standardPcs.map(renderPc)}</div>}
                     
