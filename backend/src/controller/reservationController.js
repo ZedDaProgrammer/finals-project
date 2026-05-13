@@ -55,7 +55,6 @@ const checkAvailability = async (req, res) => {
             return res.status(401).json({ error: "Please provide the needed details."});
         }
 
-        // Updated query with the 15-minute expiration rule
         const availableStation = await pool.query(`
                 SELECT * FROM computers
                 WHERE id NOT IN (
@@ -93,7 +92,7 @@ const createBooking = async (req, res) => {
         if (checkStation.rows.length === 0) throw new Error("Station not found.");
         const pcRate = checkStation.rows[0].pc_rate || 0;
 
-        // 2. Check for Overlaps (15 min rule)
+        // 2. Check for Overlaps
         const overlapChecking = await client.query(
             `SELECT * FROM reservations
             WHERE station_id = $1 AND status != 'cancelled'
@@ -104,31 +103,44 @@ const createBooking = async (req, res) => {
 
         if (overlapChecking.rows.length > 0) throw new Error("Time slot unavailable");
 
-        // 3. Calculate Total Cost
+        // 3. Calculate Original Cost
         const startTime = new Date(start);
         const endTime = new Date(end);
-        // Calculates duration in whole hours
         const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
-        const totalCost = pcRate * durationHours;
+        const originalCost = pcRate * durationHours;
 
-        // 4. Check User Balance
+        // 4. Fetch User Balance & Points
         const userQuery = await client.query(
-            `SELECT credits FROM users WHERE id = $1 FOR UPDATE`,
+            `SELECT credits, points FROM users WHERE id = $1 FOR UPDATE`,
             [user_id]
         );
-        const userPoints = userQuery.rows[0].credits || 0;
+        const userCredits = userQuery.rows[0].credits || 0;
+        const currentPoints = userQuery.rows[0].points || 0; // Using "points"
 
-        if (userPoints < totalCost) {
-            throw new Error(`Insufficient credits. You need ${totalCost} CR, but only have ${userPoints} CR.`);
+        // 🌟 RANKING & DISCOUNT LOGIC
+        let discountRate = 0;
+        if (currentPoints >= 100) discountRate = 0.15;      // Radiant: 15%
+        else if (currentPoints >= 60) discountRate = 0.10;  // Platinum: 10%
+        else if (currentPoints >= 30) discountRate = 0.06;  // Gold: 6%
+        else if (currentPoints >= 10) discountRate = 0.03;  // Silver: 3%
+
+        const discountAmount = originalCost * discountRate;
+        const finalCost = Math.round(originalCost - discountAmount);
+
+        if (userCredits < finalCost) {
+            throw new Error(`Insufficient credits. You need ${finalCost} CR (after discount), but only have ${userCredits} CR.`);
         }
 
-        // 5. Deduct Credits from User
+
+        const earnedPoints = durationHours * 10;
+
+  
         await client.query(
-            `UPDATE users SET credits = credits - $1 WHERE id = $2`,
-            [totalCost, user_id]
+            `UPDATE users SET credits = credits - $1, points = points + $2 WHERE id = $3`,
+            [finalCost, earnedPoints, user_id] 
         );
 
-        // 6. Create the Booking
+  
         const newBooking = await client.query(`
             INSERT INTO reservations (user_id, station_id, start, "end", status)
             VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
@@ -136,11 +148,13 @@ const createBooking = async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(200).json({ message: "Booking has been confirmed", booking: newBooking.rows[0]});
+        res.status(200).json({ 
+            message: `Booking confirmed! Discount applied: ${discountRate * 100}%. You earned ${earnedPoints} rank points!`, 
+            booking: newBooking.rows[0]
+        });
     } catch(err) {
         await client.query('ROLLBACK');
         console.error("Booking Error", err.message);
-        // Returns 400 Bad Request if they don't have enough money or overlap
         res.status(400).json({ error: err.message || "Failed to make booking"});
     } finally {
         client.release();
@@ -230,13 +244,13 @@ const upgradeMembership = async (req, res) => {
     const { amount } = req.body;
     
     try {
-        const user = await pool.query('SELECT membership_points FROM users WHERE id = $1', [user_id]);
-        const currentPoints = user.rows[0].membership_points || 0;
+        const user = await pool.query('SELECT points FROM users WHERE id = $1', [user_id]); // Using "points"
+        const currentPoints = user.rows[0].points || 0;
         
         const newPoints = currentPoints + Math.floor(amount / 10); 
         
         await pool.query(
-            'UPDATE users SET membership_points = $1 WHERE id = $2',
+            'UPDATE users SET points = $1 WHERE id = $2', // Using "points"
             [newPoints, user_id]
         );
         
@@ -264,21 +278,30 @@ const groupBooking = async (req, res) => {
         
         const totalHourlyRate = checkStations.rows.reduce((sum, row) => sum + (row.pc_rate || 0), 0);
 
-
         const startTime = new Date(start);
         const endTime = new Date(end);
         const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
-        const totalCost = totalHourlyRate * durationHours;
-
+        const originalCost = totalHourlyRate * durationHours;
 
         const userQuery = await client.query(
-            `SELECT credits FROM users WHERE id = $1 FOR UPDATE`,
+            `SELECT credits, points FROM users WHERE id = $1 FOR UPDATE`, // Using "points"
             [user_id]
         );
         const userCredits = userQuery.rows[0].credits || 0;
+        const currentPoints = userQuery.rows[0].points || 0; // Using "points"
 
-        if (userCredits < totalCost) {
-            throw new Error(`Insufficient credits. You need ${totalCost} CR, but only have ${userCredits} CR.`);
+        // 🌟 RANKING & DISCOUNT LOGIC
+        let discountRate = 0;
+        if (currentPoints >= 1000) discountRate = 0.15;      // Radiant
+        else if (currentPoints >= 600) discountRate = 0.10;  // Platinum
+        else if (currentPoints >= 300) discountRate = 0.06;  // Gold
+        else if (currentPoints >= 100) discountRate = 0.03;  // Silver
+        
+        const discountAmount = originalCost * discountRate;
+        const finalCost = Math.round(originalCost - discountAmount);
+
+        if (userCredits < finalCost) {
+            throw new Error(`Insufficient credits. You need ${finalCost} CR (after discount), but only have ${userCredits} CR.`);
         }
 
         const overlapChecking = await client.query(
@@ -293,10 +316,12 @@ const groupBooking = async (req, res) => {
             throw new Error("One or more stations in this room are already booked for this time.");
         }
 
+        // 🌟 FREE POINTS LOGIC 
+        const earnedPoints = durationHours * stations.length * 10;
 
         await client.query(
-            `UPDATE users SET credits = credits - $1 WHERE id = $2`,
-            [totalCost, user_id]
+            `UPDATE users SET credits = credits - $1, points = points + $2 WHERE id = $3`, // Using "points"
+            [finalCost, earnedPoints, user_id]
         );
 
         const bookedStations = [];
@@ -310,7 +335,7 @@ const groupBooking = async (req, res) => {
         }
 
         await client.query('COMMIT');
-        res.status(200).json({ message: "Room booking confirmed!", bookings: bookedStations });
+        res.status(200).json({ message: `Group booking confirmed! Discount applied: ${discountRate * 100}%. You earned ${earnedPoints} rank points!`, bookings: bookedStations });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error("Group Booking Error:", err.message);
