@@ -115,7 +115,7 @@ const ReservationPage = () => {
         const isAvailable = availableIds.includes(pc.id);
         return (
             <div key={pc.id} className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                 onClick={() => { if(isAvailable) setSelectedPC(pc); }}>
+                 onClick={() => setSelectedPC(pc)}>
                 <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
             </div>
@@ -186,10 +186,9 @@ const ReservationPage = () => {
                                         </div>
                                         <button 
                                             className="book-room-btn" 
-                                            disabled={!isRoomAvailable}
                                             onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
                                         >
-                                            {isRoomAvailable ? `Book Full Room (${roomRate} CR/hr)` : 'Room Unavailable'}
+                                            Book Full Room ({roomRate} CR/hr)
                                         </button>
                                     </div>
                                 );
@@ -199,73 +198,90 @@ const ReservationPage = () => {
                 </div>
 
                 {/* Unified Booking Modal */}
-                {(selectedPC || selectedRoom) && (
-                    <div className="modal-overlay">
-                        <div className="modal-content modal-large">
-                            <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
-                            
-                            {!selectedRoom && selectedPC && (
-                                <div className="pc-dynamic-details">
-                                    <h4>Specifications:</h4>
-                                    <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
-                                    <p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p>
-                                    <p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p>
-                                    <p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
-                                </div>
-                            )}
+                {/* Unified Booking Modal */}
+                {(selectedPC || selectedRoom) && (() => {
+                    // Dynamically check if the selected PC/Room is available for the current time slot
+                    const isCurrentlyAvailable = selectedRoom 
+                        ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
+                        : (selectedPC && availableIds.includes(selectedPC.id));
+                    
+                    const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
+                    const totalCost = targetRate * duration;
+                    const hasEnoughCredits = (user?.credits || 0) >= totalCost;
 
-                            {selectedRoom && (
-                                <div className="pc-dynamic-details">
-                                    <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
-                                    
-                                    {/* Display specs for the room based on the first PC */}
-                                    <h4>Room Specifications:</h4>
-                                    <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
-                                    <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
-                                    <p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p>
-                                    <p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
-                                </div>
-                            )}
+                    return (
+                        <div className="modal-overlay">
+                            <div className="modal-content modal-large">
+                                <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
+                                
+                                {!selectedRoom && selectedPC && (
+                                    <div className="pc-dynamic-details">
+                                        <h4>Specifications:</h4>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
+                                    </div>
+                                )}
 
-                            <div className="modal-time-selector" style={{ marginTop: '20px' }}>
-                                <div className="input-group">
-                                    <label>Start Time:</label>
-                                    <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                                </div>
-                                <div className="input-group">
-                                    <label>Duration (Hours):</label>
-                                    <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
-                                </div>
-                            </div>
+                                {selectedRoom && (
+                                    <div className="pc-dynamic-details">
+                                        <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                        <h4>Room Specifications:</h4>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
+                                    </div>
+                                )}
 
-                            <div className="booking-summary">
-                                <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                    <strong>Total Cost:</strong> 
-                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{(selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration} CR</strong>
+                                <div className="modal-time-selector" style={{ marginTop: '20px' }}>
+                                    <div className="input-group">
+                                        <label>Start Time:</label>
+                                        <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Duration (Hours):</label>
+                                        <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                    <strong>Your Credits:</strong> 
-                                    <span style={{ color: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
-                                        {user?.credits || 0} CR
-                                    </span>
-                                </div>
-                            </div>
 
-                            <div className="modal-actions">
-                                <button 
-                                    className="confirm-btn" 
-                                    onClick={handleBooking}
-                                    disabled={(user?.credits || 0) < ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration)}
-                                    style={{ opacity: (user?.credits || 0) >= ((selectedRoom ? selectedRoom.rate : selectedPC.pc_rate) * duration) ? 1 : 0.5 }}
-                                >
-                                    Confirm
-                                </button>
-                                <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
+                                {/* NEW: Dynamic warning message if the time overlaps */}
+                                {!isCurrentlyAvailable && (
+                                    <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>
+                                        ⚠️ This {selectedRoom ? 'room' : 'PC'} is already booked during this time slot. Please adjust the Start Time or Duration.
+                                    </div>
+                                )}
+
+                                <div className="booking-summary">
+                                    <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                        <strong>Total Cost:</strong> 
+                                        <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{totalCost} CR</strong>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                        <strong>Your Credits:</strong> 
+                                        <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                            {user?.credits || 0} CR
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button 
+                                        className="confirm-btn" 
+                                        onClick={handleBooking}
+                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable}
+                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable) ? 1 : 0.5 }}
+                                    >
+                                        Confirm
+                                    </button>
+                                    <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
             </main>
         </div>
     );
