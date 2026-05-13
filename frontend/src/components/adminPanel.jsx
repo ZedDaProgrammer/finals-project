@@ -194,13 +194,57 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'computers' && (
-                    <div style={{ color: '#333' }}>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                        gap: '15px', 
+                        color: '#333' 
+                    }}>
                         {computers.map(c => (
-                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '10px', borderRadius: '8px', alignItems: 'center' }}>
-                                <span>{(c.name || c.pcname) || `PC-${c.id}`} ({c.type})</span>
-                                <span style={{ fontWeight: 'bold', color: c.availability === 'maintenance' ? '#f44336' : '#4CAF50' }}>{c.availability.toUpperCase()}</span>
-                                <button onClick={() => handleToggleComputer(c.id, c.availability)} style={{ padding: '8px 15px', cursor: 'pointer' }}>
-                                    Set to {c.availability === 'maintenance' ? 'Available' : 'Maintenance'}
+                            <div key={c.id} style={{ 
+                                background: '#fff', 
+                                border: '1px solid #ddd', 
+                                padding: '15px', 
+                                borderRadius: '8px', 
+                                textAlign: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: '10px'
+                            }}>
+                                <div>
+                                    <h4 style={{ margin: '0 0 5px', fontSize: '1.1em' }}>
+                                        {(c.name || c.pcname) || `PC-${c.id}`}
+                                    </h4>
+                                    <span style={{ fontSize: '0.85em', color: '#666', textTransform: 'uppercase' }}>
+                                        {c.type}
+                                    </span>
+                                </div>
+                                
+                                <span style={{ 
+                                    fontWeight: 'bold', 
+                                    fontSize: '0.9em',
+                                    padding: '4px 8px',
+                                    borderRadius: '12px',
+                                    backgroundColor: c.availability === 'maintenance' ? 'rgba(244, 67, 54, 0.1)' : 'rgba(76, 175, 80, 0.1)',
+                                    color: c.availability === 'maintenance' ? '#f44336' : '#4CAF50' 
+                                }}>
+                                    {c.availability.toUpperCase()}
+                                </span>
+
+                                <button 
+                                    onClick={() => handleToggleComputer(c.id, c.availability)} 
+                                    style={{ 
+                                        padding: '8px', 
+                                        cursor: 'pointer',
+                                        background: c.availability === 'maintenance' ? '#4CAF50' : '#f44336',
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        marginTop: '5px'
+                                    }}
+                                >
+                                    Set {c.availability === 'maintenance' ? 'Available' : 'Maintenance'}
                                 </button>
                             </div>
                         ))}
