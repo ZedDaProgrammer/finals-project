@@ -111,14 +111,7 @@ const AdminPanel = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings
-                                // SAFE FILTER: Deletes itself from UI when time passes
-                                .filter(b => {
-                                    const end = new Date(b.end);
-                                    if (isNaN(end.getTime())) return true;
-                                    return end > currentTime;
-                                })
-                                .map(b => (
+                            {bookings.map(b => (
                                 <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '45px' }}>
                                     <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
                                     <td>{new Date(b.start).toLocaleString()}</td>

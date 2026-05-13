@@ -9,8 +9,8 @@ const getBookings = async (req, res) => {
         const allBookings = await pool.query(`
             SELECT 
                 r.reservation_id, 
-                r.start, 
-                r."end", 
+                TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS') as start, 
+                TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS') as "end", 
                 r.status, 
                 u.username, 
                 c.id AS station_id
@@ -41,20 +41,34 @@ const updateReservationStatus = async (req, res) => {
     const { status } = req.body;
 
     try {
-        const updateStatus = await pool.query(
-            `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`,
-            [status, id]
-        );
+        let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
+        
+        // 🌟 THE FIX: When starting a PC, shift the timer to begin exactly RIGHT NOW.
+        // This guarantees they get their full duration from the moment you click start!
+        if (status === 'active') {
+            query = `
+                UPDATE reservations 
+                SET 
+                    status = $1, 
+                    "end" = CURRENT_TIMESTAMP + ("end" - start),
+                    start = CURRENT_TIMESTAMP
+                WHERE reservation_id = $2 
+                RETURNING *
+            `;
+        }
+
+        const updateStatus = await pool.query(query, [status, id]);
+        
         if (updateStatus.rows.length === 0) {
             return res.status(404).json({ message: "Reservation not found"});
         }
 
         res.status(200).json({ message: "Status updated successfully", reservation: updateStatus.rows[0]});
         
-} catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error"});
-}
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
 };
 
 const getTicket = async (req, res) => {
@@ -93,10 +107,10 @@ const updateTicketStatus = async (req, res) => {
         res.status(200).json({
              message: "Ticket status updated successfully", ticket: updateTicket.rows[0]
             });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Server error"});
-        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
 };
 
 const deleteReservation = async (req, res) => {
@@ -140,8 +154,6 @@ const updateComputerStatus = async (req, res) => {
         res.status(500).json({ message: "Server error"});
     }
 };
-
-
 
 module.exports = { 
     getBookings, 

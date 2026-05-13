@@ -128,10 +128,7 @@ const Dashboard = () => {
                     <div className="table-container">
                         {isLoading ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
-                        ) : rawSessions.filter(res => {
-                            const end = new Date(res.formatted_end || res.end);
-                            return isNaN(end.getTime()) || end > currentTime;
-                        }).length === 0 ? (
+                        ) : rawSessions.length === 0 ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
@@ -145,14 +142,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rawSessions
-                                        // SAFE FILTER: Auto-deletes itself from UI ONLY when time truly passes
-                                        .filter(res => {
-                                            const end = new Date(res.formatted_end || res.end);
-                                            if (isNaN(end.getTime())) return true; // Prevents crash-hiding
-                                            return end > currentTime; 
-                                        })
-                                        .map((res) => {
+                                    {rawSessions.map((res) => {
                                         
                                         const start = new Date(res.formatted_start || res.start);
                                         const end = new Date(res.formatted_end || res.end);
@@ -188,6 +178,13 @@ const Dashboard = () => {
                                             const secs = Math.floor((diffMs % 60000) / 1000);
                                             
                                             displayTimeStr = `${hours}h ${mins}m ${secs}s`;
+                                        } 
+                                        else {
+                                            // ADDED FALLBACK: If time has passed, clearly mark it as expired
+                                            statusStr = "Expired";
+                                            badgeClass = "completed"; 
+                                            timeColor = "#f44336";
+                                            displayTimeStr = "0h 0m 0s";
                                         }
 
                                         return (
