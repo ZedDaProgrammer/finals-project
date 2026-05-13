@@ -267,9 +267,7 @@ const ReservationPage = () => {
                 </div>
 
                 {/* Unified Booking Modal */}
-                {/* Unified Booking Modal */}
-                {(selectedPC || selectedRoom) && (() => {
-                    // Dynamically check if the selected PC/Room is available for the current time slot
+                {(selectedPC || selectedRoom) && (() => { 
                     const isCurrentlyAvailable = selectedRoom 
                         ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
                         : (selectedPC && availableIds.includes(selectedPC.id));

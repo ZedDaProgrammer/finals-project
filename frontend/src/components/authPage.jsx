@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// 1. IMPORT USEAUTH
 import { useAuth } from '../../context/AuthContext'; 
 
 const AuthPage = () => {

@@ -255,7 +255,6 @@ const groupBooking = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Calculate Total Hourly Rate for all PCs in the room
         const checkStations = await client.query(
             `SELECT pc_rate FROM computers WHERE id = ANY($1)`,
             [stations]
@@ -265,13 +264,13 @@ const groupBooking = async (req, res) => {
         
         const totalHourlyRate = checkStations.rows.reduce((sum, row) => sum + (row.pc_rate || 0), 0);
 
-        // 2. Calculate Total Cost based on duration
+
         const startTime = new Date(start);
         const endTime = new Date(end);
         const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
         const totalCost = totalHourlyRate * durationHours;
 
-        // 3. Check User Credits
+
         const userQuery = await client.query(
             `SELECT credits FROM users WHERE id = $1 FOR UPDATE`,
             [user_id]
@@ -282,7 +281,6 @@ const groupBooking = async (req, res) => {
             throw new Error(`Insufficient credits. You need ${totalCost} CR, but only have ${userCredits} CR.`);
         }
 
-        // 4. Check Availability for ALL stations in the group
         const overlapChecking = await client.query(
             `SELECT station_id FROM reservations
             WHERE station_id = ANY($1) AND status != 'cancelled'
@@ -295,13 +293,12 @@ const groupBooking = async (req, res) => {
             throw new Error("One or more stations in this room are already booked for this time.");
         }
 
-        // 5. Deduct Credits
+
         await client.query(
             `UPDATE users SET credits = credits - $1 WHERE id = $2`,
             [totalCost, user_id]
         );
 
-        // 6. Create the Bookings
         const bookedStations = [];
         for (const station_id of stations) {
             const newBooking = await client.query(`
@@ -348,7 +345,6 @@ const dashboardData = async (req, res) => {
         }
         const user_id = req.user.id;
 
-        // Removed the time check so it fetches your 5 most recent bookings unconditionally
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type,
                    TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS') as formatted_start,

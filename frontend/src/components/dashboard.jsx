@@ -181,7 +181,7 @@ const Dashboard = () => {
 
                                         let statusStr = "";
                                         let timeLeftStr = "";
-                                        let badgeClass = ""; // Maps directly to your style.css classes
+                                        let badgeClass = "";
                                         let timeColor = ""; 
 
                                         if (res.status === 'pending') {
@@ -195,8 +195,8 @@ const Dashboard = () => {
                                             const diffMs = start - currentTime;
                                             const diffMins = Math.ceil(diffMs / 60000);
                                             timeLeftStr = `Starts in ${diffMins} min`;
-                                            badgeClass = "upcoming"; // Connects to .status-badge.upcoming
-                                            timeColor = "#0056b3";   // Matches your CSS blue
+                                            badgeClass = "upcoming"; 
+                                            timeColor = "#0056b3";  
                                         } 
                                         else if (currentTime >= start && currentTime < end) {
                                             statusStr = "Active";
@@ -205,14 +205,14 @@ const Dashboard = () => {
                                             const hours = Math.floor(diffMins / 60);
                                             const mins = diffMins % 60;
                                             timeLeftStr = `${hours}h ${mins}m left`;
-                                            badgeClass = "active";   // Connects to .status-badge.active
-                                            timeColor = "#28a745";   // Matches your CSS green
+                                            badgeClass = "active";   
+                                            timeColor = "#28a745"; 
                                         } 
                                         else {
                                             statusStr = "Expired";
                                             timeLeftStr = "0h 0m 0s";
-                                            badgeClass = "completed"; // Connects to .status-badge.completed
-                                            timeColor = "#f44336";    // Red for expired
+                                            badgeClass = "completed"; 
+                                            timeColor = "#f44336";
                                         }
 
                                         return (
