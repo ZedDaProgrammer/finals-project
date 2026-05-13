@@ -21,7 +21,7 @@ const getBookings = async (req, res) => {
         `);
         
         const formattedBookings = allBookings.rows.map(b => ({
-            id: b.id,
+            id: b.reservation_id,
             start: b.start,
             end: b.end,
             status: b.status,

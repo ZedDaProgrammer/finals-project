@@ -159,7 +159,7 @@ const Dashboard = () => {
                     <div className="table-container">
                         {isLoading ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
-                        ) : rawSessions.length === 0 ? (
+                        ) : rawSessions.filter(res => res.status === 'pending' || new Date(res.formatted_end || res.end) > currentTime).length === 0 ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
@@ -168,51 +168,54 @@ const Dashboard = () => {
                                         <th>Reservation ID</th>
                                         <th>PC Details</th>
                                         <th>Reserved Time</th>
-                                        <th>Time Left</th>
+                                        <th>Duration / Time Left</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rawSessions.map((res) => {
+                                    {/* 1. Added .filter() so rows delete themselves when time hits 0 (currentTime passes end time) */}
+                                    {rawSessions
+                                        .filter(res => res.status === 'pending' || new Date(res.formatted_end || res.end) > currentTime)
+                                        .map((res) => {
+                                        
                                         const startTimeStr = res.formatted_start || res.start;
                                         const endTimeStr = res.formatted_end || res.end;
                                         const start = new Date(startTimeStr);
                                         const end = new Date(endTimeStr);
 
                                         let statusStr = "";
-                                        let timeLeftStr = "";
                                         let badgeClass = "";
                                         let timeColor = ""; 
+                                        let displayTimeStr = "";
+
+                                        // Calculate total allotted time for Pending/Upcoming
+                                        const durationHours = Math.round((end - start) / 3600000);
+                                        const allottedTimeStr = `${durationHours} Hour${durationHours > 1 ? 's' : ''}`;
 
                                         if (res.status === 'pending') {
                                             statusStr = "Pending";
-                                            timeLeftStr = "Waiting to start in cafe";
                                             badgeClass = "pending";
                                             timeColor = "gray";
+                                            displayTimeStr = allottedTimeStr;
                                         } 
                                         else if (currentTime < start) {
                                             statusStr = "Upcoming";
-                                            const diffMs = start - currentTime;
-                                            const diffMins = Math.ceil(diffMs / 60000);
-                                            timeLeftStr = `Starts in ${diffMins} min`;
                                             badgeClass = "upcoming"; 
                                             timeColor = "#0056b3";  
+                                            displayTimeStr = allottedTimeStr;
                                         } 
                                         else if (currentTime >= start && currentTime < end) {
                                             statusStr = "Active";
-                                            const diffMs = end - currentTime;
-                                            const diffMins = Math.ceil(diffMs / 60000);
-                                            const hours = Math.floor(diffMins / 60);
-                                            const mins = diffMins % 60;
-                                            timeLeftStr = `${hours}h ${mins}m left`;
                                             badgeClass = "active";   
                                             timeColor = "#28a745"; 
-                                        } 
-                                        else {
-                                            statusStr = "Expired";
-                                            timeLeftStr = "0h 0m 0s";
-                                            badgeClass = "completed"; 
-                                            timeColor = "#f44336";
+                                            
+                                            // 2. Live Countdown logic for running sessions
+                                            const diffMs = end - currentTime;
+                                            const hours = Math.floor(diffMs / 3600000);
+                                            const mins = Math.floor((diffMs % 3600000) / 60000);
+                                            const secs = Math.floor((diffMs % 60000) / 1000);
+                                            
+                                            displayTimeStr = `${hours}h ${mins}m ${secs}s`;
                                         }
 
                                         return (
@@ -220,12 +223,13 @@ const Dashboard = () => {
                                                 <td className="fw-bold">#RES-{res.reservation_id}</td>
                                                 <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
                                                 <td>{start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
-                                                {/* Safe inline styling without complex ternary checks */}
-                                                <td className="fw-bold" style={{ color: timeColor }}>
-                                                    {timeLeftStr}
+                                                
+                                                {/* Dynamically shows fixed duration OR live countdown */}
+                                                <td className="fw-bold" style={{ color: timeColor, fontVariantNumeric: 'tabular-nums' }}>
+                                                    {displayTimeStr}
                                                 </td>
+                                                
                                                 <td>
-                                                    {/* Safely injects the CSS class */}
                                                     <span className={`status-badge ${badgeClass}`}>
                                                         {statusStr}
                                                     </span>
