@@ -38,26 +38,25 @@ const getBookings = async (req, res) => {
 
 const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
-    const { status } = req.body;
+    // Extract the exact start/end times passed from the frontend React app
+    const { status, start, end } = req.body; 
 
     try {
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
+        let values = [status, id];
         
-        // 🌟 THE FIX: When starting a PC, shift the timer to begin exactly RIGHT NOW.
-        // This guarantees they get their full duration from the moment you click start!
-        if (status === 'active') {
+        // If the frontend provided the new, perfectly synced local times, save them directly!
+        if (status === 'active' && start && end) {
             query = `
                 UPDATE reservations 
-                SET 
-                    status = $1, 
-                    "end" = CURRENT_TIMESTAMP + ("end" - start),
-                    start = CURRENT_TIMESTAMP
+                SET status = $1, start = $3, "end" = $4
                 WHERE reservation_id = $2 
                 RETURNING *
             `;
+            values = [status, id, start, end];
         }
 
-        const updateStatus = await pool.query(query, [status, id]);
+        const updateStatus = await pool.query(query, values);
         
         if (updateStatus.rows.length === 0) {
             return res.status(404).json({ message: "Reservation not found"});

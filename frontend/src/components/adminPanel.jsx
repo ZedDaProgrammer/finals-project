@@ -41,11 +41,33 @@ const AdminPanel = () => {
     };
 
     const handleStartBooking = async (id) => {
+
+        const booking = bookings.find(b => b.id === id);
+        let bodyData = { status: 'active' };
+
+        if (booking) {
+            const originalStart = new Date(booking.start);
+            const originalEnd = new Date(booking.end);
+            const durationMs = originalEnd.getTime() - originalStart.getTime();
+
+  
+            const newStart = new Date();
+            const newEnd = new Date(newStart.getTime() + durationMs);
+
+            bodyData = {
+                status: 'active',
+                start: newStart.toISOString(),
+                end: newEnd.toISOString()
+            };
+        }
+
+
         await fetch(`${BASE_URL}/bookings/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ status: 'active' }) 
+            body: JSON.stringify(bodyData)
         });
+        
         fetchData(); 
     };
 
