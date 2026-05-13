@@ -10,7 +10,7 @@ const AdminPanel = () => {
     const [bookings, setBookings] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
-
+    
     useEffect(() => {
         if(token) fetchData();
     }, [token, activeTab]);
@@ -39,7 +39,7 @@ const AdminPanel = () => {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: 'active' }) 
         });
-        fetchData();
+        fetchData(); // Refreshes the table
     };
 
     const handleDeleteBooking = async (id) => {
@@ -60,6 +60,7 @@ const AdminPanel = () => {
         });
         fetchData();
     };
+        
 
     return (
         <div className="dashboard-layout">
