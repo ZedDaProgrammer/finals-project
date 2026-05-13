@@ -1248,26 +1248,40 @@ input:checked + .slider { background-color: #e94560; }
 input:checked + .slider:before { transform: translateX(22px); }
 
 /* =========================================
-   GLOBAL DARK MODE OVERRIDES
+   GLOBAL DARK MODE OVERRIDES (BULLETPROOF)
    ========================================= */
 body.dark-mode {
     background: #121212 !important;
+    color: #e0e0e0 !important;
 }
 
-body.dark-mode .dashboard-content {
-    background-color: #121212;
-    color: #e0e0e0;
+body.dark-mode .dashboard-content,
+body.dark-mode .admin-container {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
 }
 
+/* Fix Text Colors */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4,
 body.dark-mode .dashboard-header h1,
-body.dark-mode .settings-card h3,
 body.dark-mode .wallet-balance,
-body.dark-mode .panel-header h3,
-body.dark-mode .reservation-container h2,
-body.dark-mode .profile-details h2 {
-    color: #ffffff;
+body.dark-mode .profile-details h2,
+body.dark-mode .admin-container h1,
+body.dark-mode .modal-content h3 {
+    color: #ffffff !important;
 }
 
+body.dark-mode p, 
+body.dark-mode label, 
+body.dark-mode .dashboard-header p,
+body.dark-mode .specs-text {
+    color: #b0b0b0 !important;
+}
+
+/* Fix Container Backgrounds (Settings Cards, Modals, Panels, Rooms) */
 body.dark-mode .settings-card,
 body.dark-mode .widget-card,
 body.dark-mode .recent-activity-panel,
@@ -1275,53 +1289,81 @@ body.dark-mode .room-box,
 body.dark-mode .profile-card,
 body.dark-mode .history-section,
 body.dark-mode .reservation-container,
-body.dark-mode .category-tabs {
-    background: #1e1e1e;
-    border-color: #2d2d2d;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+body.dark-mode .category-tabs,
+body.dark-mode .admin-section,
+body.dark-mode .modal-content,
+body.dark-mode .price-calculation,
+body.dark-mode .pc-dynamic-details,
+body.dark-mode .history-section .panel-header,
+body.dark-mode .theme-switch-wrapper,
+body.dark-mode .auth-container,
+body.dark-mode .auth-form {
+    background: #1e1e1e !important;
+    border-color: #2d2d2d !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
 }
 
+/* Fix Inputs, Selects, & Textareas */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
 body.dark-mode .form-input,
 body.dark-mode .input-group input,
-body.dark-mode select,
-body.dark-mode .theme-switch-wrapper,
+body.dark-mode .auth-input,
 body.dark-mode .rank-badge {
-    background: #2d2d2d;
-    border-color: #444;
-    color: #fff;
+    background: #2d2d2d !important;
+    border-color: #444 !important;
+    color: #fff !important;
 }
 
-body.dark-mode .form-input:focus {
-    background: #333;
-    border-color: #e94560;
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+    border-color: #e94560 !important;
+    background: #333 !important;
 }
 
-body.dark-mode .form-group label,
-body.dark-mode p,
-body.dark-mode .dashboard-header p {
-    color: #a0a0a0;
-}
-
-body.dark-mode .activity-table th {
-    color: #888;
-    border-bottom-color: #333;
+/* Fix Tables & Admin Panel */
+body.dark-mode .activity-table th,
+body.dark-mode .admin-table th {
+    color: #a0a0a0 !important;
+    border-bottom-color: #333 !important;
+    background-color: #1a1a1a !important;
 }
 
 body.dark-mode .activity-table td,
+body.dark-mode .admin-table td,
 body.dark-mode .fw-bold {
-    color: #e0e0e0;
-    border-bottom-color: #333;
+    color: #e0e0e0 !important;
+    border-bottom-color: #333 !important;
 }
 
-body.dark-mode .activity-table tr:hover td {
-    background-color: #252525;
+body.dark-mode .activity-table tr:hover td,
+body.dark-mode .admin-table tr:hover td {
+    background-color: #252525 !important;
 }
 
+/* Fix Borders & Button Highlights */
 body.dark-mode .settings-card h3,
-body.dark-mode .room-box h4 {
-    border-bottom-color: #333;
+body.dark-mode .room-box h4,
+body.dark-mode .modal-content h3,
+body.dark-mode .pc-dynamic-details h4 {
+    border-bottom-color: #333 !important;
 }
 
 body.dark-mode .pc-seat {
-    border-color: #333;
+    border-color: #333 !important;
+}
+
+body.dark-mode .room-occupied {
+    background: #171717 !important;
+}
+
+body.dark-mode .cancel-btn {
+    background: #2d2d2d !important;
+    color: #fff !important;
+    border-color: #444 !important;
+}
+body.dark-mode .cancel-btn:hover {
+    background: #444 !important;
 }

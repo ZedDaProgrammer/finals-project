@@ -1,3 +1,4 @@
+import { useEffect } from 'react'; // Added useEffect import
 import AuthPage from './components/authPage';
 import Dashboard from './components/dashboard';
 import ReservationPage from './components/reservationPage';
@@ -8,6 +9,14 @@ import { Routes, Route } from 'react-router-dom';
 import AdminPanel from './components/adminPanel';
 
 function App() {
+    useEffect(() => {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }, []);
+
     return (
         <Routes>
             <Route path="/login" element={<AuthPage />} />            
