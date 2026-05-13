@@ -1250,6 +1250,8 @@ input:checked + .slider:before { transform: translateX(22px); }
 /* =========================================
    GLOBAL DARK MODE OVERRIDES (BULLETPROOF)
    ========================================= */
+
+/* 1. Global Backgrounds & Text */
 body.dark-mode {
     background: #121212 !important;
     color: #e0e0e0 !important;
@@ -1261,109 +1263,155 @@ body.dark-mode .admin-container {
     color: #e0e0e0 !important;
 }
 
-/* Fix Text Colors */
-body.dark-mode h1, 
-body.dark-mode h2, 
-body.dark-mode h3, 
-body.dark-mode h4,
-body.dark-mode .dashboard-header h1,
-body.dark-mode .wallet-balance,
-body.dark-mode .profile-details h2,
-body.dark-mode .admin-container h1,
-body.dark-mode .modal-content h3 {
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4,
+body.dark-mode .dashboard-header h1, body.dark-mode .wallet-balance,
+body.dark-mode .profile-details h2, body.dark-mode .admin-container h1,
+body.dark-mode .modal-content h3, body.dark-mode .pc-dynamic-details h4 {
     color: #ffffff !important;
+    border-bottom-color: #333 !important;
 }
 
-body.dark-mode p, 
-body.dark-mode label, 
-body.dark-mode .dashboard-header p,
-body.dark-mode .specs-text {
+body.dark-mode p, body.dark-mode label, body.dark-mode span,
+body.dark-mode .dashboard-header p, body.dark-mode .specs-text {
     color: #b0b0b0 !important;
 }
 
-/* Fix Container Backgrounds (Settings Cards, Modals, Panels, Rooms) */
+/* 2. Fix Settings & Admin Panel Inline Styles (Forcing Dark Backgrounds) */
 body.dark-mode .settings-card,
 body.dark-mode .widget-card,
 body.dark-mode .recent-activity-panel,
-body.dark-mode .room-box,
 body.dark-mode .profile-card,
 body.dark-mode .history-section,
-body.dark-mode .reservation-container,
 body.dark-mode .category-tabs,
-body.dark-mode .admin-section,
-body.dark-mode .modal-content,
-body.dark-mode .price-calculation,
-body.dark-mode .pc-dynamic-details,
-body.dark-mode .history-section .panel-header,
 body.dark-mode .theme-switch-wrapper,
-body.dark-mode .auth-container,
-body.dark-mode .auth-form {
+body.dark-mode section[style*="background"],
+body.dark-mode .dashboard-content div[style*="background: rgb(255, 255, 255)"],
+body.dark-mode .dashboard-content div[style*="background: #fff"] {
     background: #1e1e1e !important;
-    border-color: #2d2d2d !important;
+    border-color: #333 !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+    color: #e0e0e0 !important;
 }
 
-/* Fix Inputs, Selects, & Textareas */
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea,
-body.dark-mode .form-input,
-body.dark-mode .input-group input,
-body.dark-mode .auth-input,
-body.dark-mode .rank-badge {
+/* Force Admin Text to be Visible */
+body.dark-mode .dashboard-content div[style*="color: rgb(51, 51, 51)"],
+body.dark-mode .dashboard-content div[style*="color: #333"] {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .activity-table th, body.dark-mode .admin-table th, table th {
+    color: #a0a0a0 !important;
+    border-bottom: 2px solid #333 !important;
+    background-color: #1a1a1a !important;
+}
+
+body.dark-mode .activity-table td, body.dark-mode .admin-table td, table td,
+body.dark-mode tr[style*="border-bottom"] {
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+body.dark-mode tr:hover td {
+    background-color: #252525 !important;
+}
+
+/* 3. Inputs & Forms */
+body.dark-mode input, body.dark-mode select, body.dark-mode textarea,
+body.dark-mode .form-input, body.dark-mode .input-group input {
     background: #2d2d2d !important;
-    border-color: #444 !important;
+    border: 1px solid #444 !important;
     color: #fff !important;
 }
 
-body.dark-mode input:focus,
-body.dark-mode select:focus,
-body.dark-mode textarea:focus {
+body.dark-mode input:focus, body.dark-mode select:focus, body.dark-mode textarea:focus {
     border-color: #e94560 !important;
     background: #333 !important;
 }
 
-/* Fix Tables & Admin Panel */
-body.dark-mode .activity-table th,
-body.dark-mode .admin-table th {
-    color: #a0a0a0 !important;
-    border-bottom-color: #333 !important;
-    background-color: #1a1a1a !important;
+/* 4. Reservation Panel Theme */
+body.dark-mode .reservation-container {
+    background: #121212 !important;
+    box-shadow: none !important;
 }
 
-body.dark-mode .activity-table td,
-body.dark-mode .admin-table td,
-body.dark-mode .fw-bold {
-    color: #e0e0e0 !important;
-    border-bottom-color: #333 !important;
-}
+body.dark-mode .tab-btn { color: #888 !important; }
+body.dark-mode .tab-btn.active { background: #e94560 !important; color: #fff !important; }
 
-body.dark-mode .activity-table tr:hover td,
-body.dark-mode .admin-table tr:hover td {
-    background-color: #252525 !important;
-}
-
-/* Fix Borders & Button Highlights */
-body.dark-mode .settings-card h3,
-body.dark-mode .room-box h4,
-body.dark-mode .modal-content h3,
-body.dark-mode .pc-dynamic-details h4 {
-    border-bottom-color: #333 !important;
-}
-
+/* PC Seats */
 body.dark-mode .pc-seat {
+    background: #1e1e1e !important;
     border-color: #333 !important;
 }
-
-body.dark-mode .room-occupied {
-    background: #171717 !important;
+body.dark-mode .pc-seat.available {
+    background: rgba(40, 167, 69, 0.1) !important;
+    border-color: rgba(40, 167, 69, 0.4) !important;
+    color: #4ade80 !important;
+}
+body.dark-mode .pc-seat.available:hover { background: rgba(40, 167, 69, 0.2) !important; }
+body.dark-mode .pc-seat.occupied {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #ff6b6b !important;
+}
+body.dark-mode .pc-seat.maintenance {
+    background: #252525 !important;
+    border-color: #444 !important;
 }
 
+/* VIP Rooms */
+body.dark-mode .room-box {
+    background: #1e1e1e !important;
+    border-color: #333 !important;
+}
+body.dark-mode .room-occupied {
+    background: #151515 !important;
+    opacity: 0.6 !important;
+}
+body.dark-mode .pc-mini.free {
+    background: rgba(40, 167, 69, 0.1) !important;
+    border-color: rgba(40, 167, 69, 0.4) !important;
+    color: #4ade80 !important;
+}
+body.dark-mode .pc-mini.busy {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #ff6b6b !important;
+}
+body.dark-mode .book-room-btn {
+    background: rgba(77, 166, 255, 0.15) !important;
+    color: #4da6ff !important;
+    border: 1px solid rgba(77, 166, 255, 0.3) !important;
+}
+body.dark-mode .book-room-btn:hover:not(:disabled) {
+    background: #4da6ff !important;
+    color: #fff !important;
+}
+body.dark-mode .book-room-btn:disabled {
+    background: #2d2d2d !important;
+    color: #666 !important;
+    border-color: #444 !important;
+}
+
+/* 5. Booking Modals */
+body.dark-mode .modal-content {
+    background: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
+}
+body.dark-mode .pc-dynamic-details,
+body.dark-mode .price-calculation,
+body.dark-mode .booking-summary {
+    background: #252525 !important;
+    border-color: #333 !important;
+}
+body.dark-mode .specs-text strong {
+    color: #e0e0e0 !important;
+}
 body.dark-mode .cancel-btn {
     background: #2d2d2d !important;
-    color: #fff !important;
+    color: #e0e0e0 !important;
     border-color: #444 !important;
 }
 body.dark-mode .cancel-btn:hover {
-    background: #444 !important;
+    background: #3d3d3d !important;
 }
