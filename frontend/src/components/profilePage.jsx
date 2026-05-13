@@ -8,16 +8,16 @@ const ProfilePage = () => {
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Default to 0 if membership_points isn't loaded yet
+
     const points = user?.points || 0;
     const credits = user?.credits || 0;
 
-    // Use your backend logic to evaluate rank
+
     const evaluatePoints = (points) => {
-        if(points >= 100) return 'Radiant';
-        if(points >= 60) return 'Platinum';
-        if(points >= 30) return 'Gold';
-        if(points >= 10) return 'Silver';
+        if(points >= 350) return 'Radiant';
+        if(points >= 175) return 'Platinum';
+        if(points >= 75) return 'Gold';
+        if(points >= 25) return 'Silver';
         return 'Bronze';
     };
 

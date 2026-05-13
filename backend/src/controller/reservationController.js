@@ -97,13 +97,13 @@ const createBooking = async (req, res) => {
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        // 🌟 RANKING & DISCOUNT LOGIC
+        // 🌟 RANKING & DISCOUNT LOGIC (Balanced Scale)
         let discountRate = 0;
         let rank = "Bronze";
-        if (currentPoints >= 100) { discountRate = 0.15; rank = "Radiant"; }
-        else if (currentPoints >= 60) { discountRate = 0.10; rank = "Platinum"; }
-        else if (currentPoints >= 30) { discountRate = 0.06; rank = "Gold"; }
-        else if (currentPoints >= 10) { discountRate = 0.03; rank = "Silver"; }
+        if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
+        else if (currentPoints >= 175) { discountRate = 0.10; rank = "Platinum"; }
+        else if (currentPoints >= 75) { discountRate = 0.06; rank = "Gold"; }
+        else if (currentPoints >= 25) { discountRate = 0.03; rank = "Silver"; }
 
         const finalCost = Math.round(originalCost * (1 - discountRate));
 
@@ -111,7 +111,7 @@ const createBooking = async (req, res) => {
             throw new Error(`Rank ${rank} needs ${finalCost} CR, but you only have ${userCredits} CR.`);
         }
 
-        // 🌟 EARN POINTS: 1 Point per Hour
+        // 🌟 EARN POINTS: 1 Point per Hour Booked
         const earnedPoints = durationHours;
 
         // 3. Deduct Credits AND Add Points for free
@@ -129,11 +129,12 @@ const createBooking = async (req, res) => {
 
         await client.query('COMMIT');
         res.status(200).json({ 
-            message: `Rank ${rank}: ${discountRate * 100}% Discount applied! Earned ${earnedPoints} points.`, 
+            message: `Rank ${rank}: ${discountRate * 100}% Discount applied! Earned ${earnedPoints} rank points.`, 
             booking: newBooking.rows[0]
         });
     } catch(err) {
         await client.query('ROLLBACK');
+        console.error("Booking Error", err.message);
         res.status(400).json({ error: err.message });
     } finally {
         client.release();
@@ -223,7 +224,10 @@ const upgradeMembership = async (req, res) => {
     const { amount } = req.body;
     try {
         const user = await pool.query('SELECT points FROM users WHERE id = $1', [user_id]);
-        const newPoints = (user.rows[0].points || 0) + Math.floor(amount / 10); 
+        
+        // Balanced scaling for manual purchases if they still want to buy points
+        const newPoints = (user.rows[0].points || 0) + Math.floor(amount / 50); 
+        
         await pool.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, user_id]);
         res.status(200).json({ message: "Points updated", points: newPoints });
     } catch (err) {
@@ -259,21 +263,22 @@ const groupBooking = async (req, res) => {
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        // 🌟 DISCOUNT LOGIC
+        // 🌟 RANKING & DISCOUNT LOGIC (Balanced Scale)
         let discountRate = 0;
-        if (currentPoints >= 1000) discountRate = 0.15;
-        else if (currentPoints >= 600) discountRate = 0.10;
-        else if (currentPoints >= 300) discountRate = 0.06;
-        else if (currentPoints >= 100) discountRate = 0.03;
+        let rank = "Bronze";
+        if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
+        else if (currentPoints >= 175) { discountRate = 0.10; rank = "Platinum"; }
+        else if (currentPoints >= 75) { discountRate = 0.06; rank = "Gold"; }
+        else if (currentPoints >= 25) { discountRate = 0.03; rank = "Silver"; }
 
         const finalCost = Math.round(originalCost * (1 - discountRate));
 
         if (userCredits < finalCost) {
-            throw new Error(`Insufficient credits. You need ${finalCost} CR (after discount), but only have ${userCredits} CR.`);
+            throw new Error(`Rank ${rank} needs ${finalCost} CR (after discount), but only have ${userCredits} CR.`);
         }
 
-        // 🌟 FREE POINTS EARNED (10 per hour per PC)
-        const earnedPoints = durationHours * stations.length * 10;
+        // 🌟 EARN POINTS: 1 Point per hour PER PC booked
+        const earnedPoints = durationHours * stations.length;
 
         // Deduct FINAL COST and ADD earned Points
         await client.query(
@@ -292,7 +297,7 @@ const groupBooking = async (req, res) => {
         }
 
         await client.query('COMMIT');
-        res.status(200).json({ message: `Group booking confirmed! Discount applied: ${discountRate * 100}%. You earned ${earnedPoints} rank points!`, bookings: bookedStations });
+        res.status(200).json({ message: `Group booking confirmed! ${discountRate * 100}% Discount applied. Earned ${earnedPoints} rank points!`, bookings: bookedStations });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error("Group Booking Error:", err.message);

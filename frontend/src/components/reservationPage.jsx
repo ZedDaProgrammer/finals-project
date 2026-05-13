@@ -329,10 +329,11 @@ const ReservationPage = () => {
                                         let rank = "Bronze";
                                         let discountRate = 0;
 
-                                        if (userPoints >= 100) { rank = "Radiant"; discountRate = 0.15; }
-                                        else if (userPoints >= 60) { rank = "Platinum"; discountRate = 0.10; }
-                                        else if (userPoints >= 30) { rank = "Gold"; discountRate = 0.06; }
-                                        else if (userPoints >= 10) { rank = "Silver"; discountRate = 0.03; }
+                                        // Apply the balanced 25/75/175/350 thresholds
+                                        if (userPoints >= 350) { rank = "Radiant"; discountRate = 0.15; }
+                                        else if (userPoints >= 175) { rank = "Platinum"; discountRate = 0.10; }
+                                        else if (userPoints >= 75) { rank = "Gold"; discountRate = 0.06; }
+                                        else if (userPoints >= 25) { rank = "Silver"; discountRate = 0.03; }
 
                                         const originalCost = targetRate * duration;
                                         const discountAmount = Math.round(originalCost * discountRate);
