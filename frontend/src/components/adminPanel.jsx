@@ -41,7 +41,6 @@ const AdminPanel = () => {
     };
 
     const handleStartBooking = async (id) => {
-
         const booking = bookings.find(b => b.id === id);
         let bodyData = { status: 'active' };
 
@@ -50,17 +49,22 @@ const AdminPanel = () => {
             const originalEnd = new Date(booking.end);
             const durationMs = originalEnd.getTime() - originalStart.getTime();
 
-  
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
+            // Formats strictly to Local Time (YYYY-MM-DD HH:MM:SS) 
+            // This stops the database from shifting the timezone backwards 8 hours!
+            const formatLocal = (d) => {
+                const pad = (n) => n.toString().padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            };
+
             bodyData = {
                 status: 'active',
-                start: newStart.toISOString(),
-                end: newEnd.toISOString()
+                start: formatLocal(newStart),
+                end: formatLocal(newEnd)
             };
         }
-
 
         await fetch(`${BASE_URL}/bookings/${id}/status`, {
             method: 'PUT',

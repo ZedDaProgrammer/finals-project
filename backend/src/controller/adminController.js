@@ -38,14 +38,14 @@ const getBookings = async (req, res) => {
 
 const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
-    // Extract the exact start/end times passed from the frontend React app
+    // Extract the perfectly formatted local times from React
     const { status, start, end } = req.body; 
 
     try {
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
         
-        // If the frontend provided the new, perfectly synced local times, save them directly!
+        // Save the exact local times the frontend sent us!
         if (status === 'active' && start && end) {
             query = `
                 UPDATE reservations 
