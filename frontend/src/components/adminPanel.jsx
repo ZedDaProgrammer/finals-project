@@ -101,17 +101,22 @@ const AdminPanel = () => {
                 </div>
 
                 {activeTab === 'reservations' && (
-                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#fff' }}>
+                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#000000' }}>
                         <thead>
                             <tr style={{ borderBottom: '2px solid #444' }}>
-                                <th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>Status</th><th>Actions</th>
+                                <th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {bookings.map(b => (
                                 <tr key={b.id} style={{ borderBottom: '1px solid #333', height: '45px' }}>
-                                    <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
-                                    <td>{new Date(b.start).toLocaleString()}</td><td>{b.status}</td>
+                                    <td>{b.id}</td>
+                                    <td>{b.username}</td>
+                                    <td>{b.station_name}</td>
+                                    <td>{new Date(b.start).toLocaleString()}</td>
+                                    <td>{new Date(b.end).toLocaleString()}</td>
+                                    
+                                    <td>{b.status}</td>
                                     <td>
                                         {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '5px 10px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Start</button>}
                                         <button onClick={() => handleDeleteBooking(b.id)} style={{ padding: '5px 10px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>

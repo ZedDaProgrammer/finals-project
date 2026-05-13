@@ -7,15 +7,31 @@ const pool = require('../database/db');
 const getBookings = async (req, res) => {
     try {
         const allBookings = await pool.query(`
-            SELECT r.id, r.start, r.end, r.status, u.username, c.name AS station_name
+            SELECT 
+                r.reservation_id, 
+                r.start, 
+                r."end", 
+                r.status, 
+                u.username, 
+                c.id AS station_id
             FROM reservations r
             JOIN users u ON r.user_id = u.id
             JOIN computers c ON r.station_id = c.id
             ORDER BY r.start DESC
         `);
-        res.status(200).json({ bookings: allBookings.rows });
+        
+        const formattedBookings = allBookings.rows.map(b => ({
+            id: b.id,
+            start: b.start,
+            end: b.end,
+            status: b.status,
+            username: b.username,
+            station_name: `PC-${b.station_id}` 
+        }));
+
+        res.status(200).json({ bookings: formattedBookings });
     } catch (error) {
-        console.error(error);
+        console.error("Database error in getBookings:", error); 
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -26,7 +42,7 @@ const updateReservationStatus = async (req, res) => {
 
     try {
         const updateStatus = await pool.query(
-            `UPDATE reservations SET status = $1 WHERE id = $2 RETURNING *`,
+            `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`,
             [status, id]
         );
         if (updateStatus.rows.length === 0) {
@@ -44,17 +60,21 @@ const updateReservationStatus = async (req, res) => {
 const getTicket = async (req, res) => {
     try {
         const tickets = await pool.query(`
-            SELECT t.id, t.issue, t.status, u.username
+            SELECT 
+                t.id, 
+                t.description AS issue,
+                t.status, 
+                u.username
             FROM tickets t
             JOIN users u ON t.user_id = u.id
             ORDER BY t.created_at DESC
         `);
         res.status(200).json({ tickets: tickets.rows });
     } catch (error) {
-        console.error(error);
+        console.error("Ticket fetch error:", error);
         res.status(500).json({ message: "Server error"});
     }
-};  
+};
 
 const updateTicketStatus = async (req, res) => {
     const ticketId = req.params.id;
@@ -82,7 +102,7 @@ const updateTicketStatus = async (req, res) => {
 const deleteReservation = async (req, res) => {
     const id = req.params.id;
     try {
-        const deleteObj = await pool.query(`DELETE FROM reservations WHERE id = $1 RETURNING *`, [id]);
+        const deleteObj = await pool.query(`DELETE FROM reservations WHERE reservation_id = $1 RETURNING *`, [id]);
         if (deleteObj.rows.length === 0) {
             return res.status(404).json({ message: "Reservation not found"});
         }

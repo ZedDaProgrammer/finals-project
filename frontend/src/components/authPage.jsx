@@ -78,7 +78,7 @@ const AuthPage = () => {
   const handleSignInClick = () => setIsRightPanelActive(false);
 
   return (
-    <div className={`container ${isRightPanelActive ? "right-panel-active" : ""}`} id="container">
+    <div className={`auth-container ${isRightPanelActive ? "right-panel-active" : ""}`} id="container">
       
     
       <div className="form-container sign-up-container">
