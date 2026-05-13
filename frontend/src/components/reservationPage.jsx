@@ -322,28 +322,61 @@ const ReservationPage = () => {
 
                                 <div className="booking-summary">
                                     <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                        <strong>Total Cost:</strong> 
-                                        <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{totalCost} CR</strong>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                        <strong>Your Credits:</strong> 
-                                        <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
-                                            {user?.credits || 0} CR
-                                        </span>
-                                    </div>
-                                </div>
+                                    
+                                    {/* Calculation Logic */}
+                                    {(() => {
+                                        const userPoints = user?.points || 0;
+                                        let rank = "Bronze";
+                                        let discountRate = 0;
 
-                                <div className="modal-actions">
-                                    <button 
-                                        className="confirm-btn" 
-                                        onClick={handleBooking}
-                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable}
-                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable) ? 1 : 0.5 }}
-                                    >
-                                        Confirm
-                                    </button>
-                                    <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
+                                        if (userPoints >= 100) { rank = "Radiant"; discountRate = 0.15; }
+                                        else if (userPoints >= 60) { rank = "Platinum"; discountRate = 0.10; }
+                                        else if (userPoints >= 30) { rank = "Gold"; discountRate = 0.06; }
+                                        else if (userPoints >= 10) { rank = "Silver"; discountRate = 0.03; }
+
+                                        const originalCost = targetRate * duration;
+                                        const discountAmount = Math.round(originalCost * discountRate);
+                                        const finalCost = originalCost - discountAmount;
+                                        const hasEnoughCredits = (user?.credits || 0) >= finalCost;
+
+                                        return (
+                                            <>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                                    <span>Original Price:</span>
+                                                    <span>{originalCost} CR</span>
+                                                </div>
+                                                
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}>
+                                                    <span>Rank Discount ({rank}):</span>
+                                                    <span>-{discountRate * 100}% ({discountAmount} CR)</span>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                                    <strong>Final Total Cost:</strong> 
+                                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{finalCost} CR</strong>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                                    <strong>Your Credits:</strong> 
+                                                    <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                                        {user?.credits || 0} CR
+                                                    </span>
+                                                </div>
+
+                                                <div className="modal-actions">
+                                                    <button 
+                                                        className="confirm-btn" 
+                                                        onClick={handleBooking}
+                                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable}
+                                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable) ? 1 : 0.5 }}
+                                                    >
+                                                        Confirm
+                                                    </button>
+                                                    <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
