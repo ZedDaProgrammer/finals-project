@@ -55,24 +55,24 @@ const ReservationPage = () => {
 
     const sortedComputers = [...allComputers].sort((a, b) => a.id - b.id);
 
-    // Use sortedComputers instead of allComputers
+   
     const allStandardPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
     const standardPcs = allStandardPcs.slice(0, 20); 
     
-    // Use sortedComputers instead of allComputers
+
     const allVipPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
     
-    // Distributing the VIP PCs:
-    const generalVipPcs = allVipPcs.slice(0, 20);      // First 20 go to the VIP Lounge
-    const vipRoomPcs = allVipPcs.slice(20, 45);        // Next 25 fill the 5 VIP Rooms
-    const privateVipPcs = allVipPcs.slice(45, 55);     // Next 10 fill the 5 Private Suites (5 rooms x 2 PCs each)
+  
+    const generalVipPcs = allVipPcs.slice(0, 20);      
+    const vipRoomPcs = allVipPcs.slice(20, 45);        
+    const privateVipPcs = allVipPcs.slice(45, 55);    
 
-    // Logging to console to debug:
+
     console.log("All computers loaded:", allComputers.length);
     console.log("Standard PCs displayed:", standardPcs.length);
     console.log("VIP Lounge PCs:", generalVipPcs.length); 
     console.log("VIP Room PCs:", vipRoomPcs.length); 
-    console.log("Private Suite PCs:", privateVipPcs.length);  // Left empty since all VIPs are in the lounge  // Left empty since all VIPs are in the lounge // Last 4 go to Private Rooms (2 rooms x 2 PCs) 
+    console.log("Private Suite PCs:", privateVipPcs.length);  
 
     const handleBooking = async () => {
         const isRoom = !!selectedRoom;
@@ -110,21 +110,12 @@ const ReservationPage = () => {
         }
     };
 
-    const renderPc = (pc) => {
-        const isAvailable = availableIds.includes(pc.id);
-        return (
-            <div key={pc.id} className={`pc-seat ${isAvailable ? 'available' : 'occupied'}`} 
-                 onClick={() => setSelectedPC(pc)}>
-                <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
-                <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-            </div>
-        );
-    };
+    
     const [cpuFilter, setCpuFilter] = useState('all');
     const [gpuFilter, setGpuFilter] = useState('all');
     const [monitorFilter, setMonitorFilter] = useState('all');
-    const applyFilters = (pcs) => {
-     return pcs.filter(pc => {
+
+    const isMatch = (pc) => {
          let match = true;
          if (cpuFilter !== 'all') {
              if (cpuFilter === 'Intel' && (!pc.cpu || !pc.cpu.toLowerCase().includes('i'))) match = false;
@@ -139,11 +130,29 @@ const ReservationPage = () => {
              if (monitorFilter === '240' && parseInt(pc.monitor_hz) !== 240) match = false;
          }
          return match;
-     });
- };
+    };
 
- const displayedStandardPcs = applyFilters(standardPcs);
- const displayedGeneralVipPcs = applyFilters(generalVipPcs);
+    const renderPc = (pc) => {
+        const isAvailable = availableIds.includes(pc.id);
+        const match = isMatch(pc);
+        
+        return (
+            <div key={pc.id} 
+                 className={`pc-seat ${isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
+                 onClick={() => { if (match) setSelectedPC(pc); }}
+                 style={{ 
+                     opacity: match ? 1 : 0.3, 
+                     cursor: match ? 'pointer' : 'not-allowed', 
+                     filter: match ? 'none' : 'grayscale(100%)',
+                     pointerEvents: match ? 'auto' : 'none'
+                 }}>
+                <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
+                <span className="pc-rate">{pc.pc_rate} CR/hr</span>
+            </div>
+        );
+    };
+
+
 
     return (
         <div className="dashboard-layout">
