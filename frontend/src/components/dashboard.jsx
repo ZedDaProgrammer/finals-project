@@ -144,8 +144,8 @@ const Dashboard = () => {
                                 <tbody>
                                     {rawSessions.map((res) => {
                                         
-                                        const start = new Date(res.formatted_start || res.start);
-                                        const end = new Date(res.formatted_end || res.end);
+                                        const start = new Date(res.start);
+                                        const end = new Date(res.end);
 
                                         let statusStr = "";
                                         let badgeClass = "";

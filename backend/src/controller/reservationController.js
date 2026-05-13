@@ -346,16 +346,14 @@ const dashboardData = async (req, res) => {
         const user_id = req.user.id;
 
         const activeSessions = await pool.query(`
-            SELECT r.*, c.type AS computer_type,
-                   TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS') as formatted_start,
-                   TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS') as formatted_end
+            SELECT r.*, c.type AS computer_type
             FROM reservations r
             JOIN computers c ON r.station_id = c.id
             WHERE r.user_id = $1 
             AND r.status != 'cancelled'
-            ORDER BY r.start DESC `,
-            [user_id]
-        );
+            ORDER BY r.start DESC 
+        `, [user_id]);
+        
         res.status(200).json({ activeSessions: activeSessions.rows });
     } catch (err) {
         console.error("Dashboard data error", err.message);

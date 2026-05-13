@@ -9,8 +9,8 @@ const getBookings = async (req, res) => {
         const allBookings = await pool.query(`
             SELECT 
                 r.reservation_id, 
-                TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS') as start, 
-                TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS') as "end", 
+                r.start, 
+                r."end", 
                 r.status, 
                 u.username, 
                 c.id AS station_id
