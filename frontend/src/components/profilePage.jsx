@@ -46,6 +46,12 @@ const ProfilePage = () => {
 
     const rank = evaluatePoints(points);
 
+    const completedHistory = history.filter(res => {
+        const end = new Date(res.end);
+        const now = new Date();
+        return res.status !== 'cancelled' && now > end;
+    });
+
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
@@ -103,8 +109,8 @@ const ProfilePage = () => {
                         <div className="table-container">
                             {isLoading ? (
                                 <p style={{textAlign: 'center', padding: '20px'}}>Loading history...</p>
-                            ) : history.length === 0 ? (
-                                <p style={{textAlign: 'center', padding: '20px'}}>You have no past reservations.</p>
+                            ) : completedHistory.length === 0 ? (
+                                <p style={{textAlign: 'center', padding: '20px'}}>You have no completed reservations.</p>
                             ) : (
                                 <table className="activity-table">
                                     <thead>
@@ -117,28 +123,10 @@ const ProfilePage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {history.map((res) => {
+                                        {completedHistory.map((res) => {
                                             const start = new Date(res.start);
                                             const end = new Date(res.end);
-                                            const now = new Date();
                                             const durationHrs = Math.round(Math.abs(end - start) / 36e5);
-
-                                            // Determine the dynamic status based on time
-                                            let displayStatus = res.status; // Default (e.g., 'pending' or 'cancelled')
-                                            let badgeClass = res.status;
-
-                                            if (res.status !== 'cancelled') {
-                                                if (now > end) {
-                                                    displayStatus = 'completed';
-                                                    badgeClass = 'completed';
-                                                } else if (now >= start && now <= end) {
-                                                    displayStatus = 'active';
-                                                    badgeClass = 'active';
-                                                } else {
-                                                    displayStatus = 'pending';
-                                                    badgeClass = 'pending';
-                                                }
-                                            }
 
                                             return (
                                                 <tr key={res.reservation_id}>
@@ -147,9 +135,9 @@ const ProfilePage = () => {
                                                     <td>{start.toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                                     <td>{durationHrs} hour(s)</td>
                                                     <td>
-                                                        {/* Apply the dynamic class and text */}
-                                                        <span className={`status-badge ${badgeClass}`}>
-                                                            {displayStatus.toUpperCase()}
+                                                        {/* Since we filtered, we know the status is always COMPLETED */}
+                                                        <span className="status-badge completed">
+                                                            COMPLETED
                                                         </span>
                                                     </td>
                                                 </tr>
