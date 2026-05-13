@@ -179,15 +179,8 @@ const ReservationPage = () => {
                                         <div className="room-grid">
                                             {pcs.map(p => (
                                                 <div key={p.id} className={`pc-mini ${availableIds.includes(p.id) ? 'free' : 'busy'}`}>
+                                                    {/* Keep the VIP- label but remove the specs below it */}
                                                     <div className="pc-name-label">{`VIP-${p.id}`}</div>
-                                                    
-                                                    {/* Displaying the Specs */}
-                                                    <div className="pc-mini-specs">
-                                                        <div>{p.cpu || 'N/A CPU'}</div>
-                                                        <div>{p.gpu || 'N/A GPU'}</div>
-                                                        <div>{p.ram ? `${p.ram} GB RAM` : 'N/A RAM'}</div>
-                                                        <div>{p.monitor_hz ? `${p.monitor_hz} Hz` : ''}</div>
-                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -224,6 +217,13 @@ const ReservationPage = () => {
                             {selectedRoom && (
                                 <div className="pc-dynamic-details">
                                     <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                    
+                                    {/* Display specs for the room based on the first PC */}
+                                    <h4>Room Specifications:</h4>
+                                    <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
+                                    <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
+                                    <p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p>
+                                    <p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
                                 </div>
                             )}
 
