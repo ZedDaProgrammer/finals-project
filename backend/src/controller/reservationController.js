@@ -309,13 +309,13 @@ const groupBooking = async (req, res) => {
 
 const createTicket = async (req, res) => {
     const user_id = req.user.id;
-    const { subject, description, priority } = req.body;
+    const { station_id, subject, description } = req.body; 
     
     try {
         const newTicket = await pool.query(
-            `INSERT INTO tickets (user_id, subject, description, priority, status)
+            `INSERT INTO tickets (user_id, station_id, subject, description, status)
              VALUES ($1, $2, $3, $4, 'open') RETURNING *`,
-            [user_id, subject, description, priority || 'normal']
+            [user_id, station_id || null, subject, description] // station_id is optional
         );
         
         res.status(201).json({ message: "Support ticket created", ticket: newTicket.rows[0] });

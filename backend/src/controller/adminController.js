@@ -75,8 +75,11 @@ const getTicket = async (req, res) => {
         const tickets = await pool.query(`
             SELECT 
                 t.id, 
+                t.station_id,
+                t.subject,
                 t.description AS issue,
                 t.status, 
+                t.created_at,
                 u.username
             FROM tickets t
             JOIN users u ON t.user_id = u.id

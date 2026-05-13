@@ -94,6 +94,15 @@ const AdminPanel = () => {
         fetchData();
     };
 
+    const handleResolveTicket = async (id) => {
+        await fetch(`${BASE_URL}/tickets/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ status: 'resolved' })
+        });
+        fetchData();
+    };
+
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
@@ -156,11 +165,31 @@ const AdminPanel = () => {
                 {activeTab === 'tickets' && (
                     <div style={{ color: '#333' }}>
                         {tickets.map(t => (
-                            <div key={t.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '10px', borderRadius: '8px' }}>
-                                <strong>User:</strong> {t.username} | <strong>Status:</strong> {t.status}
-                                <p style={{ marginTop: '10px' }}>{t.issue}</p>
+                            <div key={t.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+                                    <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#d84315'}}>(Station PC-{t.station_id})</span>}</h4>
+                                    <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#f44336' : '#4CAF50' }}>
+                                        {t.status.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div style={{ fontSize: '0.9em', color: '#555', marginBottom: '10px' }}>
+                                    <strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}
+                                </div>
+                                <div style={{ background: '#f9f9f9', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}>
+                                    {t.issue}
+                                </div>
+                                
+                                {t.status === 'open' && (
+                                    <button 
+                                        onClick={() => handleResolveTicket(t.id)} 
+                                        style={{ padding: '8px 15px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        Mark as Resolved
+                                    </button>
+                                )}
                             </div>
                         ))}
+                        {tickets.length === 0 && <p>No support tickets submitted yet.</p>}
                     </div>
                 )}
 

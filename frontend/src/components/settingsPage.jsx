@@ -10,7 +10,7 @@ const SettingsPage = () => {
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
     
     // Ticket States
-    const [ticket, setTicket] = useState({ subject: '', description: '', priority: 'normal' });
+    const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
     const [userTickets, setUserTickets] = useState([]);
 
     useEffect(() => {
@@ -137,11 +137,13 @@ const SettingsPage = () => {
                     </section>
 
                     {/* Support Ticket */}
+                    {/* Support Ticket */}
                     <section className="settings-card" style={{ background: '#fff', padding: '20px', borderRadius: '10px' }}>
                         <h3>Support Ticket</h3>
                         <form onSubmit={handleSubmitTicket}>
-                            <input type="text" placeholder="Subject" value={ticket.subject} onChange={e => setTicket({...ticket, subject: e.target.value})} style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px' }} />
-                            <textarea placeholder="Describe the issue..." value={ticket.description} onChange={e => setTicket({...ticket, description: e.target.value})} style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px', height: '80px' }} />
+                            <input type="number" placeholder="PC Station ID (Optional)" value={ticket.station_id} onChange={e => setTicket({...ticket, station_id: e.target.value})} style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px' }} />
+                            <input type="text" placeholder="Subject (e.g. Broken Mouse, Refund Request)" value={ticket.subject} onChange={e => setTicket({...ticket, subject: e.target.value})} required style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px' }} />
+                            <textarea placeholder="Describe the issue in detail..." value={ticket.description} onChange={e => setTicket({...ticket, description: e.target.value})} required style={{ display: 'block', width: '100%', marginBottom: '10px', padding: '10px', height: '80px' }} />
                             <button type="submit" className="confirm-btn" style={{ background: '#d84315' }}>Submit Ticket</button>
                         </form>
                     </section>

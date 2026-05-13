@@ -3,9 +3,24 @@ const router = express.Router();
 const { token } = require('../middleware/authMiddleware');
 router.use(token);
 
-const { checkAvailability, createBooking, getHistory, deleteBooking, filterComputers, upgradeMembership, groupBooking, createTicket, getDashboardStats, getUserTickets } = require('../controller/reservationController');
+const { 
+    checkAvailability, 
+    createBooking, 
+    getHistory, 
+    deleteBooking, 
+    filterComputers, 
+    upgradeMembership, 
+    groupBooking, 
+    createTicket, 
+    getDashboardStats, 
+    dashboardData,
+    getUserTickets 
+} = require('../controller/reservationController');
 
-router.get('/dashboard', getDashboardStats);
+
+router.get('/stats', getDashboardStats);
+router.get('/dashboard', dashboardData);
+
 router.get('/check', checkAvailability);
 router.post('/book', createBooking);
 router.get('/history', getHistory);
@@ -13,7 +28,7 @@ router.delete('/cancel/:id', deleteBooking);
 router.post('/filter', filterComputers);
 router.post('/purchase', upgradeMembership);
 router.post('/group-booking', groupBooking);
-router.post('/post', createTicket);
-router.get('/tickets', getUserTickets);
+router.post('/ticket', createTicket); 
+router.get('/my-tickets', getUserTickets); 
 
 module.exports = router;
