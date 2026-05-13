@@ -5,11 +5,10 @@ const SettingsPage = () => {
     const { user, token, logout } = useAuth();
     const BASE_URL = 'http://localhost:3000/src';
 
-    // Account States
-    const [accountData, setAccountData] = useState({ username: user?.username || '', email: user?.email || '' });
+    // Password State
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
     
-    // Ticket States
+    // Ticket State
     const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
     
     // Dark Mode State (Loads saved preference)
@@ -27,16 +26,6 @@ const SettingsPage = () => {
             localStorage.setItem('darkMode', 'false');
         }
     }, [isDarkMode]);
-
-    const handleUpdateProfile = async (e) => {
-        e.preventDefault();
-        const res = await fetch(`${BASE_URL}/authRoute/update-profile`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(accountData)
-        });
-        if (res.ok) alert("Profile updated! Please refresh to see changes.");
-    };
 
     const handleChangePassword = async (e) => {
         e.preventDefault();
@@ -139,22 +128,6 @@ const SettingsPage = () => {
                                 <button onClick={() => handleAddCredits(500)} className="wallet-btn">+ 500 CR</button>
                                 <button onClick={() => handleAddCredits(1000)} className="wallet-btn">+ 1000 CR</button>
                             </div>
-                        </section>
-
-                        {/* Profile Update */}
-                        <section className="settings-card">
-                            <h3>👤 Profile Information</h3>
-                            <form onSubmit={handleUpdateProfile}>
-                                <div className="form-group">
-                                    <label>Username</label>
-                                    <input type="text" className="form-input" value={accountData.username} onChange={e => setAccountData({...accountData, username: e.target.value})} required />
-                                </div>
-                                <div className="form-group">
-                                    <label>Email Address</label>
-                                    <input type="email" className="form-input" value={accountData.email} onChange={e => setAccountData({...accountData, email: e.target.value})} required />
-                                </div>
-                                <button type="submit" className="settings-btn">Save Profile Changes</button>
-                            </form>
                         </section>
 
                         {/* Password Change */}
