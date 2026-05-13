@@ -348,21 +348,19 @@ const dashboardData = async (req, res) => {
             return res.status(401).json({ error: "User session expired." });
         }
         const user_id = req.user.id;
-        const currentDate = new Date().toISOString();
 
-        // Removed the "start < currentDate" rule so it fetches upcoming bookings too!
+        // Removed the time check so it fetches your 5 most recent bookings unconditionally
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type,
-                   TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as formatted_start,
-                   TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as formatted_end
+                   TO_CHAR(r.start, 'YYYY-MM-DD"T"HH24:MI:SS') as formatted_start,
+                   TO_CHAR(r."end", 'YYYY-MM-DD"T"HH24:MI:SS') as formatted_end
             FROM reservations r
             JOIN computers c ON r.station_id = c.id
             WHERE r.user_id = $1 
             AND r.status != 'cancelled'
-            AND r."end" > $2::timestamp
-            ORDER BY r.start ASC
+            ORDER BY r.start DESC 
             LIMIT 5`,
-            [user_id, currentDate]
+            [user_id]
         );
         res.status(200).json({ activeSessions: activeSessions.rows });
     } catch (err) {

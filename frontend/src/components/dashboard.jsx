@@ -168,7 +168,6 @@ const Dashboard = () => {
                                 </thead>
                                 <tbody>
                                     {rawSessions.map((res) => {
-                                        // Setup times securely using the formatted string
                                         const startTimeStr = res.formatted_start || res.start;
                                         const endTimeStr = res.formatted_end || res.end;
                                         const start = new Date(startTimeStr);
@@ -176,20 +175,38 @@ const Dashboard = () => {
 
                                         let statusStr = "";
                                         let timeLeftStr = "";
+                                        let badgeClass = ""; // Maps directly to your style.css classes
+                                        let timeColor = ""; 
 
                                         if (res.status === 'pending') {
                                             statusStr = "Pending";
                                             timeLeftStr = "Waiting to start in cafe";
+                                            badgeClass = "pending";
+                                            timeColor = "gray";
                                         } 
                                         else if (currentTime < start) {
                                             statusStr = "Upcoming";
                                             const diffMs = start - currentTime;
                                             const diffMins = Math.ceil(diffMs / 60000);
                                             timeLeftStr = `Starts in ${diffMins} min`;
+                                            badgeClass = "upcoming"; // Connects to .status-badge.upcoming
+                                            timeColor = "#0056b3";   // Matches your CSS blue
+                                        } 
+                                        else if (currentTime >= start && currentTime < end) {
+                                            statusStr = "Active";
+                                            const diffMs = end - currentTime;
+                                            const diffMins = Math.ceil(diffMs / 60000);
+                                            const hours = Math.floor(diffMins / 60);
+                                            const mins = diffMins % 60;
+                                            timeLeftStr = `${hours}h ${mins}m left`;
+                                            badgeClass = "active";   // Connects to .status-badge.active
+                                            timeColor = "#28a745";   // Matches your CSS green
                                         } 
                                         else {
                                             statusStr = "Expired";
                                             timeLeftStr = "0h 0m 0s";
+                                            badgeClass = "completed"; // Connects to .status-badge.completed
+                                            timeColor = "#f44336";    // Red for expired
                                         }
 
                                         return (
@@ -197,13 +214,13 @@ const Dashboard = () => {
                                                 <td className="fw-bold">#RES-{res.reservation_id}</td>
                                                 <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
                                                 <td>{start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
-                                                <td className="fw-bold" style={{ 
-                                                    color: statusStr === 'Expired' ? '#f44336' : statusStr === 'Ongoing' ? '#00e676' : 'gray'
-                                                }}>
+                                                {/* Safe inline styling without complex ternary checks */}
+                                                <td className="fw-bold" style={{ color: timeColor }}>
                                                     {timeLeftStr}
                                                 </td>
                                                 <td>
-                                                    <span className={`status-badge ${statusStr === 'Ongoing' ? 'confirmed' : 'pending'}`}>
+                                                    {/* Safely injects the CSS class */}
+                                                    <span className={`status-badge ${badgeClass}`}>
                                                         {statusStr}
                                                     </span>
                                                 </td>
