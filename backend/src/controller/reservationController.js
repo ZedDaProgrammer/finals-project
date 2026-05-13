@@ -358,8 +358,7 @@ const dashboardData = async (req, res) => {
             JOIN computers c ON r.station_id = c.id
             WHERE r.user_id = $1 
             AND r.status != 'cancelled'
-            ORDER BY r.start DESC 
-            LIMIT 5`,
+            ORDER BY r.start DESC `,
             [user_id]
         );
         res.status(200).json({ activeSessions: activeSessions.rows });

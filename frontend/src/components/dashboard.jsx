@@ -34,7 +34,9 @@ const Dashboard = () => {
                 };
 
   
-                const statsRes = await fetch(`${BASE_URL}/stats`, { headers });
+                const statsRes = await fetch(`${BASE_URL}/stats`, { 
+                    headers,
+                cache: 'no-store'     });
                 if (statsRes.status === 401) {
                     logout(); 
                     return;
@@ -44,11 +46,16 @@ const Dashboard = () => {
 
                 
               
-                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers });
+                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { 
+                    headers,
+                    cache: 'no-store'
+                 });
                 const dashboard = await dashboardRes.json();
 
          
-                const historyRes = await fetch(`${BASE_URL}/history`, { headers });
+                const historyRes = await fetch(`${BASE_URL}/history`, { 
+                    headers,
+                     cache: 'no-store' });
                 const history = await historyRes.json();
                 
                 setDashboardData({
