@@ -3,11 +3,9 @@ const jwt = require('jsonwebtoken');
 
 const token = async (req, res, next) => {
     try {
-
         let token = req.cookies.token;
 
         if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-  
             token = req.headers.authorization.split(' ')[1]; 
         }
 
@@ -17,7 +15,8 @@ const token = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const user = await pool.query('SELECT id, username, email, credits, points FROM users WHERE id = $1',
+        const user = await pool.query(
+            'SELECT id, username, email, credits, points, role FROM users WHERE id = $1',
             [decoded.id]
         );
 
@@ -37,17 +36,17 @@ const token = async (req, res, next) => {
 const isAdmin = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const user = await pool.query('SELECT is_admin FROM users WHERE id = $1', 
-        [userId]);
 
-        if(user.rows.length === 0 || !user.rows[0].is_admin){
+        const user = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
+
+        if(user.rows.length === 0 || user.rows[0].role !== 'admin'){
             return res.status(403).json({ message: "Forbidden, Admins only"});
         }
         next();
-} catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error"});
-}
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
 };
 
 module.exports = { token, isAdmin };

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminPanel = () => {
-    const { token } = useAuth();
+    // Make sure we bring in user and logout alongside token
+    const { token, user, logout } = useAuth();
     const BASE_URL = 'http://localhost:3000/src/adminRoute';
     
     const [activeTab, setActiveTab] = useState('reservations');
@@ -62,6 +63,34 @@ const AdminPanel = () => {
 
     return (
         <div className="dashboard-layout">
+            {/* Standard Sidebar Added Here */}
+            <aside className="sidebar">
+                <div className="sidebar-brand">
+                    <h2>BlackByte</h2>
+                </div>
+                
+                <nav className="sidebar-nav">
+                    <div className="nav-section">
+                        <span className="nav-section-title">Main Menu</span>
+                        <a href="/dashboard" className="nav-item">Dashboard</a>
+                        <a href="/booking" className="nav-item">Reservation</a>
+                        
+                        {/* Admin Link (Active in this view) */}
+                        {user?.role === 'admin' && (
+                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
+                        )}
+                    </div>
+
+                    <div className="nav-section account-section">
+                        <span className="nav-section-title">Account</span>
+                        <a href="/profile" className="nav-item">Profile</a>
+                        <a href="/settings" className="nav-item">Settings</a>
+                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                    </div>
+                </nav>
+            </aside>
+
+            {/* Main Content View */}
             <main className="dashboard-content" style={{ padding: '30px' }}>
                 <h2>Admin Control Panel</h2>
                 <div className="category-tabs" style={{ marginBottom: '20px' }}>

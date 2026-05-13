@@ -94,10 +94,9 @@ const Dashboard = () => {
                         <span className="nav-section-title">Main Menu</span>
                         <a href="/dashboard" className="nav-item active">Dashboard</a>
                         <a href="/booking" className="nav-item">Reservation</a>
-                        
                         {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
-                        )}
+                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
+                        )}                    
                     </div>
 
                     <div className="nav-section account-section">

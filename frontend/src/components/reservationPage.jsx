@@ -180,8 +180,8 @@ const ReservationPage = () => {
                         <a href="/dashboard" className="nav-item">Dashboard</a>
                         <a href="/booking" className="nav-item active">Reservation</a>
                         {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
-                        )}
+                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
+                        )}                       
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
