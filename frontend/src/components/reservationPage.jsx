@@ -133,24 +133,40 @@ const ReservationPage = () => {
     };
 
     const renderPc = (pc) => {
-        const isAvailable = availableIds.includes(pc.id);
-        const match = isMatch(pc);
-        
-        return (
-            <div key={pc.id} 
-                 className={`pc-seat ${isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
-                 onClick={() => { if (match) setSelectedPC(pc); }}
-                 style={{ 
-                     opacity: match ? 1 : 0.3, 
-                     cursor: match ? 'pointer' : 'not-allowed', 
-                     filter: match ? 'none' : 'grayscale(100%)',
-                     pointerEvents: match ? 'auto' : 'none'
-                 }}>
-                <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
-                <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-            </div>
-        );
-    };
+    const isMaintenance = pc.availability === 'maintenance';
+    // It's available only if it's not on maintenance AND the server's checkAvailability returned its ID
+    const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
+    const match = isMatch(pc);
+    
+    return (
+        <div key={pc.id} 
+             className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
+             onClick={() => { if (match && !isMaintenance) setSelectedPC(pc); }}
+             style={{ 
+                 opacity: match ? 1 : 0.3, 
+                 cursor: isMaintenance ? 'not-allowed' : match ? 'pointer' : 'not-allowed', 
+                 filter: isMaintenance || !match ? 'grayscale(100%)' : 'none',
+                 pointerEvents: match && !isMaintenance ? 'auto' : 'none',
+                 position: 'relative',
+                 overflow: 'hidden'
+             }}>
+            <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
+            <span className="pc-rate">{pc.pc_rate} CR/hr</span>
+            
+            {/* Visual overlay for maintenance PCs */}
+            {isMaintenance && (
+                <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', color: '#ff4d4d',
+                    fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px'
+                }}>
+                    MAINTENANCE
+                </div>
+            )}
+        </div>
+    );
+};
 
 
 

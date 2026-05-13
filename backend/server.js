@@ -7,6 +7,7 @@ const authRouter = require('./src/routes/authRoute');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const authReservation = require('./src/routes/reservationRoute');
+const adminRouter = require('./src/routes/adminRoute');
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/src/authRoute', authRouter);
 app.use('/src/reservationRoute', authReservation);
-
+app.use('/src/adminRoute', adminRouter);
 app.get('/', async (req, res) =>{
     console.log("Start");
     const result = await pool.query("SELECT current_database()");

@@ -79,4 +79,55 @@ const updateTicketStatus = async (req, res) => {
         }
 };
 
-module.exports = { getBookings, updateReservationStatus, getTicket, updateTicketStatus};
+const deleteReservation = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const deleteObj = await pool.query(`DELETE FROM reservations WHERE id = $1 RETURNING *`, [id]);
+        if (deleteObj.rows.length === 0) {
+            return res.status(404).json({ message: "Reservation not found"});
+        }
+        res.status(200).json({ message: "Reservation deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
+};
+
+const getComputers = async (req, res) => {
+    try {
+        const computers = await pool.query(`SELECT * FROM computers ORDER BY id ASC`);
+        res.status(200).json({ computers: computers.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
+};
+
+const updateComputerStatus = async (req, res) => {
+    const id = req.params.id;
+    const { availability } = req.body;
+    try {
+        const updateStatus = await pool.query(
+            `UPDATE computers SET availability = $1 WHERE id = $2 RETURNING *`,
+            [availability, id]
+        );
+        if (updateStatus.rows.length === 0) {
+            return res.status(404).json({ message: "Computer not found"});
+        }
+        res.status(200).json({ message: "Status updated successfully", computer: updateStatus.rows[0]});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error"});
+    }
+};
+
+
+module.exports = { 
+    getBookings, 
+    updateReservationStatus, 
+    getTicket, 
+    updateTicketStatus, 
+    deleteReservation, 
+    getComputers, 
+    updateComputerStatus 
+};

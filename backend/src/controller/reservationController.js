@@ -207,15 +207,14 @@ const filterComputers = async (req, res) => {
     try {
         const { type } = req.body;
         
-        let query = 'SELECT * FROM computers WHERE availability = $1';
-        let values = ['available'];
+        let query = 'SELECT * FROM computers'; 
+        let values = [];
         
         if (type && type !== 'all') {
-            query += ' AND type = $2';
+            query += ' WHERE type = $1';
             values.push(type.toLowerCase());
         }
         
-        // ADD THIS LINE to sort computers sequentially by ID
         query += ' ORDER BY id ASC';
         
         const computers = await pool.query(query, values);

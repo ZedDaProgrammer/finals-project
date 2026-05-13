@@ -4,6 +4,7 @@ import ReservationPage from './components/reservationPage';
 import Protected from './protectedRoute';
 import ProfilePage from './components/profilePage';
 import { Routes, Route } from 'react-router-dom';
+import AdminPanel from './components/adminPanel';
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/booking" element={<ReservationPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={<AdminPanel />} />
             </Route>   
         </Routes>
     );
