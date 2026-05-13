@@ -215,6 +215,9 @@ const filterComputers = async (req, res) => {
             values.push(type.toLowerCase());
         }
         
+        // ADD THIS LINE to sort computers sequentially by ID
+        query += ' ORDER BY id ASC';
+        
         const computers = await pool.query(query, values);
         res.status(200).json(computers.rows);
     } catch (err) {

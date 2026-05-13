@@ -54,15 +54,18 @@ const ReservationPage = () => {
         if (token) checkAvailability();
     }, [token, startTime, duration]);
 
-                            // Grouping Logic
-    const allStandardPcs = allComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
-    const standardPcs = allStandardPcs.slice(0, 20); // Limit standard lounge to exactly 20 Standard PCs
+    const sortedComputers = [...allComputers].sort((a, b) => a.id - b.id);
+
+    // Use sortedComputers instead of allComputers
+    const allStandardPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
+    const standardPcs = allStandardPcs.slice(0, 20); 
     
-    const allVipPcs = allComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
+    // Use sortedComputers instead of allComputers
+    const allVipPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
     
     // Distributing the VIP PCs:
     const generalVipPcs = allVipPcs.slice(0, 20);      // First 20 go to the VIP Lounge
-    const vipRoomPcs = allVipPcs.slice(20, 45);        // Next 25 fill the 5 VIP Rooms (5 rooms x 5 PCs each)
+    const vipRoomPcs = allVipPcs.slice(20, 45);        // Next 25 fill the 5 VIP Rooms
     const privateVipPcs = allVipPcs.slice(45, 55);     // Next 10 fill the 5 Private Suites (5 rooms x 2 PCs each)
 
     // Logging to console to debug:
@@ -176,7 +179,15 @@ const ReservationPage = () => {
                                         <div className="room-grid">
                                             {pcs.map(p => (
                                                 <div key={p.id} className={`pc-mini ${availableIds.includes(p.id) ? 'free' : 'busy'}`}>
-                                                    {p.pcname || `PC-${p.id}`}
+                                                    <div className="pc-name-label">{`VIP-${p.id}`}</div>
+                                                    
+                                                    {/* Displaying the Specs */}
+                                                    <div className="pc-mini-specs">
+                                                        <div>{p.cpu || 'N/A CPU'}</div>
+                                                        <div>{p.gpu || 'N/A GPU'}</div>
+                                                        <div>{p.ram ? `${p.ram} GB RAM` : 'N/A RAM'}</div>
+                                                        <div>{p.monitor_hz ? `${p.monitor_hz} Hz` : ''}</div>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -200,7 +211,7 @@ const ReservationPage = () => {
                         <div className="modal-content modal-large">
                             <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
                             
-                            {selectedPC && (
+                            {!selectedRoom && selectedPC && (
                                 <div className="pc-dynamic-details">
                                     <h4>Specifications:</h4>
                                     <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
