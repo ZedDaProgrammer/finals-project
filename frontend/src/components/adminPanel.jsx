@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminPanel = () => {
-    // Make sure we bring in user and logout alongside token
     const { token, user, logout } = useAuth();
     const BASE_URL = 'http://localhost:3000/src/adminRoute';
     
@@ -11,6 +10,14 @@ const AdminPanel = () => {
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
     
+    // Live timer for Auto-Delete UI
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
     useEffect(() => {
         if(token) fetchData();
     }, [token, activeTab]);
@@ -39,7 +46,7 @@ const AdminPanel = () => {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: 'active' }) 
         });
-        fetchData(); // Refreshes the table
+        fetchData(); 
     };
 
     const handleDeleteBooking = async (id) => {
@@ -60,11 +67,9 @@ const AdminPanel = () => {
         });
         fetchData();
     };
-        
 
     return (
         <div className="dashboard-layout">
-            {/* Standard Sidebar Added Here */}
             <aside className="sidebar">
                 <div className="sidebar-brand">
                     <h2>BlackByte</h2>
@@ -76,7 +81,6 @@ const AdminPanel = () => {
                         <a href="/dashboard" className="nav-item">Dashboard</a>
                         <a href="/booking" className="nav-item">Reservation</a>
                         
-                        {/* Admin Link (Active in this view) */}
                         {user?.role === 'admin' && (
                             <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
                         )}
@@ -91,7 +95,6 @@ const AdminPanel = () => {
                 </nav>
             </aside>
 
-            {/* Main Content View */}
             <main className="dashboard-content" style={{ padding: '30px' }}>
                 <h2>Admin Control Panel</h2>
                 <div className="category-tabs" style={{ marginBottom: '20px' }}>
@@ -101,21 +104,21 @@ const AdminPanel = () => {
                 </div>
 
                 {activeTab === 'reservations' && (
-                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#000000' }}>
+                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#333' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #444' }}>
+                            <tr style={{ borderBottom: '2px solid #ccc' }}>
                                 <th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings.map(b => (
-                                <tr key={b.id} style={{ borderBottom: '1px solid #333', height: '45px' }}>
-                                    <td>{b.id}</td>
-                                    <td>{b.username}</td>
-                                    <td>{b.station_name}</td>
+                            {bookings
+                                // Hides row from Admin UI when its end time naturally expires
+                                .filter(b => new Date(b.end) > currentTime)
+                                .map(b => (
+                                <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '45px' }}>
+                                    <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
                                     <td>{new Date(b.start).toLocaleString()}</td>
                                     <td>{new Date(b.end).toLocaleString()}</td>
-                                    
                                     <td>{b.status}</td>
                                     <td>
                                         {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '5px 10px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Start</button>}
@@ -128,9 +131,9 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'tickets' && (
-                    <div style={{ color: '#fff' }}>
+                    <div style={{ color: '#333' }}>
                         {tickets.map(t => (
-                            <div key={t.id} style={{ background: '#2d2d2d', padding: '15px', marginBottom: '10px', borderRadius: '8px' }}>
+                            <div key={t.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '10px', borderRadius: '8px' }}>
                                 <strong>User:</strong> {t.username} | <strong>Status:</strong> {t.status}
                                 <p style={{ marginTop: '10px' }}>{t.issue}</p>
                             </div>
@@ -139,11 +142,11 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'computers' && (
-                    <div style={{ color: '#fff' }}>
+                    <div style={{ color: '#333' }}>
                         {computers.map(c => (
-                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', background: '#2d2d2d', padding: '15px', marginBottom: '10px', borderRadius: '8px', alignItems: 'center' }}>
+                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '10px', borderRadius: '8px', alignItems: 'center' }}>
                                 <span>{(c.name || c.pcname) || `PC-${c.id}`} ({c.type})</span>
-                                <span style={{ color: c.availability === 'maintenance' ? '#f44336' : '#4CAF50' }}>{c.availability.toUpperCase()}</span>
+                                <span style={{ fontWeight: 'bold', color: c.availability === 'maintenance' ? '#f44336' : '#4CAF50' }}>{c.availability.toUpperCase()}</span>
                                 <button onClick={() => handleToggleComputer(c.id, c.availability)} style={{ padding: '8px 15px', cursor: 'pointer' }}>
                                     Set to {c.availability === 'maintenance' ? 'Available' : 'Maintenance'}
                                 </button>
