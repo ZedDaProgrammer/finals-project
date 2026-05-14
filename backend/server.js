@@ -9,7 +9,7 @@ const cors = require('cors');
 const authReservation = require('./src/routes/reservationRoute');
 const adminRouter = require('./src/routes/adminRoute');
 
-const allowedOrigins = ['http://localhost:5173', 'https://your-frontend-domain.vercel.app'];
+const allowedOrigins = ['http://localhost:5173', 'https://finals-project-xi.vercel.app/'];
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {

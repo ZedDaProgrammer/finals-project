@@ -12,11 +12,13 @@ const AuthPage = () => {
     password: ''
   });
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try{
-      const response = await fetch('http://localhost:3000/src/authRoute/login', {
+      const response = await fetch(`${API_URL}/src/authRoute/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +49,7 @@ const AuthPage = () => {
 
     try {
     
-      const response = await fetch('http://localhost:3000/src/authRoute/register', {
+      const response = await fetch(`${API_URL}/src/authRoute/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
