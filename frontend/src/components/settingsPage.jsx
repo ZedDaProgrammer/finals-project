@@ -4,23 +4,21 @@ import { useAuth } from '../../context/AuthContext';
 const SettingsPage = () => {
     const { user, token, logout } = useAuth();
     
-    // UPDATED BASE URL
+
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api`;
 
-    // Password State
+
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
 
-    
-    // Ticket State
+
     const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
     
-    // Dark Mode State (Loads saved preference)
+
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('darkMode') === 'true';
     });
 
-    // Automatically apply Dark Mode to the whole website
     useEffect(() => {
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
@@ -34,7 +32,7 @@ const SettingsPage = () => {
     const handleChangePassword = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) return alert("Passwords do not match");
-        const res = await fetch(`${BASE_URL}/authRoute/change-password`, {
+        const res = await fetch(`${BASE_URL}/auth/change-password`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
@@ -49,7 +47,7 @@ const SettingsPage = () => {
     };
 
     const handleAddCredits = async (amount) => {
-        const res = await fetch(`${BASE_URL}/authRoute/add-credits`, {
+        const res = await fetch(`${BASE_URL}/auth/add-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ amount })
@@ -62,7 +60,7 @@ const SettingsPage = () => {
 
     const handleSubmitTicket = async (e) => {
         e.preventDefault();
-        const res = await fetch(`${BASE_URL}/reservationRoute/ticket`, {
+        const res = await fetch(`${BASE_URL}/reservation/ticket`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(ticket)
