@@ -927,117 +927,168 @@ body.dark-mode div[style*="color: #555"] {
 }
 
 body.dark-mode .admin-section h3 { border-bottom-color: #e94560 !important; }
-/* Fix Admin Panel Specific #f9f9f9 */
-body.dark-mode div[style*="background: #f9f9f9"],
-body.dark-mode div[style*="background: rgb(249, 249, 249)"] {
-    background: #252525 !important;
-    border-color: #333 !important;
-    color: #e0e0e0 !important;
-}
 
-/* 3. Dark Mode Glowing Valorant Ranks */
+/* Dark Mode Ranks */
 body.dark-mode .rank-bronze { background: rgba(165, 113, 82, 0.2) !important; color: #c98b67 !important; border-color: #c98b67 !important; text-shadow: 0 0 5px rgba(201, 139, 103, 0.5);}
 body.dark-mode .rank-silver { background: rgba(178, 178, 178, 0.2) !important; color: #d1d1d1 !important; border-color: #d1d1d1 !important; text-shadow: 0 0 5px rgba(209, 209, 209, 0.5);}
 body.dark-mode .rank-gold { background: rgba(229, 197, 99, 0.2) !important; color: #ffe075 !important; border-color: #ffe075 !important; text-shadow: 0 0 5px rgba(255, 224, 117, 0.5);}
 body.dark-mode .rank-platinum { background: rgba(62, 181, 172, 0.2) !important; color: #5cf2e7 !important; border-color: #5cf2e7 !important; text-shadow: 0 0 8px rgba(92, 242, 231, 0.6);}
-body.dark-mode .rank-radiant { 
-    background: rgba(255, 234, 138, 0.2) !important; 
-    color: #fff2b2 !important; 
-    border-color: #fff2b2 !important; 
-    text-shadow: 0 0 10px rgba(255, 242, 178, 0.8);
-    box-shadow: 0 0 10px rgba(255, 234, 138, 0.3) inset;
-}
+body.dark-mode .rank-radiant { background: rgba(255, 234, 138, 0.2) !important; color: #ffea8a !important; border-color: #ffea8a !important; text-shadow: 0 0 8px rgba(255, 234, 138, 0.6);}
 
-/* 4. Inputs & Tables */
-/* 4. Inputs & Tables */
-body.dark-mode input, body.dark-mode select, body.dark-mode textarea,
+/* 3. Forms & Inputs */
 body.dark-mode .form-input, body.dark-mode .input-group input {
-    background: #2d2d2d !important;
-    border-color: #444 !important;
-    color: #fff !important;
-}
-
-body.dark-mode input:focus, body.dark-mode textarea:focus { 
-    border-color: #e94560 !important; 
-    background: #333 !important; 
-}
-
-body.dark-mode .activity-table th, body.dark-mode .admin-table th {
-    background-color: #1a1a1a !important;
-    color: #a0a0a0 !important;
-    border-bottom: 2px solid #333 !important;
-}
-
-/* FIX: Added color: #e0e0e0 !important; to make table text visible! */
-body.dark-mode .activity-table td, body.dark-mode .admin-table td,
-body.dark-mode .activity-table td span, body.dark-mode .admin-table td span,
-body.dark-mode div[style*="borderBottom: 1px solid #eee"],
-body.dark-mode div[style*="border-bottom: 1px solid #eee"],
-body.dark-mode div[style*="border-bottom: 1px solid rgb(238, 238, 238)"] {
-    border-bottom: 1px solid #333 !important;
-    color: #e0e0e0 !important; 
-}
-
-body.dark-mode tr:hover td { 
-    background-color: #252525 !important; 
-}
-/* 5. Perfect Reservation Panel Theme */
-body.dark-mode .reservation-container { background: #121212 !important; box-shadow: none !important; }
-body.dark-mode .tab-btn { color: #888 !important; }
-body.dark-mode .tab-btn.active { background: #e94560 !important; color: #fff !important; }
-
-/* PC Seats */
-body.dark-mode .pc-seat { background: #1e1e1e !important; border-color: #333 !important; }
-body.dark-mode .pc-seat.available {
-    background: rgba(40, 167, 69, 0.1) !important;
-    border-color: rgba(40, 167, 69, 0.4) !important;
-    color: #4ade80 !important;
-}
-body.dark-mode .pc-seat.available:hover { background: rgba(40, 167, 69, 0.2) !important; }
-body.dark-mode .pc-seat.occupied {
-    background: rgba(220, 53, 69, 0.1) !important;
-    border-color: rgba(220, 53, 69, 0.3) !important;
-    color: #ff6b6b !important;
-}
-body.dark-mode .pc-seat.maintenance { background: #252525 !important; border-color: #444 !important; }
-
-/* VIP Rooms */
-body.dark-mode .room-occupied { background: #151515 !important; opacity: 0.6 !important; }
-body.dark-mode .pc-mini.free {
-    background: rgba(40, 167, 69, 0.1) !important;
-    border-color: rgba(40, 167, 69, 0.4) !important;
-    color: #4ade80 !important;
-}
-body.dark-mode .pc-mini.busy {
-    background: rgba(220, 53, 69, 0.1) !important;
-    border-color: rgba(220, 53, 69, 0.3) !important;
-    color: #ff6b6b !important;
-}
-body.dark-mode .book-room-btn {
-    background: rgba(77, 166, 255, 0.15) !important;
-    color: #4da6ff !important;
-    border: 1px solid rgba(77, 166, 255, 0.3) !important;
-}
-body.dark-mode .book-room-btn:hover:not(:disabled) {
-    background: #4da6ff !important;
-    color: #fff !important;
-}
-
-/* 6. Booking Modals */
-body.dark-mode .modal-content {
-    background: #1e1e1e !important;
-    border: 1px solid #333 !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
-}
-body.dark-mode .pc-dynamic-details,
-body.dark-mode .price-calculation,
-body.dark-mode .booking-summary {
-    background: #252525 !important;
-    border-color: #333 !important;
-}
-body.dark-mode .cancel-btn {
-    background: #2d2d2d !important;
+    background: #2a2a2a !important;
     color: #e0e0e0 !important;
     border-color: #444 !important;
 }
-body.dark-mode .cancel-btn:hover { background: #3d3d3d !important; }
+
+body.dark-mode .form-input:focus, body.dark-mode .input-group input:focus {
+    border-color: #e94560 !important;
+    background: #333 !important;
+}
+
+/* Modal specific fixes */
+body.dark-mode .modal-content {
+    background: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important;
+}
+
+body.dark-mode .price-calculation,
+body.dark-mode .pc-dynamic-details {
+    background: #2a2a2a !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode .price-calculation p,
+body.dark-mode .specs-text {
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode .specs-text strong {
+    color: #e0e0e0 !important;
+}
+
+/* Reservation specific fixes */
+body.dark-mode .pc-seat {
+    background: #2a2a2a !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode .pc-seat.available {
+    background: rgba(40, 167, 69, 0.15) !important;
+    border-color: #28a745 !important;
+    color: #4ade80 !important;
+}
+
+body.dark-mode .pc-seat.occupied {
+    background: rgba(220, 53, 69, 0.15) !important;
+    border-color: #dc3545 !important;
+    color: #ff6b6b !important;
+}
+
+/* Tables */
+body.dark-mode .activity-table th { border-bottom-color: #444 !important; color: #888 !important; }
+body.dark-mode .activity-table td { border-bottom-color: #333 !important; }
+body.dark-mode .activity-table tr:hover td { background-color: #2a2a2a !important; }
+body.dark-mode .panel-header { border-bottom-color: #333 !important; }
+
+/* Admin Panel overrides */
+body.dark-mode .admin-table th { background-color: #111 !important; }
+body.dark-mode .admin-table tr:hover { background-color: #2a2a2a !important; }
+body.dark-mode .admin-table th, body.dark-mode .admin-table td { border-bottom-color: #333 !important; }
+
+/* Buttons inside dark mode */
+body.dark-mode .cancel-btn {
+    background: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+body.dark-mode .cancel-btn:hover { background: #333 !important; }
+/* === AUTH PAGE MATCHING DASHBOARD COLORS === */
+
+/* Light Mode Overrides for Auth Page */
+.auth-container {
+    background-color: #fff;
+}
+.auth-container form {
+    background-color: #fff;
+}
+.auth-container h1, .auth-container p, .auth-container span, .auth-container a {
+    color: #333;
+}
+.auth-container .overlay h1, 
+.auth-container .overlay p, 
+.auth-container .overlay span, 
+.auth-container .overlay a {
+    color: #fff;
+}
+
+.auth-container input {
+    background-color: #eee;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Auth Buttons & Overlay to match dashboard accents (#e94560 & #1a1a2e) */
+.auth-container button {
+    background-color: #e94560;
+    border-color: #e94560;
+    color: #fff;
+}
+.auth-container button.ghost {
+    background-color: transparent;
+    border-color: #fff;
+    color: #fff;
+}
+.auth-container .overlay {
+    background: #1a1a2e; /* Matches sidebar */
+    background: linear-gradient(to right, #1a1a2e, #e94560);
+    color: #fff;
+}
+
+/* Dark Mode Overrides for Auth Page */
+body.dark-mode .auth-container {
+    background-color: #1e1e1e !important;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.5), 0 10px 10px rgba(0,0,0,0.5) !important;
+}
+body.dark-mode .auth-container form {
+    background-color: #1e1e1e !important;
+}
+body.dark-mode .auth-container h1, 
+body.dark-mode .auth-container p, 
+body.dark-mode .auth-container span, 
+body.dark-mode .auth-container a {
+    color: #e0e0e0 !important;
+}
+body.dark-mode .auth-container .overlay h1, 
+body.dark-mode .auth-container .overlay p, 
+body.dark-mode .auth-container .overlay span, 
+body.dark-mode .auth-container .overlay a {
+    color: #fff !important;
+}
+
+body.dark-mode .auth-container input {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #444 !important;
+}
+body.dark-mode .auth-container input:focus {
+    border-color: #e94560 !important;
+    background-color: #333 !important;
+    outline: none;
+}
+body.dark-mode .auth-container button {
+    background-color: #e94560 !important;
+    border-color: #e94560 !important;
+    color: #fff !important;
+}
+body.dark-mode .auth-container button.ghost {
+    background-color: transparent !important;
+    border-color: #fff !important;
+    color: #fff !important;
+}
+body.dark-mode .auth-container .overlay {
+    background: #121212 !important; /* Matches dark dashboard background */
+    background: linear-gradient(to right, #121212, #1a1a2e) !important;
+}
