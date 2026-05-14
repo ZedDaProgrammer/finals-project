@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../pictures/logo.png';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
@@ -174,7 +175,7 @@ const ReservationPage = () => {
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
-                <div className="sidebar-brand"><h2>BlackByte</h2></div>
+                <div className="sidebar-brand"><img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} /></div>
                 <nav className="sidebar-nav">
                     <div className="nav-section">
                         <span className="nav-section-title">Main Menu</span>

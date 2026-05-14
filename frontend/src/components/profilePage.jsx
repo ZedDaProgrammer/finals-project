@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../pictures/logo.png';
 
 const ProfilePage = () => {
     const { user, token, logout } = useAuth();
@@ -60,7 +61,7 @@ const ProfilePage = () => {
         <div className="dashboard-layout">
             <aside className="sidebar">
                 <div className="sidebar-brand">
-                    <h2>BlackByte</h2>
+                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
                 </div>
                 
                 <nav className="sidebar-nav">

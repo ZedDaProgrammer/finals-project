@@ -1214,15 +1214,10 @@ body.dark-mode .auth-container .overlay {
    DYNAMIC LOGO STYLES
    ========================================= */
 .brand-logo {
-    height: 40px; /* Adjust this value to fit your layout */
+    height: 70px; /* Adjust this value to fit your layout */
     width: auto;
     transition: filter 0.3s ease;
     display: block;
-}
-
-/* Light Mode: Force the image to be solid black */
-body:not(.dark-mode) .brand-logo {
-    filter: brightness(0);
 }
 
 /* Dark Mode: Force the image to be solid white */

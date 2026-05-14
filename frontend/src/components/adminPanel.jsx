@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../pictures/logo.png';
 
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();
@@ -109,7 +110,7 @@ const AdminPanel = () => {
         <div className="dashboard-layout">
             <aside className="sidebar">
                 <div className="sidebar-brand">
-                    <h2>BlackByte</h2>
+                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
                 </div>
                 
                 <nav className="sidebar-nav">
