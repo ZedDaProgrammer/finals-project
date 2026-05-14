@@ -1224,3 +1224,41 @@ body.dark-mode .auth-container .overlay {
 body.dark-mode .brand-logo {
     filter: brightness(0) invert(1);
 }
+
+/* =========================================
+   SUCCESS / ERROR MESSAGE MODALS
+   ========================================= */
+.message-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+.message-icon.success {
+    color: #28a745;
+}
+.message-icon.error {
+    color: #dc3545;
+}
+.message-text {
+    font-size: 16px;
+    color: #4a4e69;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+.close-message-btn {
+    background: #e94560;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+.close-message-btn:hover {
+    background: #d83a50;
+    transform: translateY(-2px);
+}
+
+body.dark-mode .message-text {
+    color: #e0e0e0 !important;
+}

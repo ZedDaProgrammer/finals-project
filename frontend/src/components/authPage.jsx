@@ -12,7 +12,20 @@ const AuthPage = () => {
     password: ''
   });
 
+  const [messageModal, setMessageModal] = useState({
+    show: false,
+    type: '', // 'success' or 'error'
+    message: '',
+    onClose: null // Function to run when closed (like redirecting)
+  });
+
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+const closeMessageModal = () => {
+    const { onClose } = messageModal;
+    setMessageModal({ show: false, type: '', message: '', onClose: null });
+    if (onClose) onClose(); // Execute redirect if it exists
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();

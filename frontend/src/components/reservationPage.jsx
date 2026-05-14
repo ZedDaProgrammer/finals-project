@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+// Import your dynamic logo
 import logoImg from '../../pictures/logo.png';
 
 const ReservationPage = () => {
@@ -19,6 +20,9 @@ const ReservationPage = () => {
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
     });   
     const [duration, setDuration] = useState(1); 
+    
+    // NEW: State to control the success/error feedback modal
+    const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, type: '', message: '' });
 
     useEffect(() => {
         const fetchAllComputers = async () => {
@@ -57,24 +61,14 @@ const ReservationPage = () => {
 
     const sortedComputers = [...allComputers].sort((a, b) => a.id - b.id);
 
-   
     const allStandardPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
     const standardPcs = allStandardPcs.slice(0, 20); 
     
-
     const allVipPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
     
-  
     const generalVipPcs = allVipPcs.slice(0, 20);      
     const vipRoomPcs = allVipPcs.slice(20, 45);        
     const privateVipPcs = allVipPcs.slice(45, 55);    
-
-
-    console.log("All computers loaded:", allComputers.length);
-    console.log("Standard PCs displayed:", standardPcs.length);
-    console.log("VIP Lounge PCs:", generalVipPcs.length); 
-    console.log("VIP Room PCs:", vipRoomPcs.length); 
-    console.log("Private Suite PCs:", privateVipPcs.length);  
 
     const handleBooking = async () => {
         const isRoom = !!selectedRoom;
@@ -101,17 +95,27 @@ const ReservationPage = () => {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
+            
+            // Replaced alert() with Custom Popup Modal Logic
             if (response.ok) {
-                alert("Booking Successful!");
-                window.location.reload();
+                setFeedbackModal({ isOpen: true, type: 'success', message: 'Booking Successful!' });
             } else {
-                alert(`Booking failed: ${data.error}`);
+                setFeedbackModal({ isOpen: true, type: 'error', message: `Booking failed: ${data.error}` });
             }
         } catch (error) { 
-            alert("An error occurred while booking."); 
+            setFeedbackModal({ isOpen: true, type: 'error', message: 'An error occurred while booking. Please try again.' });
         }
     };
 
+    // Handler to close the feedback modal
+    const closeFeedbackModal = () => {
+        // Only refresh the page if the booking was actually successful
+        if (feedbackModal.type === 'success') {
+            window.location.reload();
+        } else {
+            setFeedbackModal({ isOpen: false, type: '', message: '' });
+        }
+    };
     
     const [cpuFilter, setCpuFilter] = useState('all');
     const [gpuFilter, setGpuFilter] = useState('all');
@@ -135,47 +139,48 @@ const ReservationPage = () => {
     };
 
     const renderPc = (pc) => {
-    const isMaintenance = pc.availability === 'maintenance';
-    // It's available only if it's not on maintenance AND the server's checkAvailability returned its ID
-    const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
-    const match = isMatch(pc);
-    
-    return (
-        <div key={pc.id} 
-             className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
-             onClick={() => { if (match && !isMaintenance) setSelectedPC(pc); }}
-             style={{ 
-                 opacity: match ? 1 : 0.3, 
-                 cursor: isMaintenance ? 'not-allowed' : match ? 'pointer' : 'not-allowed', 
-                 filter: isMaintenance || !match ? 'grayscale(100%)' : 'none',
-                 pointerEvents: match && !isMaintenance ? 'auto' : 'none',
-                 position: 'relative',
-                 overflow: 'hidden'
-             }}>
-            <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
-            <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-            
-            {/* Visual overlay for maintenance PCs */}
-            {isMaintenance && (
-                <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', color: '#ff4d4d',
-                    fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px'
-                }}>
-                    MAINTENANCE
-                </div>
-            )}
-        </div>
-    );
-};
-
-
+        const isMaintenance = pc.availability === 'maintenance';
+        // It's available only if it's not on maintenance AND the server's checkAvailability returned its ID
+        const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
+        const match = isMatch(pc);
+        
+        return (
+            <div key={pc.id} 
+                 className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
+                 onClick={() => { if (match && !isMaintenance) setSelectedPC(pc); }}
+                 style={{ 
+                     opacity: match ? 1 : 0.3, 
+                     cursor: isMaintenance ? 'not-allowed' : match ? 'pointer' : 'not-allowed', 
+                     filter: isMaintenance || !match ? 'grayscale(100%)' : 'none',
+                     pointerEvents: match && !isMaintenance ? 'auto' : 'none',
+                     position: 'relative',
+                     overflow: 'hidden'
+                 }}>
+                <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
+                <span className="pc-rate">{pc.pc_rate} CR/hr</span>
+                
+                {/* Visual overlay for maintenance PCs */}
+                {isMaintenance && (
+                    <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', color: '#ff4d4d',
+                        fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px'
+                    }}>
+                        MAINTENANCE
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
-                <div className="sidebar-brand"><img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} /></div>
+                <div className="sidebar-brand">
+                    {/* Dynamic logo implemented */}
+                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
+                </div>
                 <nav className="sidebar-nav">
                     <div className="nav-section">
                         <span className="nav-section-title">Main Menu</span>
@@ -250,7 +255,6 @@ const ReservationPage = () => {
                                         <div className="room-grid">
                                             {pcs.map(p => (
                                                 <div key={p.id} className={`pc-mini ${availableIds.includes(p.id) ? 'free' : 'busy'}`}>
-                                                    {/* Keep the VIP- label but remove the specs below it */}
                                                     <div className="pc-name-label">{`VIP-${p.id}`}</div>
                                                 </div>
                                             ))}
@@ -268,7 +272,7 @@ const ReservationPage = () => {
                     )}
                 </div>
 
-                {/* Unified Booking Modal */}
+                {/* Main Unified Booking Modal */}
                 {(selectedPC || selectedRoom) && (() => { 
                     const isCurrentlyAvailable = selectedRoom 
                         ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
@@ -315,7 +319,6 @@ const ReservationPage = () => {
                                     </div>
                                 </div>
 
-                                {/* NEW: Dynamic warning message if the time overlaps */}
                                 {!isCurrentlyAvailable && (
                                     <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>
                                         ⚠️ This {selectedRoom ? 'room' : 'PC'} is already booked during this time slot. Please adjust the Start Time or Duration.
@@ -325,7 +328,6 @@ const ReservationPage = () => {
                                 <div className="booking-summary">
                                     <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
                                     
-                                    {/* Calculation Logic */}
                                     {(() => {
                                         const userPoints = user?.points || 0;
                                         let rank = "Bronze";
@@ -384,6 +386,37 @@ const ReservationPage = () => {
                         </div>
                     );
                 })()}
+
+                {/* NEW: Feedback Modal for Success and Errors */}
+                {feedbackModal.isOpen && (
+                    <div className="modal-overlay" style={{ zIndex: 1100 }}>
+                        <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px' }}>
+                            <h3 style={{ 
+                                color: feedbackModal.type === 'success' ? '#28a745' : '#dc3545', 
+                                borderBottom: 'none', 
+                                marginBottom: '10px',
+                                fontSize: '24px'
+                            }}>
+                                {feedbackModal.type === 'success' ? '✅ Success' : '❌ Error'}
+                            </h3>
+                            <p style={{ fontSize: '16px', margin: '15px 0 25px 0', lineHeight: '1.5' }}>
+                                {feedbackModal.message}
+                            </p>
+                            <button 
+                                className="confirm-btn" 
+                                onClick={closeFeedbackModal} 
+                                style={{ 
+                                    width: '100%', 
+                                    background: feedbackModal.type === 'success' ? '#28a745' : '#dc3545',
+                                    fontSize: '16px',
+                                    padding: '12px'
+                                }}
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
