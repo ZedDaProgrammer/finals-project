@@ -1091,3 +1091,121 @@ body.dark-mode .auth-container .overlay {
     background: #121212 !important; /* Matches dark dashboard background */
     background: linear-gradient(to right, #121212, #1a1a2e) !important;
 }
+
+/* =========================================
+   LANDING PAGE STYLES
+   ========================================= */
+.landing-page {
+  color: #ffffff;
+  background-color: #121212;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 50px;
+  background: #1a1a1d;
+  border-bottom: 2px solid #d84315;
+}
+
+.landing-nav .logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.login-btn, .cta-btn {
+  background: #d84315;
+  color: white;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.login-btn:hover, .cta-btn:hover {
+  background: #bf360c;
+}
+
+.hero-section {
+  height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 35px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #cccccc;
+  line-height: 1.6;
+}
+
+.features-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #0f0f11;
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #ffffff;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: #1a1a1d;
+  padding: 30px 20px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: #d84315;
+}
+
+.feature-card h3 {
+  color: #d84315;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.feature-card p {
+  color: #aaa;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.landing-footer {
+  text-align: center;
+  padding: 25px;
+  background: #0a0a0c;
+  color: #666;
+  font-size: 0.9rem;
+}

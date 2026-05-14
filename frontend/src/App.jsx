@@ -1,4 +1,5 @@
-import { useEffect } from 'react'; // Added useEffect import
+import { useEffect } from 'react'; 
+import LandingPage from './components/landingPage'; // IMPORT YOUR NEW PAGE
 import AuthPage from './components/authPage';
 import Dashboard from './components/dashboard';
 import ReservationPage from './components/reservationPage';
@@ -19,6 +20,8 @@ function App() {
 
     return (
         <Routes>
+            <Route path="/" element={<LandingPage />} />
+            
             <Route path="/login" element={<AuthPage />} />            
             <Route element={<Protected />}>
                 <Route path="/dashboard" element={<Dashboard />} />
