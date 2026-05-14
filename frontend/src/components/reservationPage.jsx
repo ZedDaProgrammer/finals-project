@@ -209,6 +209,7 @@ const ReservationPage = () => {
                                 <option value="all">All Monitors</option>
                                 <option value="144">144Hz</option>
                                 <option value="240">240Hz</option>
+                                <option value="360">360Hz</option>
                             </select>
                         </div>
                     )}
