@@ -3,13 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
-    const BASE_URL = 'http://localhost:3000/src/reservationRoute';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const BASE_URL = `${API_URL}/api/reservation`;
 
     const [allComputers, setAllComputers] = useState([]);
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null); 
-    const [activeTab, setActiveTab] = useState('standard'); 
+    const [activeTab, setActiveTab] = useState('standard');
             
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
@@ -329,7 +330,6 @@ const ReservationPage = () => {
                                         let rank = "Bronze";
                                         let discountRate = 0;
 
-                                        // Apply the balanced 25/75/175/350 thresholds
                                         if (userPoints >= 350) { rank = "Radiant"; discountRate = 0.15; }
                                         else if (userPoints >= 175) { rank = "Platinum"; discountRate = 0.10; }
                                         else if (userPoints >= 75) { rank = "Gold"; discountRate = 0.06; }

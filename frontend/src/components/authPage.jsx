@@ -18,7 +18,7 @@ const AuthPage = () => {
     e.preventDefault();
 
     try{
-      const response = await fetch(`${API_URL}/src/authRoute/login`, {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,12 +44,12 @@ const AuthPage = () => {
       alert("Server is down. Try again later.");
     }
   };
+
   const handleRegister = async (e) => {
     e.preventDefault(); 
 
     try {
-    
-      const response = await fetch(`${API_URL}/src/authRoute/register`, {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,10 +81,7 @@ const AuthPage = () => {
 
   return (
     <div className={`auth-container ${isRightPanelActive ? "right-panel-active" : ""}`} id="container">
-      
-    
       <div className="form-container sign-up-container">
-
         <form onSubmit={handleRegister}>
           <h1>Create Account</h1>
           <span>or use your email for registration</span>
@@ -107,7 +104,6 @@ const AuthPage = () => {
         </form>
       </div>
 
- 
       <div className="form-container sign-in-container">
         <form onSubmit={handleLogin}>
           <h1>Sign in</h1>

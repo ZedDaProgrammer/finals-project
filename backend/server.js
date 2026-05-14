@@ -9,7 +9,7 @@ const cors = require('cors');
 const authReservation = require('./src/routes/reservationRoute');
 const adminRouter = require('./src/routes/adminRoute');
 
-const allowedOrigins = ['http://localhost:5173', 'https://finals-project-xi.vercel.app/'];
+const allowedOrigins = ['http://localhost:5173', 'https://finals-project-xi.vercel.app'];
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -22,9 +22,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use('/src/authRoute', authRouter);
-app.use('/src/reservationRoute', authReservation);
-app.use('/src/adminRoute', adminRouter);
+
+// Updated to use /api/
+app.use('/api/auth', authRouter);
+app.use('/api/reservation', authReservation);
+app.use('/api/admin', adminRouter);
+
 app.get('/', async (req, res) =>{
     console.log("Start");
     const result = await pool.query("SELECT current_database()");
@@ -32,9 +35,8 @@ app.get('/', async (req, res) =>{
     res.send(`The database name is ${result.rows[0].current_database}`);
 });
 
-
 app.listen(PORT, () => {
-    console.log(`Server is madafaking running ${PORT}`);
+    console.log(`Server is running on ${PORT}`);
 });
 
 module.exports = app;

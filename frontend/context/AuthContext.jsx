@@ -6,11 +6,12 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token') || null);
     const [user, setUser] = useState(null);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    
     useEffect(() => {
         const fetchUser = async () => {
             if (token) {
                 try {
-                    const response = await fetch(`${API_URL}/src/authRoute/profile`, {
+                    const response = await fetch(`${API_URL}/api/auth/profile`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -18,15 +19,12 @@ export const AuthProvider = ({ children }) => {
                     
                     if (response.ok) {
                         const userData = await response.json();
-                        
                         setUser({ isAuthenticated: true, ...userData }); 
                     } else {
-                        
                         logout();
                     }
                 } catch (error) {
                     console.error("Failed to fetch user:", error);
-                 
                     setUser({ isAuthenticated: true }); 
                 }
             } else {

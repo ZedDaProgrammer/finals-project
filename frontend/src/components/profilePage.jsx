@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 const ProfilePage = () => {
     const { user, token, logout } = useAuth();
     const BASE_URL = 'http://localhost:3000/src/reservationRoute';
-
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 

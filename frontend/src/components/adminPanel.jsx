@@ -5,14 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();
     const navigate = useNavigate();
-    const BASE_URL = 'http://localhost:3000/src/adminRoute';
+    
+    // UPDATED BASE URL
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const BASE_URL = `${API_URL}/api/admin`;
     
     const [activeTab, setActiveTab] = useState('reservations');
     const [bookings, setBookings] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
-    
-
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -25,11 +26,6 @@ const AdminPanel = () => {
             navigate('/dashboard', { replace: true });
         }
     }, [user, navigate]);
-
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
 
     useEffect(() => {
         if(token) fetchData();
@@ -65,8 +61,6 @@ const AdminPanel = () => {
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
-            // Formats strictly to Local Time (YYYY-MM-DD HH:MM:SS) 
-            // This stops the database from shifting the timezone backwards 8 hours!
             const formatLocal = (d) => {
                 const pad = (n) => n.toString().padStart(2, '0');
                 return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;

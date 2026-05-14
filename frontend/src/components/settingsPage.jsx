@@ -3,10 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 
 const SettingsPage = () => {
     const { user, token, logout } = useAuth();
-    const BASE_URL = 'http://localhost:3000/src';
+    
+    // UPDATED BASE URL
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const BASE_URL = `${API_URL}/api`;
 
     // Password State
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+
     
     // Ticket State
     const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
