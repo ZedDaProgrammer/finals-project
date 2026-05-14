@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useFeedback } from '../../context/FeedbackContext'; // 1. Import the hook
+import { useFeedback } from '../../context/feedbackContext'; // 1. Import the hook
 import logoImg from '../../pictures/logo.png';
 
 const ReservationPage = () => {

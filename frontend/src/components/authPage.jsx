@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; 
-import { useFeedback } from '../../context/FeedbackContext';
+import { useFeedback } from '../../context/feedbackContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();

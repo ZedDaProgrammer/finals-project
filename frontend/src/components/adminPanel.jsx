@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../pictures/logo.png';
-import { useFeedback } from '../../context/FeedbackContext';
+import { useFeedback } from '../../context/feedbackContext';
 
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useFeedback } from '../../context/FeedbackContext';
+import { useFeedback } from '../../context/feedbackContext';
 import logoImg from '../../pictures/logo.png';
 
 const SettingsPage = () => {
