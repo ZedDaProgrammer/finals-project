@@ -61,15 +61,10 @@ const AdminPanel = () => {
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
-            const formatLocal = (d) => {
-                const pad = (n) => n.toString().padStart(2, '0');
-                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-            };
-
             bodyData = {
                 status: 'active',
-                start: formatLocal(newStart),
-                end: formatLocal(newEnd)
+                start: newStart.toISOString(),
+                end: newEnd.toISOString()
             };
         }
 
