@@ -43,10 +43,6 @@ const LandingPage = () => {
             <h3>🔒 Private Suites</h3>
             <p>Bring your squad! Book a 2-PC or 5-PC private room for distraction-free team practices, LAN parties, or uninterrupted streaming.</p>
           </div>
-          <div className="feature-card">
-            <h3>🍔 Refreshments</h3>
-            <p>Stay fueled for the grind with our selection of snacks, energy drinks, and hot meals delivered directly to your station.</p>
-          </div>
         </div>
       </section>
 
