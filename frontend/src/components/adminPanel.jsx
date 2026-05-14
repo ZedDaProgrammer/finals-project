@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();
+    const navigate = useNavigate();
     const BASE_URL = 'http://localhost:3000/src/adminRoute';
     
     const [activeTab, setActiveTab] = useState('reservations');
@@ -10,8 +12,19 @@ const AdminPanel = () => {
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
     
-    // Live timer for Auto-Delete UI
+
     const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+    
+   useEffect(() => {
+        if (user && user.role !== 'admin') {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
