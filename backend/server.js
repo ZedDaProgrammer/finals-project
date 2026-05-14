@@ -9,8 +9,15 @@ const cors = require('cors');
 const authReservation = require('./src/routes/reservationRoute');
 const adminRouter = require('./src/routes/adminRoute');
 
+const allowedOrigins = ['http://localhost:5173', 'https://your-frontend-domain.vercel.app'];
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 app.use(express.json());
@@ -29,3 +36,5 @@ app.get('/', async (req, res) =>{
 app.listen(PORT, () => {
     console.log(`Server is madafaking running ${PORT}`);
 });
+
+module.exports = app;
