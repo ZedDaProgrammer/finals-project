@@ -25,7 +25,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const BASE_URL = 'http://localhost:3000/src/reservationRoute';
+                const BASE_URL = `${API_URL}/api/reservation`;
                 const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
                 const statsRes = await fetch(`${BASE_URL}/stats`, { headers, cache: 'no-store' });
