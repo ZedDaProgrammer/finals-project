@@ -121,6 +121,7 @@ const ReservationPage = () => {
          if (monitorFilter !== 'all') {
              if (monitorFilter === '144' && parseInt(pc.monitor_hz) !== 144) match = false;
              if (monitorFilter === '240' && parseInt(pc.monitor_hz) !== 240) match = false;
+             if (monitorFilter === '360' && parseInt(pc.monitor_hz) !== 360) match = false;
          }
          return match;
     };
