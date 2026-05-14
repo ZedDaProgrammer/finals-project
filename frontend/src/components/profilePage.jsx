@@ -3,8 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 
 const ProfilePage = () => {
     const { user, token, logout } = useAuth();
-    const BASE_URL = `${API_URL}/api/reservation`;
+    
+
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    
+    const BASE_URL = `${API_URL}/api/reservation`;
+
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
