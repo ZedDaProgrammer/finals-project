@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../pictures/logo.png';
+import { useFeedback } from '../../context/FeedbackContext';
 
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();
     const navigate = useNavigate();
-    
+    const { showFeedback } = useFeedback();
     // UPDATED BASE URL
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/admin`;
