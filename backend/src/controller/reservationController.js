@@ -311,11 +311,13 @@ const createTicket = async (req, res) => {
     const user_id = req.user.id;
     const { station_id, subject, description } = req.body; 
     
+    const safeStationId = (station_id === '' || !station_id) ? null : parseInt(station_id);
+
     try {
         const newTicket = await pool.query(
             `INSERT INTO tickets (user_id, station_id, subject, description, status)
              VALUES ($1, $2, $3, $4, 'open') RETURNING *`,
-            [user_id, station_id || null, subject, description] // station_id is optional
+            [user_id, safeStationId, subject, description] 
         );
         
         res.status(201).json({ message: "Support ticket created", ticket: newTicket.rows[0] });

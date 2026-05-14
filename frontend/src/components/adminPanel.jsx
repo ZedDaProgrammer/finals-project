@@ -183,7 +183,7 @@ const AdminPanel = () => {
                                     <strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}
                                 </div>
                                 <div style={{ background: '#f9f9f9', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}>
-                                    {t.issue}
+                                    {t.description}
                                 </div>
                                 
                                 {t.status === 'open' && (
