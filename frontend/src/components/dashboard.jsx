@@ -128,7 +128,7 @@ const Dashboard = () => {
                     <div className="table-container">
                         {isLoading ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>Loading active sessions...</p>
-                        ) : rawSessions.length === 0 ? (
+                        ) : rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime).length === 0 ? (
                             <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
                             <table className="activity-table">
@@ -142,7 +142,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rawSessions.map((res) => {
+                                    {rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime).map((res) => {
                                         
                                         const start = new Date(res.start);
                                         const end = new Date(res.end);
