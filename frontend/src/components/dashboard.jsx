@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
+import logoImg from '../../pictures/logo.png';
 
 const Dashboard = () => {
     const { user, token, logout } = useAuth();
@@ -64,7 +65,8 @@ const Dashboard = () => {
         <div className="dashboard-layout">
             <aside className="sidebar">
                 <div className="sidebar-brand">
-                    <h2>BlackByte</h2>
+                    {/* Replaced the <h2> with the dynamic logo */}
+                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
                 </div>
                 
                 <nav className="sidebar-nav">

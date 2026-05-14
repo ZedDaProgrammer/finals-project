@@ -1097,7 +1097,7 @@ body.dark-mode .auth-container .overlay {
    ========================================= */
 .landing-page {
   color: #ffffff;
-  background-color: #121212;
+  background-color: #121212; /* <-- Change this color */
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
 }
@@ -1208,4 +1208,24 @@ body.dark-mode .auth-container .overlay {
   background: #0a0a0c;
   color: #666;
   font-size: 0.9rem;
+}
+
+/* =========================================
+   DYNAMIC LOGO STYLES
+   ========================================= */
+.brand-logo {
+    height: 40px; /* Adjust this value to fit your layout */
+    width: auto;
+    transition: filter 0.3s ease;
+    display: block;
+}
+
+/* Light Mode: Force the image to be solid black */
+body:not(.dark-mode) .brand-logo {
+    filter: brightness(0);
+}
+
+/* Dark Mode: Force the image to be solid white */
+body.dark-mode .brand-logo {
+    filter: brightness(0) invert(1);
 }

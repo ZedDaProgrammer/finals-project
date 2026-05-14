@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
+import logoImg from '../../pictures/logo.png';
+import bgImg from '../../pictures/landingpage.jpg';
 const LandingPage = () => {
   return (
     <div className="landing-page">
       {/* Navigation Bar */}
       <nav className="landing-nav">
-        <div className="logo">BlackByte</div>
+        <div className="logo">
+            <img src={logoImg} alt="BlackByte Logo" className="brand-logo" />
+        </div>
         <div className="nav-links">
           <Link to="/login" className="login-btn">Sign In / Register</Link>
         </div>
@@ -14,11 +17,11 @@ const LandingPage = () => {
 
       {/* Hero Section with Placeholder Background */}
       <header className="hero-section" style={{
-          backgroundImage: 'url("https://via.placeholder.com/1920x1080/1a1a1d/333333?text=BlackByte+Cafe+Background")',
+          backgroundImage: `url(${bgImg})`, 
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlendMode: 'overlay',
-          backgroundColor: 'rgba(0, 0, 0, 0.75)' // Darkens the background image so text is readable
+          backgroundColor: 'rgba(0, 0, 0, 0.75)' // Keep this to darken the image so text remains readable
       }}>
         <div className="hero-content">
           <h1>Level Up Your Gaming Experience</h1>
