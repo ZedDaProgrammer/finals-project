@@ -1,15 +1,19 @@
-
 require('dotenv').config();
 const { Pool } = require('pg');
 
-//linking database
-const pool = new Pool({
+const poolConfig = {
     connectionString: process.env.DATABASE_URL
-});
+};
+
+if (process.env.NODE_ENV === 'production') {
+    poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+// linking database
+const pool = new Pool(poolConfig);
 
 pool.on("connect", () => {
-    console.log("Connection pool established with database")
-    
+    console.log("Connection pool established with database");
 });
 
 pool.on("error", (err) => {
