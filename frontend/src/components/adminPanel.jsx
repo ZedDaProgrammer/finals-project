@@ -8,7 +8,7 @@ const AdminPanel = () => {
     const { token, user, logout } = useAuth();
     const navigate = useNavigate();
     const { showFeedback } = useFeedback();
-    // UPDATED BASE URL
+    
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/admin`;
     
@@ -70,41 +70,64 @@ const AdminPanel = () => {
             };
         }
 
-        await fetch(`${BASE_URL}/bookings/${id}/status`, {
+        const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify(bodyData)
         });
-        
-        fetchData(); 
+
+        if(res.ok) {
+            showFeedback('success', 'Reservation started successfully!');
+            fetchData(); 
+        } else {
+            showFeedback('error', 'Failed to start reservation.');
+        }
     };
 
     const handleDeleteBooking = async (id) => {
         if(!window.confirm("Delete this reservation?")) return;
-        await fetch(`${BASE_URL}/bookings/${id}`, {
+        const res = await fetch(`${BASE_URL}/bookings/${id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
-        fetchData();
+
+        if(res.ok) {
+            showFeedback('success', 'Reservation deleted successfully!');
+            fetchData();
+        } else {
+            showFeedback('error', 'Failed to delete reservation.');
+        }
     };
 
     const handleToggleComputer = async (id, currentStatus) => {
         const newStatus = currentStatus === 'maintenance' ? 'available' : 'maintenance';
-        await fetch(`${BASE_URL}/computers/${id}/status`, {
+        const res = await fetch(`${BASE_URL}/computers/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ availability: newStatus })
         });
-        fetchData();
+
+        if(res.ok) {
+            showFeedback('success', `Computer status updated to ${newStatus.toUpperCase()}!`);
+            fetchData();
+        } else {
+            showFeedback('error', 'Failed to update computer status.');
+        }
     };
 
     const handleResolveTicket = async (id) => {
-        await fetch(`${BASE_URL}/tickets/${id}/status`, {
+        const res = await fetch(`${BASE_URL}/tickets/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ status: 'resolved' })
         });
-        fetchData();
+
+        if(res.ok) {
+            showFeedback('success', 'Support ticket marked as resolved!');
+            fetchData();
+        } else {
+            showFeedback('error', 'Failed to resolve support ticket.');
+        }
     };
 
     return (

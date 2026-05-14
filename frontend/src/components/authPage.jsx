@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; 
+import { useFeedback } from '../../context/FeedbackContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth(); 
+  const { showFeedback } = useFeedback();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -12,20 +14,7 @@ const AuthPage = () => {
     password: ''
   });
 
-  const [messageModal, setMessageModal] = useState({
-    show: false,
-    type: '', // 'success' or 'error'
-    message: '',
-    onClose: null // Function to run when closed (like redirecting)
-  });
-
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-const closeMessageModal = () => {
-    const { onClose } = messageModal;
-    setMessageModal({ show: false, type: '', message: '', onClose: null });
-    if (onClose) onClose(); // Execute redirect if it exists
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -46,15 +35,15 @@ const closeMessageModal = () => {
 
       if (response.ok) {
         login(data.token); 
-        alert("Login Successful!");
-        navigate('/dashboard');
+        // Show success, and only navigate when "OK" is clicked
+        showFeedback('success', 'Login Successful!', () => navigate('/dashboard'));
       } else {
-        alert(data.message || "Login failed");
+        showFeedback('error', data.message || "Login failed");
       }
 
     } catch (error) {
       console.error("Error connecting to API:", error);
-      alert("Server is down. Try again later.");
+      showFeedback('error', "Server is down. Try again later.");
     }
   };
 
@@ -77,13 +66,14 @@ const closeMessageModal = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registration Successful!");
+        // Show success and slide the panel over to the login form
+        showFeedback('success', "Registration Successful! Please sign in.", () => setIsRightPanelActive(false));
       } else {
-        alert(data.message || "Registration failed");
+        showFeedback('error', data.message || "Registration failed");
       }
     } catch (error) {
       console.error("Error connecting to API:", error);
-      alert("Server is down. Try again later.");
+      showFeedback('error', "Server is down. Try again later.");
     }
   };
 
@@ -102,16 +92,19 @@ const closeMessageModal = () => {
             type="text" 
             placeholder="Name" 
             onChange={(e) => setFormData({...formData, name: e.target.value})}
+            required
           />
           <input 
             type="email"
             placeholder="Email"
             onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
           />
           <input 
             type="password"
             placeholder="Password"
             onChange={(e) => setFormData({...formData, password: e.target.value})}
+            required
           />
           <button type="submit">Sign Up</button>
         </form>
@@ -124,11 +117,13 @@ const closeMessageModal = () => {
             type="email" 
             placeholder="Email" 
             onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
           />
           <input 
             type="password" 
             placeholder="Password" 
             onChange={(e) => setFormData({...formData, password: e.target.value})}
+            required
           />
           <a href="#">Forgot your password?</a>
           <button type="submit">Sign In</button>

@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useFeedback } from '../../context/FeedbackContext';
 import logoImg from '../../pictures/logo.png';
 
 const SettingsPage = () => {
     const { user, token, logout } = useAuth();
-    
+    const { showFeedback } = useFeedback();
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api`;
 
-
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
-
-
     const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
     
-
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('darkMode') === 'true';
     });
@@ -32,18 +29,23 @@ const SettingsPage = () => {
 
     const handleChangePassword = async (e) => {
         e.preventDefault();
-        if (passwords.new !== passwords.confirm) return alert("Passwords do not match");
+        if (passwords.new !== passwords.confirm) {
+            showFeedback('error', "Passwords do not match");
+            return;
+        }
+
         const res = await fetch(`${BASE_URL}/auth/change-password`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
         });
+
         if (res.ok) {
-            alert("Password changed successfully!");
+            showFeedback('success', "Password changed successfully!");
             setPasswords({ current: '', new: '', confirm: '' });
         } else {
             const data = await res.json();
-            alert(data.message || "Failed to change password");
+            showFeedback('error', data.message || "Failed to change password");
         }
     };
 
@@ -53,9 +55,11 @@ const SettingsPage = () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ amount })
         });
+
         if (res.ok) {
-            alert(`Successfully added ${amount} CR! Refreshing page to update balance...`);
-            window.location.reload();
+            showFeedback('success', `Successfully added ${amount} CR!`, () => window.location.reload());
+        } else {
+            showFeedback('error', "Failed to add credits. Try again later.");
         }
     };
 
@@ -66,9 +70,12 @@ const SettingsPage = () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(ticket)
         });
+
         if (res.ok) {
-            alert("Support ticket submitted! An admin will review it shortly.");
+            showFeedback('success', "Support ticket submitted! An admin will review it shortly.");
             setTicket({ station_id: '', subject: '', description: '' });
+        } else {
+            showFeedback('error', "Failed to submit ticket. Try again later.");
         }
     };
 
@@ -106,7 +113,7 @@ const SettingsPage = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                             {/* Appearance / Dark Mode */}
                             <section className="settings-card" style={{ margin: 0 }}>
-                                <h3>🌙 Appearance</h3>
+                                <h3>🖥️ Appearance</h3>
                                 <p style={{marginBottom: '20px'}}>Customize how BlackByte looks on your device.</p>
                                 <div className="theme-switch-wrapper">
                                     <div>
@@ -157,7 +164,7 @@ const SettingsPage = () => {
 
                         {/* Support Ticket */}
                         <section className="settings-card">
-                            <h3>🎧 Contact Support</h3>
+                            <h3>📞 Contact Support</h3>
                             <p style={{marginBottom: '20px'}}>Report broken equipment or request assistance from an admin.</p>
                             <form onSubmit={handleSubmitTicket} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
