@@ -902,7 +902,6 @@ body.dark-mode .admin-section,
 body.dark-mode .rank-badge,
 body.dark-mode .theme-switch-wrapper,
 body.dark-mode .slider,
-body.dark-mode form:not(.auth-form), /* Protects Settings from white forms */
 body.dark-mode div[style*="background: rgb(255, 255, 255)"],
 body.dark-mode div[style*="background: #fff"],
 body.dark-mode div[style*="background: white"] {
