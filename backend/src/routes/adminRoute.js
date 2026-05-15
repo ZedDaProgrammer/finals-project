@@ -10,7 +10,6 @@ router.delete('/bookings/:id', token, isAdmin, deleteReservation);
 
 router.get('/tickets', token, isAdmin, getTicket);
 router.put('/tickets/:id/status', token, isAdmin, updateTicketStatus);
-
 router.get('/computers', token, isAdmin, getComputers); 
 router.put('/computers/:id/status', token, isAdmin, updateComputerStatus); 
 

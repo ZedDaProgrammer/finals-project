@@ -35,17 +35,13 @@ const token = async (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
     try {
-        const userId = req.user.id;
-
-        const user = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
-
-        if(user.rows.length === 0 || user.rows[0].role !== 'admin'){
-            return res.status(403).json({ message: "Forbidden, Admins only"});
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ message: "Forbidden, Admins only" });
         }
         next();
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 

@@ -145,19 +145,20 @@ const getHistory = async (req, res) => {
     const user_id = req.user.id;
 
     try{
-        const historyQuery = await pool.query(
-            `SELECT r.*, c.type AS computer_type
-            FROM reservations r
-            JOIN computers c ON r.station_id = c.id
-            WHERE r.user_id = $1 
-            ORDER BY r.start DESC`,
-            [user_id]
-        );
-
-        const countQuery = await pool.query(
-            `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
-            [user_id]
-        );
+        const [historyQuery, countQuery] = await Promise.all([
+            pool.query(
+                `SELECT r.*, c.type AS computer_type
+                FROM reservations r
+                JOIN computers c ON r.station_id = c.id
+                WHERE r.user_id = $1 
+                ORDER BY r.start DESC`,
+                [user_id]
+            ),
+            pool.query(
+                `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
+                [user_id]
+            )
+        ]);
         
 
         res.status(200).json({ 
@@ -309,8 +310,7 @@ const groupBooking = async (req, res) => {
 
 const createTicket = async (req, res) => {
     const user_id = req.user.id;
-    const { station_id, subject, description } = req.body; 
-    
+    const { station_id, subject, description } = req.body;  
     const safeStationId = (station_id === '' || !station_id) ? null : parseInt(station_id);
 
     try {
