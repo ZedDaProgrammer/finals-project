@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useFeedback } from '../../context/feedbackContext'; // 1. Import the hook
+import { useFeedback } from '../../context/feedbackContext';
+import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
     const { showFeedback } = useFeedback(); // 2. Initialize the hook
-    
+    const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/reservation`;
 
@@ -131,6 +132,7 @@ const ReservationPage = () => {
         const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
         const match = isMatch(pc);
         
+        
         return (
             <div key={pc.id} 
                  className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
@@ -159,6 +161,11 @@ const ReservationPage = () => {
             </div>
         );
     };
+    const handleLogout = () => {
+   
+        localStorage.removeItem('token'); 
+        navigate('/login', { replace: true }); 
+    };
 
     return (
         <div className="dashboard-layout">
@@ -179,7 +186,7 @@ const ReservationPage = () => {
                         <span className="nav-section-title">Account</span>
                         <a href="/profile" className="nav-item">Profile</a>
                         <a href="/settings" className="nav-item">Settings</a>
-                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
                     </div>
                 </nav>
             </aside>

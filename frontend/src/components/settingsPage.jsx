@@ -78,6 +78,12 @@ const SettingsPage = () => {
             showFeedback('error', "Failed to submit ticket. Try again later.");
         }
     };
+    const handleLogout = () => {
+
+        localStorage.removeItem('token'); 
+
+        navigate('/login', { replace: true }); 
+    };
 
     return (
         <div className="dashboard-layout">
@@ -94,7 +100,7 @@ const SettingsPage = () => {
                         <span className="nav-section-title">Account</span>
                         <a href="/profile" className="nav-item">Profile</a>
                         <a href="/settings" className="nav-item active">Settings</a>
-                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
                     </div>
                 </nav>
             </aside>

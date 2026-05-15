@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
+import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
 
 const Dashboard = () => {
     const { user, token, logout } = useAuth();
+    const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [dashboardData, setDashboardData] = useState({
         availablePCs: 0,
@@ -60,6 +62,10 @@ const Dashboard = () => {
 
         if (token) fetchDashboardData();
     }, [token, logout]);
+    const handleLogout = () => {
+        localStorage.removeItem('token'); 
+        navigate('/login', { replace: true }); 
+    };
 
     return (
         <div className="dashboard-layout">
@@ -83,7 +89,7 @@ const Dashboard = () => {
                         <span className="nav-section-title">Account</span>
                         <a href="/profile" className="nav-item">Profile</a>
                         <a href="/settings" className="nav-item">Settings</a>
-                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
                     </div>
                 </nav>
             </aside>
