@@ -26,7 +26,8 @@ const AuthPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email,
+          // Converts email to lowercase upon submission
+          email: formData.email.toLowerCase(),
           password: formData.password,
         }),
       });
@@ -35,7 +36,6 @@ const AuthPage = () => {
 
       if (response.ok) {
         login(data.token); 
-        // Show success, and only navigate when "OK" is clicked
         showFeedback('success', 'Login Successful!', () => navigate('/dashboard'));
       } else {
         showFeedback('error', data.message || "Login failed");
@@ -57,8 +57,9 @@ const AuthPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.name,
-          email: formData.email,
+          // Converts both username and email to lowercase upon submission
+          username: formData.name.toLowerCase(),
+          email: formData.email.toLowerCase(),
           password: formData.password,
         }),
       });
@@ -66,7 +67,6 @@ const AuthPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Show success and slide the panel over to the login form
         showFeedback('success', "Registration Successful! Please sign in.", () => setIsRightPanelActive(false));
       } else {
         showFeedback('error', data.message || "Registration failed");

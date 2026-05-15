@@ -6,7 +6,7 @@ import logoImg from '../../pictures/logo.png';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
-    const { showFeedback } = useFeedback(); // 2. Initialize the hook
+    const { showFeedback } = useFeedback(); 
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/reservation`;
@@ -16,6 +16,9 @@ const ReservationPage = () => {
     const [selectedPC, setSelectedPC] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null); 
     const [activeTab, setActiveTab] = useState('standard');
+    
+    // NEW: Loading state to prevent spam clicks
+    const [isBooking, setIsBooking] = useState(false);
             
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
@@ -68,6 +71,10 @@ const ReservationPage = () => {
     const privateVipPcs = allVipPcs.slice(45, 55);    
 
     const handleBooking = async () => {
+        // Prevent execution if already in the middle of a booking
+        if (isBooking) return;
+        setIsBooking(true);
+
         const isRoom = !!selectedRoom;
         const endpoint = isRoom ? '/group-booking' : '/book';
         
@@ -93,15 +100,16 @@ const ReservationPage = () => {
             });
             const data = await response.json();
             
-            // 3. Trigger the global modal!
             if (response.ok) {
-                // Notice the 3rd parameter: it reloads the page AFTER the user clicks OK
+                // If successful, the page reloads, effectively resetting state
                 showFeedback('success', 'Booking Successful!', () => window.location.reload());
             } else {
                 showFeedback('error', `Booking failed: ${data.error}`);
+                setIsBooking(false); // Re-enable button on error
             }
         } catch (error) { 
             showFeedback('error', 'An error occurred while booking. Please try again.');
+            setIsBooking(false); // Re-enable button on error
         }
     };
 
@@ -132,7 +140,6 @@ const ReservationPage = () => {
         const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
         const match = isMatch(pc);
         
-        
         return (
             <div key={pc.id} 
                  className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
@@ -161,8 +168,8 @@ const ReservationPage = () => {
             </div>
         );
     };
+
     const handleLogout = () => {
-   
         localStorage.removeItem('token'); 
         navigate('/login', { replace: true }); 
     };
@@ -263,7 +270,6 @@ const ReservationPage = () => {
                     )}
                 </div>
 
-                {/* Main Unified Booking Modal */}
                 {(selectedPC || selectedRoom) && (() => { 
                     const isCurrentlyAvailable = selectedRoom 
                         ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
@@ -359,13 +365,14 @@ const ReservationPage = () => {
                                                 </div>
 
                                                 <div className="modal-actions">
+                                                    {/* Disable the button if processing to prevent spam clicks */}
                                                     <button 
                                                         className="confirm-btn" 
                                                         onClick={handleBooking}
-                                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable}
-                                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable) ? 1 : 0.5 }}
+                                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}
+                                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable && !isBooking) ? 1 : 0.5 }}
                                                     >
-                                                        Confirm
+                                                        {isBooking ? 'Processing...' : 'Confirm'}
                                                     </button>
                                                     <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
                                                 </div>
