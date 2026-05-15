@@ -15,19 +15,19 @@ const getDashboardStats = async (req, res) => {
 
         const currentDate = new Date().toISOString();
 
+        // OPTIMIZATION: Swapped 'NOT IN' for 'NOT EXISTS' for better execution plan
         const availableQuery = await pool.query(
-            `SELECT type, COUNT(*) as count FROM computers
-             WHERE availability = 'available' 
-             AND id NOT IN (
-                 SELECT station_id FROM reservations
-                 WHERE status != 'cancelled'
-                 AND station_id IS NOT NULL
-                 AND start <= $1
-                 AND "end" >= $1
+            `SELECT c.type, COUNT(*) as count FROM computers c
+             WHERE c.availability = 'available' 
+             AND NOT EXISTS (
+                 SELECT 1 FROM reservations r
+                 WHERE r.station_id = c.id
+                 AND r.status != 'cancelled'
+                 AND r.start <= $1
+                 AND r."end" >= $1
              )
-             GROUP BY type`, [currentDate]
+             GROUP BY c.type`, [currentDate]
         );
-
      
         let availableStandardPc = 0;
         let availableVipPc = 0;
@@ -49,22 +49,24 @@ const getDashboardStats = async (req, res) => {
 };
 
 const checkAvailability = async (req, res) => {
-    try{
+    try {
         const { start, end } = req.query;
-        if(!start || !end){
+        if (!start || !end) {
             return res.status(401).json({ error: "Please provide the needed details."});
         }
 
+        // OPTIMIZATION: Swapped 'NOT IN' for 'NOT EXISTS'
         const availableStation = await pool.query(`
-                SELECT * FROM computers
-                WHERE id NOT IN (
-                    SELECT station_id FROM reservations
-                    WHERE status != 'cancelled'
-                    AND start < $2::timestamp
-                    AND "end" > $1::timestamp
-                    AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))
+                SELECT c.* FROM computers c
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM reservations r
+                    WHERE r.station_id = c.id
+                    AND r.status != 'cancelled'
+                    AND r.start < $2::timestamp
+                    AND r."end" > $1::timestamp
+                    AND NOT (r.status = 'pending' AND CURRENT_TIMESTAMP > (r.start + INTERVAL '15 minutes'))
                 )
-                ORDER BY id ASC
+                ORDER BY c.id ASC
             `, [start, end]);
             
         res.status(200).json({ availableStation: availableStation.rows });
@@ -83,7 +85,6 @@ const createBooking = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Calculate duration and original cost
         const checkStation = await client.query(`SELECT * FROM computers WHERE id = $1 FOR UPDATE`, [station_id]);
         if (checkStation.rows.length === 0) throw new Error("Station not found.");
         
@@ -92,12 +93,10 @@ const createBooking = async (req, res) => {
         const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
         const originalCost = (checkStation.rows[0].pc_rate || 0) * durationHours;
 
-        // 2. Fetch User Rank from 'points' column
         const userQuery = await client.query(`SELECT credits, points FROM users WHERE id = $1 FOR UPDATE`, [user_id]);
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        // 🌟 RANKING & DISCOUNT LOGIC (Balanced Scale)
         let discountRate = 0;
         let rank = "Bronze";
         if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
@@ -111,16 +110,13 @@ const createBooking = async (req, res) => {
             throw new Error(`Rank ${rank} needs ${finalCost} CR, but you only have ${userCredits} CR.`);
         }
 
-        // 🌟 EARN POINTS: 1 Point per Hour Booked
         const earnedPoints = durationHours;
 
-        // 3. Deduct Credits AND Add Points for free
         await client.query(
             `UPDATE users SET credits = credits - $1, points = points + $2 WHERE id = $3`,
             [finalCost, earnedPoints, user_id]
         );
 
-        // 4. Create the Booking
         const newBooking = await client.query(`
             INSERT INTO reservations (user_id, station_id, start, "end", status)
             VALUES ($1, $2, $3 ,$4, 'pending') returning *`,
@@ -143,23 +139,26 @@ const createBooking = async (req, res) => {
 
 const getHistory = async (req, res) => {
     const user_id = req.user.id;
+    // OPTIMIZATION: Implemented pagination to prevent fetching massive payloads
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
 
-    try{
+    try {
         const [historyQuery, countQuery] = await Promise.all([
             pool.query(
                 `SELECT r.*, c.type AS computer_type
                 FROM reservations r
                 JOIN computers c ON r.station_id = c.id
                 WHERE r.user_id = $1 
-                ORDER BY r.start DESC`,
-                [user_id]
+                ORDER BY r.start DESC
+                LIMIT $2 OFFSET $3`,
+                [user_id, limit, offset]
             ),
             pool.query(
                 `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
                 [user_id]
             )
         ]);
-        
 
         res.status(200).json({ 
             history: historyQuery.rows,
@@ -175,14 +174,14 @@ const deleteBooking = async (req, res) => {
     const user_id = req.user.id;
     const reservation_id = req.params.id;
 
-    try{
+    try {
         const checkBooking = await pool.query(
             `SELECT * FROM reservations WHERE reservation_id = $1 AND user_id = $2`,
             [reservation_id, user_id]
         );
 
-        if(checkBooking.rows.length === 0){
-            return res.status(404).json({ error: "Booking not found or unautorized"});
+        if (checkBooking.rows.length === 0) {
+            return res.status(404).json({ error: "Booking not found or unauthorized"});
         }
 
         await pool.query(
@@ -190,7 +189,7 @@ const deleteBooking = async (req, res) => {
             [reservation_id]
         );
 
-        res.status(200).json({ message: "Booking Cancelled Succesfully" });
+        res.status(200).json({ message: "Booking Cancelled Successfully" });
 
     } catch (err) {
         console.error("Cancellation error:", err.message);
@@ -225,8 +224,6 @@ const upgradeMembership = async (req, res) => {
     const { amount } = req.body;
     try {
         const user = await pool.query('SELECT points FROM users WHERE id = $1', [user_id]);
-        
-        // Balanced scaling for manual purchases if they still want to buy points
         const newPoints = (user.rows[0].points || 0) + Math.floor(amount / 50); 
         
         await pool.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, user_id]);
@@ -264,7 +261,6 @@ const groupBooking = async (req, res) => {
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        // 🌟 RANKING & DISCOUNT LOGIC (Balanced Scale)
         let discountRate = 0;
         let rank = "Bronze";
         if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
@@ -278,27 +274,26 @@ const groupBooking = async (req, res) => {
             throw new Error(`Rank ${rank} needs ${finalCost} CR (after discount), but only have ${userCredits} CR.`);
         }
 
-        // 🌟 EARN POINTS: 1 Point per hour PER PC booked
         const earnedPoints = durationHours * stations.length;
 
-        // Deduct FINAL COST and ADD earned Points
         await client.query(
             `UPDATE users SET credits = credits - $1, points = points + $2 WHERE id = $3`,
             [finalCost, earnedPoints, user_id]
         );
 
-        const bookedStations = [];
-        for (const station_id of stations) {
-            const newBooking = await client.query(`
-                INSERT INTO reservations (user_id, station_id, start, "end", status)
-                VALUES ($1, $2, $3, $4, 'pending') returning *`,
-                [user_id, station_id, start, end]
-            );
-            bookedStations.push(newBooking.rows[0]);
-        }
+        // OPTIMIZATION: Replaced the N+1 `for` loop with a single batch insertion using `unnest`
+        const newBookings = await client.query(`
+            INSERT INTO reservations (user_id, station_id, start, "end", status)
+            SELECT $1, unnest($2::int[]), $3, $4, 'pending'
+            RETURNING *`,
+            [user_id, stations, start, end]
+        );
 
         await client.query('COMMIT');
-        res.status(200).json({ message: `Group booking confirmed! ${discountRate * 100}% Discount applied. Earned ${earnedPoints} rank points!`, bookings: bookedStations });
+        res.status(200).json({ 
+            message: `Group booking confirmed! ${discountRate * 100}% Discount applied. Earned ${earnedPoints} rank points!`, 
+            bookings: newBookings.rows 
+        });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error("Group Booking Error:", err.message);

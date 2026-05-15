@@ -1,16 +1,17 @@
-import { useEffect } from 'react'; 
-import LandingPage from './components/landingPage'; 
-import AuthPage from './components/authPage';
-import Dashboard from './components/dashboard';
-import ReservationPage from './components/reservationPage';
+import { useEffect, lazy, Suspense } from 'react'; 
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Protected from './protectedRoute';
-import Settings from './components/settingsPage';
-import ProfilePage from './components/profilePage';
-import { Routes, Route, Navigate } from 'react-router-dom'; // Added Navigate
-import AdminPanel from './components/adminPanel';
+
+// Lazy load all major components
+const LandingPage = lazy(() => import('./components/landingPage'));
+const AuthPage = lazy(() => import('./components/authPage'));
+const Dashboard = lazy(() => import('./components/dashboard'));
+const ReservationPage = lazy(() => import('./components/reservationPage'));
+const Settings = lazy(() => import('./components/settingsPage'));
+const ProfilePage = lazy(() => import('./components/profilePage'));
+const AdminPanel = lazy(() => import('./components/adminPanel'));
 
 function App() {
-    // Check if the user is currently logged in
     const isAuthenticated = !!localStorage.getItem('token');
 
     useEffect(() => {
@@ -21,27 +22,35 @@ function App() {
         }
     }, []);
 
-    return (
-        <Routes>
-            <Route 
-                path="/" 
-                element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} 
-            />
-            <Route 
-                path="/login" 
-                element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <AuthPage />} 
-            />                   
- 
-            <Route element={<Protected />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/booking" element={<ReservationPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/settings" element={<Settings />} />
-            </Route>   
+    const LoadingSpinner = () => (
+        <div className="loading-fallback" style={{ display: 'flex', justifyContent: 'center', marginTop: '20vh' }}>
+            <h2>Loading...</h2>
+        </div>
+    );
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+    return (
+        <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+                <Route 
+                    path="/" 
+                    element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} 
+                />
+                <Route 
+                    path="/login" 
+                    element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <AuthPage />} 
+                />                   
+    
+                <Route element={<Protected />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/booking" element={<ReservationPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/admin" element={<AdminPanel />} />
+                    <Route path="/settings" element={<Settings />} />
+                </Route>   
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </Suspense>
     );
 }
 
