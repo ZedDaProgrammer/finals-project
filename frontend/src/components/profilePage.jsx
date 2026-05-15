@@ -14,10 +14,8 @@ const ProfilePage = () => {
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-
     const points = user?.points || 0;
     const credits = user?.credits || 0;
-
 
     const evaluatePoints = (points) => {
         if(points >= 350) return 'Radiant';
@@ -52,11 +50,10 @@ const ProfilePage = () => {
 
     const rank = evaluatePoints(points);
 
-    const completedHistory = history.filter(res => {
-        const end = new Date(res.end);
-        const now = new Date();
-        return res.status !== 'cancelled' && now > end;
-    });
+    // Remove the restrictive `now > end` filter so you can actually see upcoming bookings.
+    // We will still filter out cancelled ones, or you can remove the filter entirely to see cancelled ones too.
+    const visibleHistory = history.filter(res => res.status !== 'cancelled');
+
     const handleLogout = () => {
         localStorage.removeItem('token'); 
         navigate('/login', { replace: true }); 
@@ -118,8 +115,8 @@ const ProfilePage = () => {
                         <div className="table-container">
                             {isLoading ? (
                                 <p style={{textAlign: 'center', padding: '20px'}}>Loading history...</p>
-                            ) : completedHistory.length === 0 ? (
-                                <p style={{textAlign: 'center', padding: '20px'}}>You have no completed reservations.</p>
+                            ) : visibleHistory.length === 0 ? (
+                                <p style={{textAlign: 'center', padding: '20px'}}>You have no reservation history.</p>
                             ) : (
                                 <table className="activity-table">
                                     <thead>
@@ -132,10 +129,23 @@ const ProfilePage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {completedHistory.map((res) => {
+                                        {visibleHistory.map((res) => {
                                             const start = new Date(res.start);
                                             const end = new Date(res.end);
+                                            const now = new Date();
                                             const durationHrs = Math.round(Math.abs(end - start) / 36e5);
+
+                                            // Dynamically calculate the real status
+                                            let displayStatus = 'UPCOMING';
+                                            let badgeClass = 'pending';
+
+                                            if (now > end) {
+                                                displayStatus = 'COMPLETED';
+                                                badgeClass = 'completed';
+                                            } else if (now >= start && now <= end) {
+                                                displayStatus = 'ACTIVE';
+                                                badgeClass = 'active'; // You might need to add an .active CSS class in your style.css
+                                            }
 
                                             return (
                                                 <tr key={res.reservation_id}>
@@ -144,9 +154,8 @@ const ProfilePage = () => {
                                                     <td>{start.toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                                     <td>{durationHrs} hour(s)</td>
                                                     <td>
-                                                        {/* Since we filtered, we know the status is always COMPLETED */}
-                                                        <span className="status-badge completed">
-                                                            COMPLETED
+                                                        <span className={`status-badge ${badgeClass}`}>
+                                                            {displayStatus}
                                                         </span>
                                                     </td>
                                                 </tr>
