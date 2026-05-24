@@ -483,7 +483,7 @@ input {
 
 
 /* =========================================
-   RESERVATION PANEL
+   RESERVATION PANEL & SECTION BUTTONS
    ========================================= */
 .reservation-container {
     padding: 50px;
@@ -501,7 +501,7 @@ input {
 .category-tabs {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     background: white;
     padding: 10px;
     border-radius: 30px;
@@ -519,6 +519,29 @@ input {
     transition: 0.3s;
 }
 .tab-btn.active { background: #e94560; color: white; }
+
+/* Custom Action Button for Layout Previews */
+.layout-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(26, 26, 46, 0.15);
+    transition: background 0.2s, transform 0.2s;
+}
+.layout-toggle-btn:hover {
+    background: #e94560;
+    transform: translateY(-2px);
+}
 
 .pc-grid {
     display: grid;
@@ -849,6 +872,26 @@ input {
 .btn-cancel { background: #edf2f4; color: #4a4e69; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
 .btn-confirm { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
 
+/* Blueprint Image Frame Visual Placeholder Token Rule definitions */
+.layout-image-placeholder {
+    background: #f8f9fa;
+    border: 2px dashed #ced4da;
+    border-radius: 12px;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0;
+}
+.placeholder-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a4e69;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 
 /* Valorant Ranks Light Tiers */
 .rank-bronze { background: rgba(165, 113, 82, 0.1); color: #a57152; border: 1px solid #a57152; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
@@ -886,7 +929,7 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
    GLOBAL DARK MODE OVERRIDES (BULLETPROOF)
    ========================================= */
 body.dark-mode { 
-    background: #121212 !important; /* FIXED: Overwrites light gradient layout completely */
+    background: #121212 !important; 
     color: #e0e0e0 !important; 
 }
 body.dark-mode .dashboard-content, body.dark-mode .admin-container { background-color: #121212 !important; }
@@ -906,7 +949,6 @@ body.dark-mode .rank-badge, body.dark-mode .wallet-card, body.dark-mode .ticket-
 body.dark-mode .room-specs-preview { color: #a5a5a5 !important; border-bottom-color: #333 !important; }
 body.dark-mode .room-specs-preview strong { color: #e94560 !important; }
 
-/* Table hover contrast mechanics update */
 body.dark-mode .activity-table tr:hover td { background-color: #26262b !important; color: #ffffff !important; }
 
 body.dark-mode .theme-switch-wrapper { background: #252525 !important; border-color: #3a3a3a !important; }
@@ -923,6 +965,9 @@ body.dark-mode .breakdown-item.total { border-top-color: #555; color: #e0e0e0 !i
 body.dark-mode .btn-cancel { background: #2a2a2a; color: #e0e0e0; }
 
 body.dark-mode .loading-fallback { background: #121212 !important; }
+
+body.dark-mode .layout-image-placeholder { background: #2a2a2a !important; border-color: #444 !important; }
+body.dark-mode .placeholder-text { color: #e0e0e0 !important; }
 
 body.dark-mode .rank-bronze { background: rgba(165, 113, 82, 0.2) !important; color: #c98b67 !important; }
 body.dark-mode .rank-silver { background: rgba(178, 178, 178, 0.2) !important; color: #d1d1d1 !important; }

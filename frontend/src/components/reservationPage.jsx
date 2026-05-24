@@ -3,7 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useFeedback } from '../../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
-import { Monitor, Gem, Layers, ShieldCheck, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Monitor, Gem, Layers, ShieldCheck, Map, X } from 'lucide-react';
+import standardLayoutImg from '../../pictures/standard.jpg';
+import vipLoungeLayoutImg from '../../pictures/vip.jpg';
+import vipRoomsLayoutImg from '../../pictures/vip_room.jpg';
+import privateLayoutImg from '../../pictures/private_lounge.jpg';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
@@ -18,6 +22,8 @@ const ReservationPage = () => {
     const [selectedRoom, setSelectedRoom] = useState(null); 
     const [activeTab, setActiveTab] = useState('standard');
     const [isBooking, setIsBooking] = useState(false);
+    const [showLayoutModal, setShowLayoutModal] = useState(false);
+    const [imageError, setImageError] = useState(false);
             
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
@@ -25,6 +31,11 @@ const ReservationPage = () => {
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
     });   
     const [duration, setDuration] = useState(1); 
+
+    // Reset layout image errors when changing category sectors
+    useEffect(() => {
+        setImageError(false);
+    }, [activeTab]);
 
     useEffect(() => {
         const fetchAllComputers = async () => {
@@ -41,7 +52,7 @@ const ReservationPage = () => {
             } catch (error) { console.error("Error fetching computers:", error); }
         };
         if (token) fetchAllComputers();
-    }, [token]);
+    }, [token, BASE_URL]);
 
     useEffect(() => {
         const checkAvailability = async () => {
@@ -59,7 +70,7 @@ const ReservationPage = () => {
             } catch (error) { console.error("Error checking availability:", error); }
         };
         if (token) checkAvailability();
-    }, [token, startTime, duration]);
+    }, [token, startTime, duration, BASE_URL]);
 
     const sortedComputers = [...allComputers].sort((a, b) => a.id - b.id);
     const allStandardPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
@@ -75,6 +86,7 @@ const ReservationPage = () => {
 
         const isRoom = !!selectedRoom;
         const endpoint = isRoom ? '/group-booking' : '/book';
+        
         const startTimestamp = new Date(startTime);
         const endTimestamp = new Date(startTimestamp.getTime() + duration * 36e5);
 
@@ -101,11 +113,11 @@ const ReservationPage = () => {
                 showFeedback('success', 'Booking Successful!', () => window.location.reload());
             } else {
                 showFeedback('error', `Booking failed: ${data.error}`);
-                setIsBooking(false);
+                setIsBooking(false); 
             }
         } catch (error) { 
             showFeedback('error', 'An error occurred while booking. Please try again.');
-            setIsBooking(false);
+            setIsBooking(false); 
         }
     };
 
@@ -150,7 +162,17 @@ const ReservationPage = () => {
                  }}>
                 <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-                {isMaintenance && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4d4d', fontWeight: 'bold', fontSize: '12px' }}>MAINTENANCE</div>}
+                
+                {isMaintenance && (
+                    <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', color: '#ff4d4d',
+                        fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px'
+                    }}>
+                        MAINTENANCE
+                    </div>
+                )}
             </div>
         );
     };
@@ -160,6 +182,44 @@ const ReservationPage = () => {
         logout();
         navigate('/login', { replace: true }); 
     };
+
+    // Tab-specific configuration routing logic
+    const getLayoutDetails = () => {
+        switch (activeTab) {
+            case 'standard':
+                return {
+                    title: 'Standard Lounge Layout Sector',
+                    image: standardLayoutImg,
+                    filename: 'standard_layout.png',
+                    description: 'Station terminal nodes 1 to 20 spatial layout mapping configuration.'
+                };
+            case 'vip_lounge':
+                return {
+                    title: 'VIP Lounge Layout Sector',
+                    image: vipLoungeLayoutImg,
+                    filename: 'vip_lounge_layout.png',
+                    description: 'Premium standalone workstation clusters configuration blueprint.'
+                };
+            case 'vip_rooms':
+                return {
+                    title: 'VIP 5-PC Team Rooms Sector',
+                    image: vipRoomsLayoutImg,
+                    filename: 'vip_rooms_layout.png',
+                    description: 'Multi-seat localized team arena nodes setup layout (Rooms 1 to 5).'
+                };
+            case 'private':
+                return {
+                    title: 'Private Dual 2-PC Suites Sector',
+                    image: privateLayoutImg,
+                    filename: 'private_layout.png',
+                    description: 'Dual isolation pod suites arrangement setup architecture (Suites 1 to 5).'
+                };
+            default:
+                return { title: 'Lounge Workspace Blueprint', image: null, filename: '', description: '' };
+        }
+    };
+
+    const layoutDetails = getLayoutDetails();
 
     return (
         <div className="dashboard-layout">
@@ -172,7 +232,9 @@ const ReservationPage = () => {
                         <span className="nav-section-title">Main Menu</span>
                         <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
                         <a href="/booking" className="nav-item active"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}                       
+                        {user?.role === 'admin' && (
+                            <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>
+                        )}                       
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
@@ -186,22 +248,42 @@ const ReservationPage = () => {
             <main className="dashboard-content">
                 <div className="reservation-container">
                     <h2>Reservations</h2>
+                    
                     <div className="category-tabs">
                         <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}><Monitor size={16} /> Standard Lounge</button>
                         <button className={`tab-btn ${activeTab === 'vip_lounge' ? 'active' : ''}`} onClick={() => setActiveTab('vip_lounge')}><Gem size={16} /> VIP Lounge</button>
                         <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}><Layers size={16} /> VIP Rooms (5-PC)</button>
                         <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}><ShieldCheck size={16} /> Private (2-PC)</button>
                     </div>
+
+                    {/* Integrated Section Layout Button */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
+                        <button 
+                            className="layout-toggle-btn"
+                            onClick={() => setShowLayoutModal(true)}
+                        >
+                            <Map size={16} />
+                            Show Room PC Layout
+                        </button>
+                    </div>
+
                     {(activeTab === 'standard' || activeTab === 'vip_lounge') && (
                         <div className="filters-container" style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
                             <select value={cpuFilter} onChange={e => setCpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All CPUs</option><option value="Intel">Intel</option><option value="Ryzen">Ryzen</option>
+                                <option value="all">All CPUs</option>
+                                <option value="Intel">Intel</option>
+                                <option value="Ryzen">Ryzen</option>
                             </select>
                             <select value={gpuFilter} onChange={e => setGpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All GPUs</option><option value="GTX">GTX</option><option value="RTX">RTX</option>
+                                <option value="all">All GPUs</option>
+                                <option value="GTX">GTX</option>
+                                <option value="RTX">RTX</option>
                             </select>
                             <select value={monitorFilter} onChange={e => setMonitorFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All Monitors</option><option value="144">144Hz</option><option value="240">240Hz</option><option value="360">360Hz</option>
+                                <option value="all">All Monitors</option>
+                                <option value="144">144Hz</option>
+                                <option value="240">240Hz</option>
+                                <option value="360">360Hz</option>
                             </select>
                         </div>
                     )}
@@ -212,7 +294,10 @@ const ReservationPage = () => {
                     {(activeTab === 'vip_rooms' || activeTab === 'private') && (
                         <div className="rooms-layout">
                             {[0,1,2,3,4].map(idx => {
-                                const pcs = activeTab === 'vip_rooms' ? vipRoomPcs.slice(idx*5, (idx+1)*5) : privateVipPcs.slice(idx*2, (idx+1)*2);
+                                const pcs = activeTab === 'vip_rooms' 
+                                    ? vipRoomPcs.slice(idx*5, (idx+1)*5)
+                                    : privateVipPcs.slice(idx*2, (idx+1)*2);
+                                
                                 if (pcs.length === 0) return null;
                                 const isRoomAvailable = pcs.every(p => availableIds.includes(p.id));
                                 const roomRate = pcs.reduce((sum, p) => sum + (p.pc_rate || 0), 0);
@@ -221,10 +306,12 @@ const ReservationPage = () => {
                                     <div key={idx} className={`room-box ${isRoomAvailable ? '' : 'room-occupied'}`}>
                                         <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} {idx + 1}</h4>
                                         
-                                        {/* UNIFORMITY FIX: Displays the complete hardware setup blueprint right on the category grid */}
+                                        {/* Dynamic uniform 4-parameter technical specification layout previews */}
                                         <div className="room-specs-preview">
-                                            <div><strong>CPU:</strong> {pcs[0]?.cpu || 'Intel Core i7'} | <strong>GPU:</strong> {pcs[0]?.gpu || 'NVIDIA RTX'}</div>
-                                            <div><strong>RAM:</strong> {pcs[0]?.ram ? `${pcs[0].ram} GB` : '16 GB'} | <strong>Display:</strong> {pcs[0]?.monitor_hz ? `${pcs[0].monitor_hz}Hz` : '240Hz'}</div>
+                                            <span><strong>CPU:</strong> {pcs[0]?.cpu || 'N/A'}</span>
+                                            <span><strong>GPU:</strong> {pcs[0]?.gpu || 'N/A'}</span>
+                                            <span><strong>RAM:</strong> {pcs[0]?.ram ? `${pcs[0].ram} GB` : 'N/A'}</span>
+                                            <span><strong>Monitor:</strong> {pcs[0]?.monitor_hz ? `${pcs[0].monitor_hz}Hz` : 'N/A'}</span>
                                         </div>
 
                                         <div className="room-grid">
@@ -234,7 +321,12 @@ const ReservationPage = () => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <button className="book-room-btn" onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}>Book Full Room ({roomRate} CR/hr)</button>
+                                        <button 
+                                            className="book-room-btn" 
+                                            onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
+                                        >
+                                            Book Full Room ({roomRate} CR/hr)
+                                        </button>
                                     </div>
                                 );
                             })}
@@ -242,55 +334,109 @@ const ReservationPage = () => {
                     )}
                 </div>
 
+                {/* Confirm Booking Modal Dialog */}
                 {(selectedPC || selectedRoom) && (() => { 
-                    const isCurrentlyAvailable = selectedRoom ? selectedRoom.pcs.every(p => availableIds.includes(p.id)) : (selectedPC && availableIds.includes(selectedPC.id));
-                    const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
+                    const isCurrentlyAvailable = selectedRoom 
+                        ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
+                        : (selectedPC && availableIds.includes(selectedPC.id));
                     
+                    const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
+                    const totalCost = targetRate * duration;
+
                     return (
                         <div className="modal-overlay">
                             <div className="modal-content modal-large">
                                 <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
+                                
                                 {!selectedRoom && selectedPC && (
                                     <div className="pc-dynamic-details">
                                         <h4>Specifications:</h4>
-                                        <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p><p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p><p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
                                     </div>
                                 )}
+
                                 {selectedRoom && (
                                     <div className="pc-dynamic-details">
-                                        <p style={{ fontStyle: 'italic', marginBottom: '15px' }} className="specs-text">You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                        <p style={{color: '#6c757d', fontStyle: 'italic', marginBottom: '15px'}} className="specs-text">You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
                                         <h4>Room Specifications:</h4>
-                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p><p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p><p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
                                     </div>
                                 )}
 
-                                <div className="modal-time-selector">
-                                    <div className="input-group"><label>Start Time:</label><input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} /></div>
-                                    <div className="input-group"><label>Duration (Hours):</label><input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} /></div>
+                                <div className="modal-time-selector" style={{ marginTop: '20px' }}>
+                                    <div className="input-group">
+                                        <label>Start Time:</label>
+                                        <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Duration (Hours):</label>
+                                        <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
+                                    </div>
                                 </div>
 
-                                {!isCurrentlyAvailable && <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: 'rgba(220,53,69,0.1)', padding: '10px', borderRadius: '5px' }}>⚠️ This slot is already booked. Please adjust parameters.</div>}
+                                {!isCurrentlyAvailable && (
+                                    <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: 'rgba(220,53,69,0.1)', padding: '10px', borderRadius: '5px' }}>
+                                        ⚠️ This {selectedRoom ? 'room' : 'PC'} is already booked during this time slot. Please adjust parameters.
+                                    </div>
+                                )}
 
                                 <div className="booking-summary">
                                     <hr style={{ margin: '15px 0', borderTop: '1px solid #ced4da' }}/>
+                                    
                                     {(() => {
-                                        const userPoints = user?.points || 0; let rank = "Bronze"; let discountRate = 0;
+                                        const userPoints = user?.points || 0;
+                                        let rank = "Bronze";
+                                        let discountRate = 0;
+
                                         if (userPoints >= 350) { rank = "Radiant"; discountRate = 0.15; }
                                         else if (userPoints >= 175) { rank = "Platinum"; discountRate = 0.10; }
                                         else if (userPoints >= 75) { rank = "Gold"; discountRate = 0.06; }
                                         else if (userPoints >= 25) { rank = "Silver"; discountRate = 0.03; }
 
-                                        const originalCost = targetRate * duration; const discountAmount = Math.round(originalCost * discountRate); const finalCost = originalCost - discountAmount;
+                                        const originalCost = targetRate * duration;
+                                        const discountAmount = Math.round(originalCost * discountRate);
+                                        const finalCost = originalCost - discountAmount;
                                         const hasEnoughCredits = (user?.credits || 0) >= finalCost;
 
                                         return (
                                             <>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><span>Original Price:</span><span>{originalCost} CR</span></div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}><span>Rank Discount ({rank}):</span><span>-{discountRate * 100}% ({discountAmount} CR)</span></div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}><strong>Final Cost:</strong><strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong></div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}><strong>Your Credits:</strong><span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>{user?.credits || 0} CR</span></div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                                    <span>Original Price:</span>
+                                                    <span>{originalCost} CR</span>
+                                                </div>
+                                                
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}>
+                                                    <span>Rank Discount ({rank}):</span>
+                                                    <span>-{discountRate * 100}% ({discountAmount} CR)</span>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                                    <strong>Final Total Cost:</strong> 
+                                                    <strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                                    <strong>Your Credits:</strong> 
+                                                    <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                                        {user?.credits || 0} CR
+                                                    </span>
+                                                </div>
+
                                                 <div className="modal-actions">
-                                                    <button className="confirm-btn" onClick={handleBooking} disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}>{isBooking ? 'Processing...' : 'Confirm'}</button>
+                                                    <button 
+                                                        className="confirm-btn" 
+                                                        onClick={handleBooking}
+                                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}
+                                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable && !isBooking) ? 1 : 0.5 }}
+                                                    >
+                                                        {isBooking ? 'Processing...' : 'Confirm'}
+                                                    </button>
                                                     <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
                                                 </div>
                                             </>
@@ -301,6 +447,48 @@ const ReservationPage = () => {
                         </div>
                     );
                 })()}
+
+                {/* Tab-Specific Room Layout Image Modal View */}
+                {showLayoutModal && (
+                    <div className="modal-overlay" onClick={() => setShowLayoutModal(false)}>
+                        <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>{layoutDetails.title}</h3>
+                                <button className="modal-close" onClick={() => setShowLayoutModal(false)}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="layout-image-wrapper" style={{ margin: '15px 0', textAlign: 'center' }}>
+                                    {!imageError && layoutDetails.image ? (
+                                        <img 
+                                            src={layoutDetails.image} 
+                                            alt={layoutDetails.title}
+                                            onError={() => setImageError(true)}
+                                            style={{ maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }}
+                                        />
+                                    ) : (
+                                        <div className="layout-image-placeholder">
+                                            <div className="placeholder-icon-wrapper">
+                                                <Map size={44} style={{ color: '#e94560', marginBottom: '10px' }} />
+                                            </div>
+                                            <span className="placeholder-text">{layoutDetails.title} Blueprint Placeholder</span>
+                                            <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: '#8d99ae', lineHeight: '1.4' }}>
+                                                Image file missing. Place a <strong>{layoutDetails.filename}</strong> image asset file inside your <code>frontend/pictures/</code> directory workspace to swap this dashboard placeholder out.
+                                            </p>
+                                        </div>
+                                    )}
+                                    <p style={{ margin: '15px 0 0 0', fontSize: '14px', color: '#6c757d', fontWeight: '500', lineHeight: '1.5' }}>
+                                        {layoutDetails.description}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn-cancel" onClick={() => setShowLayoutModal(false)}>Close View</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
