@@ -29,14 +29,20 @@ app.use('/api/reservation', authReservation);
 app.use('/api/admin', adminRouter);
 
 app.get('/', async (req, res) =>{
-    console.log("Start");
-    const result = await pool.query("SELECT current_database()");
-    console.log("End");
-    res.send(`The database name is ${result.rows[0].current_database}`);
+    if (process.env.NODE_ENV === 'development') {
+        console.log("Server health check: Starting database query");
+    }
+    try {
+        const result = await pool.query("SELECT current_database()");
+        res.send(`The database name is ${result.rows[0].current_database}`);
+    } catch (error) {
+        console.error("Database connection error:", error.message);
+        res.status(500).json({ error: "Database connection failed" });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
