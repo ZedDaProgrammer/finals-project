@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 
 export const AuthContext = createContext();
 
@@ -7,33 +7,34 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     
-    useEffect(() => {
-        const fetchUser = async () => {
-            if (token) {
-                try {
-                    const response = await fetch(`${API_URL}/api/auth/profile`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const userData = await response.json();
-                        setUser({ isAuthenticated: true, ...userData }); 
-                    } else {
-                        logout();
+    // Wrapped in useCallback so it can be exposed and safely utilized as a dependency
+    const fetchUser = useCallback(async () => {
+        if (token) {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                } catch (error) {
-                    console.error("Failed to fetch user:", error);
-                    setUser({ isAuthenticated: true }); 
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUser({ isAuthenticated: true, ...userData }); 
+                } else {
+                    logout();
                 }
-            } else {
-                setUser(null);
+            } catch (error) {
+                console.error("Failed to fetch user:", error);
+                setUser({ isAuthenticated: true }); 
             }
-        };
+        } else {
+            setUser(null);
+        }
+    }, [token, API_URL]);
 
+    useEffect(() => {
         fetchUser();
-    }, [token]);
+    }, [fetchUser]);
 
     const login = (newToken) => {
         localStorage.setItem('token', newToken);
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout }}>
+        <AuthContext.Provider value={{ user, token, login, logout, refreshUser: fetchUser }}>
             {children}
         </AuthContext.Provider>
     );

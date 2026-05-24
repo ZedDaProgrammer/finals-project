@@ -5,7 +5,8 @@ import { Wallet, Plus, X } from 'lucide-react';
 import logoImg from '../../pictures/logo.png';
 
 const ProfilePage = () => {
-    const { user, token, logout } = useAuth();
+    // Destructure refreshUser from useAuth context
+    const { user, token, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/reservation`;
@@ -41,7 +42,7 @@ const ProfilePage = () => {
                     setHistory(data.history);
                 }
             } catch (err) {
-                if (process.env.NODE_ENV === 'development') {
+                if (import.meta.env.DEV) {
                     console.error("Failed to fetch history:", err);
                 }
             } finally {
@@ -67,13 +68,16 @@ const ProfilePage = () => {
             if (response.ok) {
                 setShowWalletModal(false);
                 setCreditSlider(20);
-                // Trigger a refresh by updating user context (you may need to add this to AuthContext)
-                window.location.reload();
+                
+                // Reactive context state refresh instead of harsh window reloads
+                if (refreshUser) {
+                    await refreshUser();
+                }
             } else {
                 alert('Failed to add credits');
             }
         } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
+            if (import.meta.env.DEV) {
                 console.error("Credit addition error:", error);
             }
             alert('Error adding credits');

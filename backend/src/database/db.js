@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === 'production') {
     poolConfig.ssl = { rejectUnauthorized: false };
 }
 
-// linking database
 const pool = new Pool(poolConfig);
 
 pool.on("connect", () => {

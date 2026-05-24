@@ -130,6 +130,11 @@ const AdminPanel = () => {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token'); 
+        navigate('/login', { replace: true }); 
+    };
+
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
@@ -152,7 +157,7 @@ const AdminPanel = () => {
                         <span className="nav-section-title">Account</span>
                         <a href="/profile" className="nav-item">Profile</a>
                         <a href="/settings" className="nav-item">Settings</a>
-                        <button onClick={logout} className="nav-item logout-btn">Logout</button>
+                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
                     </div>
                 </nav>
             </aside>
