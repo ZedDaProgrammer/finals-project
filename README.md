@@ -2,12 +2,12 @@
 
 A robust, full-stack web application designed for managing user registrations, secure authentication, and system reservations. Built using a modern JavaScript stack with Node.js and Express on the backend, React on the frontend, and backed by a relational database management system.
 
-## 📝 Project Description
+##  Project Description
 This system provides a seamless user flow from authentication to reservation management. It includes custom route guarding on both the client and server sides to differentiate between regular users and administrative roles. Regular users can seamlessly navigate their dashboards and check reservations, while administrators have elevated permissions to review analytics and maintain complete system management capability.
 
 ---
 
-## 🛠️ Tech Stack & Database Used
+##  Tech Stack & Database Used
 
 ### Frontend
 - **Framework:** React.js (Vite workflow)
@@ -25,7 +25,7 @@ This system provides a seamless user flow from authentication to reservation man
 
 ---
 
-## 🚀 Chosen Advanced Feature: Role-Based Access Control (RBAC) & Secure Route Guarding
+##  Chosen Advanced Feature: Role-Based Access Control (RBAC) & Secure Route Guarding
 
 The primary advanced technical feature implemented within this system is **Granular Role-Based Access Control (RBAC)** coupled with **Strict Route Guards** across both application layers:
 
@@ -34,14 +34,9 @@ The primary advanced technical feature implemented within this system is **Granu
 
 ---
 
-## ⚙️ Setup Instructions
+##  Setup Instructions
 
 ### Prerequisites
 Ensure you have the following installed on your local machine:
 - [Node.js](https://nodejs.org/) (v16.x or higher recommended)
 - [PostgreSQL](https://www.postgresql.org/) (Local instance or a hosted URI like Neon/Render)
-
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/ZedDaProgrammer/finals-project.git](https://github.com/ZedDaProgrammer/finals-project.git)
-cd finals-project
