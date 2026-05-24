@@ -9,6 +9,7 @@ const AdminPanel = () => {
     const { token, user, logout } = useAuth();
     const navigate = useNavigate();
     const { showFeedback } = useFeedback();
+    
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/admin`;
     
@@ -53,6 +54,7 @@ const AdminPanel = () => {
             const originalStart = new Date(booking.start);
             const originalEnd = new Date(booking.end);
             const durationMs = originalEnd.getTime() - originalStart.getTime();
+
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
@@ -136,13 +138,13 @@ const AdminPanel = () => {
                 </div>
 
                 {activeTab === 'reservations' && (
-                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    <table className="activity-table">
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #ccc' }}><th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th></tr>
+                            <tr><th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             {bookings.map(b => (
-                                <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '50px' }}>
+                                <tr key={b.id}>
                                     <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
                                     <td>{new Date(b.start).toLocaleString()}</td><td>{new Date(b.end).toLocaleString()}</td>
                                     <td><span className={`status-badge ${b.status === 'active' ? 'active' : 'pending'}`}>{b.status}</span></td>
@@ -157,15 +159,15 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'tickets' && (
-                    <div>
+                    <div className="tickets-list-wrapper">
                         {tickets.map(t => (
-                            <div key={t.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+                            <div key={t.id} className="ticket-card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '10px', marginBottom: '10px' }}>
                                     <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#e94560'}}>(Station PC-{t.station_id})</span>}</h4>
                                     <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#dc3545' : '#28a745' }}>{t.status.toUpperCase()}</span>
                                 </div>
                                 <div style={{ fontSize: '0.9em', color: '#6c757d', marginBottom: '10px' }}><strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}</div>
-                                <div style={{ background: '#f8f9fa', padding: '10px', borderRadius: '5px', marginBottom: '10px', color: '#333' }}>{t.issue}</div>
+                                <div className="ticket-issue">{t.issue}</div>
                                 {t.status === 'open' && <button onClick={() => handleResolveTicket(t.id)} style={{ padding: '8px 15px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Mark as Resolved</button>}
                             </div>
                         ))}

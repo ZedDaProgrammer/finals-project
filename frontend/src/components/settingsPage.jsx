@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useFeedback } from '../../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
+import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
 
 const SettingsPage = () => {
     const { user, token, logout } = useAuth();
@@ -82,15 +83,15 @@ const SettingsPage = () => {
                 <nav className="sidebar-nav">
                     <div className="nav-section">
                         <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item">Dashboard</a>
-                        <a href="/booking" className="nav-item">Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item">Admin Panel</a>}
+                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
+                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
+                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item">Profile</a>
-                        <a href="/settings" className="nav-item active">Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
+                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
+                        <a href="/settings" className="nav-item active"><Settings size={18} /> Settings</a>
+                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
                     </div>
                 </nav>
             </aside>
@@ -117,7 +118,7 @@ const SettingsPage = () => {
                                 </div>
                                 <label className="theme-switch" htmlFor="checkbox">
                                     <input type="checkbox" id="checkbox" checked={isDarkMode} onChange={() => setIsDarkMode(!isDarkMode)} />
-                                    <div className="slider round"></div>
+                                    <div className="toggle-slider round"></div>
                                 </label>
                             </div>
                         </section>

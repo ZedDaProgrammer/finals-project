@@ -26,14 +26,8 @@ body {
     flex-direction: column;
 }
 
-h1 {
-    font-weight: bold;
-    margin: 0;
-}
-
-h2 {
-    text-align: center;
-}
+h1 { font-weight: bold; margin: 0; }
+h2 { text-align: center; }
 
 p {
     font-size: 14px;
@@ -43,9 +37,7 @@ p {
     margin: 20px 0 30px;
 }
 
-span {
-    font-size: 12px;
-}
+span { font-size: 12px; }
 
 a {
     color: #333;
@@ -79,7 +71,6 @@ input {
     margin: 8px 0;
     width: 100%;
 }
-
 
 /* =========================================
    LOGIN & REGISTER FORMS
@@ -165,8 +156,6 @@ input {
 .auth-container.right-panel-active .overlay-container{ transform: translateX(-100%); }
 
 .overlay {
-    background: #FF416C;
-    background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
     background: linear-gradient(to right, #FF4B2B, #FF416C);
     background-repeat: no-repeat;
     background-size: cover;
@@ -201,7 +190,6 @@ input {
 .auth-container.right-panel-active .overlay-left { transform: translateX(0); }
 .overlay-right { right: 0; transform: translateX(0); }
 .auth-container.right-panel-active .overlay-right { transform: translateX(20%); }
-
 
 /* =========================================
    SIDEBAR & DASHBOARD LAYOUT
@@ -329,7 +317,6 @@ input {
 .dashboard-header h1 { color: #2b2d42; font-size: 28px; margin: 0; }
 .dashboard-header p { margin: 5px 0 0; color: #6c757d; font-size: 15px; }
 
-
 /* =========================================
    DASHBOARD WIDGETS & TABLES
    ========================================= */
@@ -428,7 +415,6 @@ input {
 .status-badge.upcoming { background: rgba(77, 166, 255, 0.1); color: #0056b3; }
 .status-badge.pending { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
-
 /* =========================================
    ADMIN PANEL
    ========================================= */
@@ -461,7 +447,6 @@ input {
 .status-available { color: green; font-weight: bold; }
 .status-occupied { color: red; font-weight: bold; }
 .status-maintenance { color: orange; font-weight: bold; }
-
 
 /* =========================================
    RESERVATION PANEL
@@ -594,9 +579,8 @@ input {
 .book-room-btn:disabled { background: #ccc; cursor: not-allowed; }
 .book-room-btn:hover:not(:disabled) { background: #3388ff; }
 
-
 /* =========================================
-   MODAL POPUPS WITH ACCELERATED SLIDING ANIMATION
+   MODAL POPUPS & ANIMATIONS
    ========================================= */
 .modal-overlay {
     position: fixed;
@@ -626,32 +610,11 @@ input {
     animation: modalSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes modalFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes modalSlideDown {
-    from {
-        transform: translateY(-40px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalSlideDown { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal-large { width: 520px; }
-
-.modal-content h3 {
-    margin-bottom: 20px;
-    color: #2b2d42;
-    font-size: 22px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
-}
-
+.modal-content h3 { margin-bottom: 20px; color: #2b2d42; font-size: 22px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
 .modal-time-selector { display: flex; flex-direction: column; gap: 18px; margin: 25px 0; text-align: left; }
 .input-group { display: flex; flex-direction: column; gap: 8px; }
 .input-group label { font-weight: 600; color: #4a4e69; font-size: 14px; }
@@ -662,7 +625,6 @@ input {
     background: #f8f9fa;
     font-family: inherit;
     font-size: 14px;
-    transition: border-color 0.2s;
 }
 .input-group input:focus { border-color: #4da6ff; outline: none; background: #fff;}
 
@@ -678,7 +640,6 @@ input {
     cursor: pointer;
     font-weight: 700;
     font-size: 15px;
-    transition: background 0.2s, transform 0.1s;
 }
 .confirm-btn { background: #28a745; color: white; }
 .confirm-btn:hover:not(:disabled) { background: #218838; transform: translateY(-2px); }
@@ -691,9 +652,8 @@ input {
 .specs-text { margin: 6px 0 !important; font-size: 14px; color: #4a4e69; display: flex; justify-content: space-between; }
 .specs-text strong { color: #2b2d42; }
 
-
 /* =========================================
-   PROFILE PAGE & VALORANT RANKS
+   PROFILE PAGE DASHBOARD GRID
    ========================================= */
 .profile-container { 
     display: grid;
@@ -713,7 +673,6 @@ input {
     gap: 30px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     border: 1px solid rgba(0,0,0,0.05);
-    margin-bottom: 0;
     grid-column: span 1;
 }
 
@@ -735,7 +694,6 @@ input {
 .profile-details h2 { margin: 0 0 6px 0; color: #2b2d42; text-align: left; font-size: 22px; }
 .profile-details p { margin: 0; color: #6c757d; font-size: 14px; }
 
-/* Standalone Grid Wallet Component */
 .wallet-card {
     background: white;
     border-radius: 16px;
@@ -759,37 +717,13 @@ input {
     margin-bottom: 15px;
 }
 
-.wallet-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.credits-display {
-    display: flex;
-    flex-direction: column;
-}
-
-.credits-amount {
-    font-size: 36px;
-    font-weight: 800;
-    color: #2b2d42;
-    line-height: 1;
-}
-
-.credits-label {
-    font-size: 11px;
-    color: #8d99ae;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 6px;
-    font-weight: 600;
-}
+.wallet-content { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; }
+.credits-display { display: flex; flex-direction: column; }
+.credits-amount { font-size: 36px; font-weight: 800; color: #2b2d42; line-height: 1; }
+.credits-label { font-size: 11px; color: #8d99ae; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; font-weight: 600; }
 
 .wallet-topup-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     background: #e94560;
@@ -799,16 +733,10 @@ input {
     padding: 12px 24px;
     font-size: 13px;
     font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: transform 0.2s, background 0.2s;
 }
 
-.wallet-topup-btn:hover {
-    background: #d83a50;
-    transform: translateY(-2px);
-}
+.wallet-topup-btn:hover { background: #d83a50; transform: translateY(-2px); }
 
 .history-section {
     background: white;
@@ -819,37 +747,10 @@ input {
     grid-column: span 2;
 }
 
-/* Modal Inner Structures and Slider Enhancements */
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.modal-header h3 {
-    margin: 0 !important;
-    border: none !important;
-    padding: 0 !important;
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.modal-close {
-    background: transparent;
-    border: none;
-    color: #8d99ae;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s;
-}
-
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 20px; }
+.modal-header h3 { margin: 0 !important; border: none !important; padding: 0 !important; font-size: 20px; font-weight: 700; }
+.modal-close { background: transparent; border: none; color: #8d99ae; cursor: pointer; display: flex; align-items: center; }
 .modal-close:hover { color: #e94560; }
-
 .modal-body { padding: 5px 0; }
 
 .slider-container { margin-bottom: 25px; text-align: left; }
@@ -857,6 +758,7 @@ input {
 .slider-label { font-weight: 600; color: #4a4e69; font-size: 14px; }
 .slider-value { font-size: 16px; font-weight: 800; color: #e94560; background: rgba(233, 69, 96, 0.1); padding: 4px 10px; border-radius: 6px; }
 
+/* Modal Range Input Mechanics */
 .slider {
     -webkit-appearance: none;
     appearance: none;
@@ -867,7 +769,6 @@ input {
     outline: none;
     margin: 10px 0;
 }
-
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -876,259 +777,116 @@ input {
     border-radius: 50%;
     background: #e94560;
     cursor: pointer;
-    transition: transform 0.1s;
 }
-.slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-.slider-marks { display: flex; justify-content: space-between; color: #8d99ae; font-size: 11px; padding: 0 2px; }
-
+.slider-marks { display: flex; justify-content: space-between; color: #8d99ae; font-size: 11px; }
 .credit-breakdown { background: #f8f9fa; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #edf2f4; text-align: left; }
 .breakdown-item { display: flex; justify-content: space-between; font-size: 13px; color: #4a4e69; margin-bottom: 8px; }
-.breakdown-item:last-child { margin-bottom: 0; }
-.breakdown-item.total { border-top: 1px dashed #ced4da; padding-top: 10px; margin-top: 10px; font-weight: 700; color: #2b2d42; font-size: 14px; }
+.breakdown-item.total { border-top: 1px dashed #ced4da; padding-top: 10px; margin-top: 10px; font-weight: 700; color: #2b2d42; }
 .breakdown-item .new-balance { color: #28a745; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
-.btn-cancel { background: #edf2f4; color: #4a4e69; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-.btn-cancel:hover { background: #e2e6ea; }
-.btn-confirm { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-.btn-confirm:hover { background: #d83a50; }
+.btn-cancel { background: #edf2f4; color: #4a4e69; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+.btn-confirm { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
 
-/* Valorant Rank Colors (Light Mode) */
+/* Support Ticket System Semantic Rules */
+.ticket-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+.ticket-issue {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Valorant Ranks Light Tiering */
 .rank-bronze { background: rgba(165, 113, 82, 0.1); color: #a57152; border: 1px solid #a57152; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-silver { background: rgba(158, 158, 158, 0.1); color: #8e8e8e; border: 1px solid #9e9e9e; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-gold { background: rgba(229, 197, 99, 0.1); color: #b89326; border: 1px solid #e5c563; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-platinum { background: rgba(62, 181, 172, 0.1); color: #3eb5ac; border: 1px solid #3eb5ac; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-radiant { background: rgba(255, 234, 138, 0.1); color: #d4af37; border: 1px solid #ffea8a; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 
-/* Shimmer Skeletal Loading Component Base Rules */
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-.shimmer-bg {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e2e5e9 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite ease-in-out;
-}
-body.dark-mode .shimmer-bg {
-    background: linear-gradient(90deg, #252525 25%, #383838 50%, #252525 75%) !important;
-    background-size: 200% 100% !important;
-}
+/* Shimmer Loader Foundations */
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.shimmer-bg { background: linear-gradient(90deg, #f0f0f0 25%, #e2e5e9 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite ease-in-out; }
 
 @media (max-width: 768px) {
     .profile-container { grid-template-columns: 1fr; gap: 20px; }
     .profile-card, .wallet-card, .history-section { grid-column: span 1; }
 }
 
-
 /* =========================================
    SETTINGS PAGE
    ========================================= */
 .settings-container { max-width: 1100px; margin: 0 auto; }
-
-.settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.settings-card {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.settings-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
-
-.settings-card h3 {
-    margin-top: 0;
-    margin-bottom: 25px;
-    color: #2b2d42;
-    font-size: 18px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin-top: 30px; }
+.settings-card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); }
+.settings-card h3 { margin: 0 0 25px; color: #2b2d42; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; display: flex; align-items: center; gap: 10px; }
 .form-group { margin-bottom: 20px; text-align: left; }
 .form-group label { display: block; font-weight: 600; color: #4a4e69; font-size: 13px; margin-bottom: 8px; }
-
-.form-input {
-    width: 100%;
-    padding: 14px 15px;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    background: #f8f9fa;
-    font-family: inherit;
-    font-size: 14px;
-    transition: border-color 0.2s, background 0.2s;
-}
+.form-input { width: 100%; padding: 14px 15px; border: 1px solid #ced4da; border-radius: 8px; background: #f8f9fa; font-family: inherit; font-size: 14px; }
 .form-input:focus { border-color: #e94560; outline: none; background: #fff; }
 
-.settings-btn {
-    background: #e94560;
-    color: white;
-    border: none;
-    padding: 14px 25px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    width: 100%;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-}
-.settings-btn:hover { background: #d83a50; transform: translateY(-2px); }
+.settings-btn { background: #e94560; color: white; border: none; padding: 14px 25px; border-radius: 8px; font-weight: bold; width: 100%; }
 
+/* Isolated Toggle Switch Classes */
+.theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
+.theme-switch { display: inline-block; height: 30px; position: relative; width: 54px; }
+.theme-switch input { display: none; }
+.toggle-slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
+.toggle-slider:before { background-color: #fff; bottom: 3px; content: ""; height: 24px; left: 4px; position: absolute; transition: .4s; width: 24px; border-radius: 50%; }
+input:checked + .toggle-slider { background-color: #e94560; }
+input:checked + .toggle-slider:before { transform: translateX(22px); }
 
 /* =========================================
    GLOBAL DARK MODE OVERRIDES (BULLETPROOF)
    ========================================= */
-body.dark-mode {
-    background: #121212 !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-mode .dashboard-content,
-body.dark-mode .admin-container {
-    background-color: #121212 !important;
-    color: #e0e0e0 !important;
-}
+body.dark-mode, body.dark-mode .dashboard-content, body.dark-mode .admin-container { background-color: #121212 !important; color: #e0e0e0 !important; }
 
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4,
 body.dark-mode p, body.dark-mode span, body.dark-mode strong, body.dark-mode label,
 body.dark-mode .dashboard-header h1, body.dark-mode .dashboard-header p,
-body.dark-mode .wallet-balance, body.dark-mode .profile-details h2,
-body.dark-mode .admin-container h1, body.dark-mode .modal-content h3,
-body.dark-mode div[style*="color: rgb(51, 51, 51)"], 
-body.dark-mode div[style*="color: #333"],
-body.dark-mode div[style*="color: rgb(85, 85, 85)"],
-body.dark-mode div[style*="color: #555"] {
-    color: #e0e0e0 !important;
+body.dark-mode .profile-details h2, body.dark-mode .modal-content h3 { color: #e0e0e0 !important; }
+
+body.dark-mode .settings-card, body.dark-mode .widget-card, body.dark-mode .recent-activity-panel,
+body.dark-mode .room-box, body.dark-mode .profile-card, body.dark-mode .history-section,
+body.dark-mode .reservation-container, body.dark-mode .category-tabs, body.dark-mode .admin-section,
+body.dark-mode .rank-badge, body.dark-mode .wallet-card, body.dark-mode .ticket-card {
+    background: #1e1e1e !important; border-color: #333 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
 }
 
-body.dark-mode .admin-section h3 { border-bottom-color: #e94560 !important; }
+/* Bulletproof Theme Toggle Switch Overrides */
+body.dark-mode .theme-switch-wrapper { background: #252525 !important; border-color: #3a3a3a !important; }
+body.dark-mode .toggle-slider { background-color: #444 !important; }
+body.dark-mode input:checked + .toggle-slider { background-color: #e94560 !important; }
 
-body.dark-mode .settings-card,
-body.dark-mode .widget-card,
-body.dark-mode .recent-activity-panel,
-body.dark-mode .room-box,
-body.dark-mode .profile-card,
-body.dark-mode .history-section,
-body.dark-mode .reservation-container,
-body.dark-mode .category-tabs,
-body.dark-mode .admin-section,
-body.dark-mode .rank-badge,
-body.dark-mode .theme-switch-wrapper,
-body.dark-mode .slider,
-body.dark-mode div[style*="background: rgb(255, 255, 255)"],
-body.dark-mode div[style*="background: #fff"],
-body.dark-mode div[style*="background: white"] {
-    background: #1e1e1e !important;
-    border-color: #333 !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
-}
+/* Ticket Content Box Contrast Core Overrides */
+body.dark-mode .ticket-issue { background: #2a2a2a !important; color: #e0e0e0 !important; border: 1px solid #3a3a3a; }
 
-body.dark-mode td, body.dark-mode th,
-body.dark-mode table[style*="color: #333"],
-body.dark-mode table[style*="color: rgb(51, 51, 51)"] {
-    color: #e0e0e0 !important;
-}
+body.dark-mode td, body.dark-mode th { color: #e0e0e0 !important; }
+body.dark-mode .shimmer-bg { background: linear-gradient(90deg, #252525 25%, #383838 50%, #252525 75%) !important; }
 
-body.dark-mode .rank-bronze { background: rgba(165, 113, 82, 0.2) !important; color: #c98b67 !important; border-color: #c98b67 !important;}
-body.dark-mode .rank-silver { background: rgba(178, 178, 178, 0.2) !important; color: #d1d1d1 !important; border-color: #d1d1d1 !important;}
-body.dark-mode .rank-gold { background: rgba(229, 197, 99, 0.2) !important; color: #ffe075 !important; border-color: #ffe075 !important;}
-body.dark-mode .rank-platinum { background: rgba(62, 181, 172, 0.2) !important; color: #5cf2e7 !important; border-color: #5cf2e7 !important;}
-body.dark-mode .rank-radiant { background: rgba(255, 234, 138, 0.2) !important; color: #ffea8a !important; border-color: #ffea8a !important;}
+body.dark-mode .form-input, body.dark-mode .input-group input, body.dark-mode .slider { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
+body.dark-mode .modal-content, body.dark-mode .price-calculation, body.dark-mode .pc-dynamic-details, body.dark-mode .credit-breakdown { background: #1e1e1e !important; border-color: #333 !important; }
+body.dark-mode .breakdown-item { color: #b0b0b0; }
+body.dark-mode .breakdown-item.total { border-top-color: #555; color: #e0e0e0 !important; }
+body.dark-mode .btn-cancel { background: #2a2a2a; color: #e0e0e0; }
 
-body.dark-mode .form-input, body.dark-mode .input-group input {
-    background: #2a2a2a !important;
-    color: #e0e0e0 !important;
-    border-color: #444 !important;
-}
+body.dark-mode .rank-bronze { background: rgba(165, 113, 82, 0.2) !important; color: #c98b67 !important; }
+body.dark-mode .rank-silver { background: rgba(178, 178, 178, 0.2) !important; color: #d1d1d1 !important; }
+body.dark-mode .rank-gold { background: rgba(229, 197, 99, 0.2) !important; color: #ffe075 !important; }
+body.dark-mode .rank-platinum { background: rgba(62, 181, 172, 0.2) !important; color: #5cf2e7 !important; }
+body.dark-mode .rank-radiant { background: rgba(255, 234, 138, 0.2) !important; color: #ffea8a !important; }
 
-body.dark-mode .form-input:focus, body.dark-mode .input-group input:focus {
-    border-color: #e94560 !important;
-    background: #333 !important;
-}
-
-body.dark-mode .modal-content {
-    background: #1e1e1e !important;
-    border: 1px solid #333 !important;
-}
-
-body.dark-mode .price-calculation,
-body.dark-mode .pc-dynamic-details {
-    background: #2a2a2a !important;
-    border-color: #444 !important;
-}
-
-body.dark-mode .price-calculation p,
-body.dark-mode .specs-text {
-    color: #b0b0b0 !important;
-}
-
-body.dark-mode .specs-text strong {
-    color: #e0e0e0 !important;
-}
-
-body.dark-mode .pc-seat {
-    background: #2a2a2a !important;
-    border-color: #444 !important;
-}
-
-body.dark-mode .pc-seat.available {
-    background: rgba(40, 167, 69, 0.15) !important;
-    border-color: #28a745 !important;
-    color: #4ade80 !important;
-}
-
-body.dark-mode .pc-seat.occupied {
-    background: rgba(220, 53, 69, 0.15) !important;
-    border-color: #dc3545 !important;
-    color: #ff6b6b !important;
-}
-
-body.dark-mode .activity-table th { border-bottom-color: #444 !important; color: #888 !important; }
-body.dark-mode .activity-table td { border-bottom-color: #333 !important; }
-body.dark-mode .activity-table tr:hover td { background-color: #2a2a2a !important; }
-body.dark-mode .panel-header { border-bottom-color: #333 !important; }
-
-body.dark-mode .admin-table th { background-color: #111 !important; }
-body.dark-mode .admin-table tr:hover { background-color: #2a2a2a !important; }
-body.dark-mode .admin-table th, body.dark-mode .admin-table td { border-bottom-color: #333 !important; }
-
-body.dark-mode .cancel-btn {
-    background: #2a2a2a !important;
-    color: #e0e0e0 !important;
-    border-color: #444 !important;
-}
-body.dark-mode .cancel-btn:hover { background: #333 !important; }
-
-/* === AUTH PAGES === */
-.auth-container { background-color: #fff; }
-.auth-container form { background-color: #fff; }
-.auth-container h1, .auth-container p, .auth-container span, .auth-container a { color: #333; }
-.auth-container .overlay h1, .auth-container .overlay p, .auth-container .overlay span, .auth-container .overlay a { color: #fff; }
-.auth-container input { background-color: #eee; color: #333; border: 1px solid #ddd; }
-.auth-container button { background-color: #e94560; border-color: #e94560; color: #fff; }
-.auth-container button.ghost { background-color: transparent; border-color: #fff; color: #fff; }
-.auth-container .overlay { background: linear-gradient(to right, #1a1a2e, #e94560); color: #fff; }
-
-body.dark-mode .auth-container { background-color: #1e1e1e !important; }
-body.dark-mode .auth-container form { background-color: #1e1e1e !important; }
-body.dark-mode .auth-container h1, body.dark-mode .auth-container p, body.dark-mode .auth-container span, body.dark-mode .auth-container a { color: #e0e0e0 !important; }
-body.dark-mode .auth-container .overlay h1, body.dark-mode .auth-container .overlay p, body.dark-mode .auth-container .overlay span, body.dark-mode .auth-container .overlay a { color: #fff !important; }
-body.dark-mode .auth-container input { background-color: #2a2a2a !important; color: #e0e0e0 !important; border: 1px solid #444 !important; }
-body.dark-mode .auth-container .overlay { background: linear-gradient(to right, #121212, #1a1a2e) !important; }
-
+body.dark-mode .pc-seat { background: #2a2a2a !important; border-color: #444 !important; }
+body.dark-mode .pc-seat.available { background: rgba(40, 167, 69, 0.15) !important; border-color: #28a745 !important; color: #4ade80 !important; }
+body.dark-mode .pc-seat.occupied { background: rgba(220, 53, 69, 0.15) !important; border-color: #dc3545 !important; color: #ff6b6b !important; }
 
 /* =========================================
    LANDING PAGE STYLES
@@ -1136,23 +894,18 @@ body.dark-mode .auth-container .overlay { background: linear-gradient(to right, 
 .landing-page { color: #ffffff; background-color: #121212; font-family: 'Inter', sans-serif; min-height: 100vh; }
 .landing-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background: #1a1a1d; border-bottom: 2px solid #1a1a2e; }
 .landing-nav .logo { font-size: 28px; font-weight: bold; color: #fff; letter-spacing: 1px; }
-.login-btn, .cta-btn { background: #1a1a2e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s ease; }
-.login-btn:hover, .cta-btn:hover { background: #1a1a33; }
+.login-btn, .cta-btn { background: #1a1a2e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
 .hero-section { height: 75vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 20px; }
 .hero-content h1 { font-size: 3.5rem; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
 .hero-content p { font-size: 1.2rem; margin-bottom: 35px; max-width: 700px; margin-left: auto; margin-right: auto; color: #cccccc; line-height: 1.6; }
 .features-section { padding: 80px 20px; text-align: center; background-color: #0f0f11; }
 .features-section h2 { font-size: 2.5rem; margin-bottom: 40px; color: #ffffff; }
 .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
-.feature-card { background: #1a1a1d; padding: 30px 20px; border-radius: 10px; border: 1px solid #333; transition: transform 0.3s ease; }
-.feature-card:hover { transform: translateY(-5px); border-color: #1a1a2e; }
-.feature-card h3 { color: #1a1a2e; margin-bottom: 15px; font-size: 1.4rem; }
-.feature-card p { color: #aaa; line-height: 1.5; font-size: 0.95rem; }
+.feature-card { background: #1a1a1d; padding: 30px 20px; border-radius: 10px; border: 1px solid #333; }
 .landing-footer { text-align: center; padding: 25px; background: #0a0a0c; color: #666; font-size: 0.9rem; }
 
 .brand-logo { height: 70px; width: auto; transition: filter 0.3s ease; display: block; }
 body.dark-mode .brand-logo { filter: brightness(0) invert(1); }
-
 
 /* =========================================
    SUCCESS / ERROR MESSAGE MODALS
@@ -1161,6 +914,5 @@ body.dark-mode .brand-logo { filter: brightness(0) invert(1); }
 .message-icon.success { color: #28a745; }
 .message-icon.error { color: #dc3545; }
 .message-text { font-size: 16px; color: #4a4e69; margin-bottom: 25px; line-height: 1.5; }
-.close-message-btn { background: #e94560; color: white; border: none; padding: 12px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: transform 0.2s, background 0.2s; }
-.close-message-btn:hover { background: #d83a50; transform: translateY(-2px); }
+.close-message-btn { background: #e94560; color: white; border: none; padding: 12px 35px; border-radius: 8px; font-weight: bold; }
 body.dark-mode .message-text { color: #e0e0e0 !important; }
