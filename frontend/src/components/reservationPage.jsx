@@ -4,6 +4,8 @@ import { useFeedback } from '../../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
 import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Monitor, Gem, Layers, ShieldCheck, Map, X } from 'lucide-react';
+
+// Import tab-specific layout blueprints from the pictures folder
 import standardLayoutImg from '../../pictures/standard.jpg';
 import vipLoungeLayoutImg from '../../pictures/vip.jpg';
 import vipRoomsLayoutImg from '../../pictures/vip_room.jpg';
@@ -32,7 +34,6 @@ const ReservationPage = () => {
     });   
     const [duration, setDuration] = useState(1); 
 
-    // Reset layout image errors when changing category sectors
     useEffect(() => {
         setImageError(false);
     }, [activeTab]);
@@ -177,13 +178,6 @@ const ReservationPage = () => {
         );
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token'); 
-        logout();
-        navigate('/login', { replace: true }); 
-    };
-
-    // Tab-specific configuration routing logic
     const getLayoutDetails = () => {
         switch (activeTab) {
             case 'standard':
@@ -256,7 +250,6 @@ const ReservationPage = () => {
                         <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}><ShieldCheck size={16} /> Private (2-PC)</button>
                     </div>
 
-                    {/* Integrated Section Layout Button */}
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
                         <button 
                             className="layout-toggle-btn"
@@ -306,7 +299,6 @@ const ReservationPage = () => {
                                     <div key={idx} className={`room-box ${isRoomAvailable ? '' : 'room-occupied'}`}>
                                         <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} {idx + 1}</h4>
                                         
-                                        {/* Dynamic uniform 4-parameter technical specification layout previews */}
                                         <div className="room-specs-preview">
                                             <span><strong>CPU:</strong> {pcs[0]?.cpu || 'N/A'}</span>
                                             <span><strong>GPU:</strong> {pcs[0]?.gpu || 'N/A'}</span>
@@ -451,7 +443,8 @@ const ReservationPage = () => {
                 {/* Tab-Specific Room Layout Image Modal View */}
                 {showLayoutModal && (
                     <div className="modal-overlay" onClick={() => setShowLayoutModal(false)}>
-                        <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
+                        {/* Enlarged configuration viewport mapping window class applied */}
+                        <div className="modal-content modal-xlarge" onClick={e => e.stopPropagation()}>
                             <div className="modal-header">
                                 <h3>{layoutDetails.title}</h3>
                                 <button className="modal-close" onClick={() => setShowLayoutModal(false)}>
