@@ -54,7 +54,6 @@ const AdminPanel = () => {
             const originalStart = new Date(booking.start);
             const originalEnd = new Date(booking.end);
             const durationMs = originalEnd.getTime() - originalStart.getTime();
-
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
@@ -176,9 +175,9 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'computers' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div className="computer-status-grid">
                         {computers.map(c => (
-                            <div key={c.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
+                            <div key={c.id} className="computer-status-card">
                                 <div>
                                     <h4 style={{ margin: '0 0 5px', fontSize: '1.1em' }}>{c.name || c.pcname || `PC-${c.id}`}</h4>
                                     <span style={{ fontSize: '0.85em', color: '#6c757d', textTransform: 'uppercase' }}>{c.type}</span>
