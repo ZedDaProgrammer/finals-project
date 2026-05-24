@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useFeedback } from '../../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
+import { Monitor, Gem, Layers, ShieldCheck, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
@@ -16,8 +17,6 @@ const ReservationPage = () => {
     const [selectedPC, setSelectedPC] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null); 
     const [activeTab, setActiveTab] = useState('standard');
-    
-    // NEW: Loading state to prevent spam clicks
     const [isBooking, setIsBooking] = useState(false);
             
     const [startTime, setStartTime] = useState(() => {
@@ -71,13 +70,11 @@ const ReservationPage = () => {
     const privateVipPcs = allVipPcs.slice(45, 55);    
 
     const handleBooking = async () => {
-        // Prevent execution if already in the middle of a booking
         if (isBooking) return;
         setIsBooking(true);
 
         const isRoom = !!selectedRoom;
         const endpoint = isRoom ? '/group-booking' : '/book';
-        
         const startTimestamp = new Date(startTime);
         const endTimestamp = new Date(startTimestamp.getTime() + duration * 36e5);
 
@@ -101,15 +98,14 @@ const ReservationPage = () => {
             const data = await response.json();
             
             if (response.ok) {
-                // If successful, the page reloads, effectively resetting state
                 showFeedback('success', 'Booking Successful!', () => window.location.reload());
             } else {
                 showFeedback('error', `Booking failed: ${data.error}`);
-                setIsBooking(false); // Re-enable button on error
+                setIsBooking(false);
             }
         } catch (error) { 
             showFeedback('error', 'An error occurred while booking. Please try again.');
-            setIsBooking(false); // Re-enable button on error
+            setIsBooking(false);
         }
     };
 
@@ -154,23 +150,14 @@ const ReservationPage = () => {
                  }}>
                 <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-                
-                {isMaintenance && (
-                    <div style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', color: '#ff4d4d',
-                        fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px'
-                    }}>
-                        MAINTENANCE
-                    </div>
-                )}
+                {isMaintenance && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4d4d', fontWeight: 'bold', fontSize: '12px' }}>MAINTENANCE</div>}
             </div>
         );
     };
 
     const handleLogout = () => {
         localStorage.removeItem('token'); 
+        logout();
         navigate('/login', { replace: true }); 
     };
 
@@ -183,17 +170,15 @@ const ReservationPage = () => {
                 <nav className="sidebar-nav">
                     <div className="nav-section">
                         <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item">Dashboard</a>
-                        <a href="/booking" className="nav-item active">Reservation</a>
-                        {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
-                        )}                       
+                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
+                        <a href="/booking" className="nav-item active"><CalendarDays size={18} /> Reservation</a>
+                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}                       
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item">Profile</a>
-                        <a href="/settings" className="nav-item">Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
+                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
+                        <a href="/settings" className="nav-item"><Settings size={18} /> Settings</a>
+                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
                     </div>
                 </nav>
             </aside>
@@ -202,47 +187,32 @@ const ReservationPage = () => {
                 <div className="reservation-container">
                     <h2>Reservations</h2>
                     <div className="category-tabs">
-                        <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}>Standard Lounge</button>
-                        <button className={`tab-btn ${activeTab === 'vip_lounge' ? 'active' : ''}`} onClick={() => setActiveTab('vip_lounge')}>VIP Lounge</button>
-                        <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}>VIP Rooms (5-PC)</button>
-                        <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>Private (2-PC)</button>
+                        <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}><Monitor size={16} /> Standard Lounge</button>
+                        <button className={`tab-btn ${activeTab === 'vip_lounge' ? 'active' : ''}`} onClick={() => setActiveTab('vip_lounge')}><Gem size={16} /> VIP Lounge</button>
+                        <button className={`tab-btn ${activeTab === 'vip_rooms' ? 'active' : ''}`} onClick={() => setActiveTab('vip_rooms')}><Layers size={16} /> VIP Rooms (5-PC)</button>
+                        <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}><ShieldCheck size={16} /> Private (2-PC)</button>
                     </div>
                     {(activeTab === 'standard' || activeTab === 'vip_lounge') && (
                         <div className="filters-container" style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
                             <select value={cpuFilter} onChange={e => setCpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All CPUs</option>
-                                <option value="Intel">Intel</option>
-                                <option value="Ryzen">Ryzen</option>
+                                <option value="all">All CPUs</option><option value="Intel">Intel</option><option value="Ryzen">Ryzen</option>
                             </select>
                             <select value={gpuFilter} onChange={e => setGpuFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All GPUs</option>
-                                <option value="GTX">GTX</option>
-                                <option value="RTX">RTX</option>
+                                <option value="all">All GPUs</option><option value="GTX">GTX</option><option value="RTX">RTX</option>
                             </select>
                             <select value={monitorFilter} onChange={e => setMonitorFilter(e.target.value)} style={{ padding: '8px', borderRadius: '5px', backgroundColor: '#2d2d2d', color: '#fff', border: '1px solid #444' }}>
-                                <option value="all">All Monitors</option>
-                                <option value="144">144Hz</option>
-                                <option value="240">240Hz</option>
-                                <option value="360">360Hz</option>
+                                <option value="all">All Monitors</option><option value="144">144Hz</option><option value="240">240Hz</option><option value="360">360Hz</option>
                             </select>
                         </div>
                     )}
 
                     {activeTab === 'standard' && <div className="pc-grid">{standardPcs.map(renderPc)}</div>}
-                    
-                    {activeTab === 'vip_lounge' && (
-                        <div className="pc-grid">
-                            {generalVipPcs.length > 0 ? generalVipPcs.map(renderPc) : <p style={{textAlign: "center", gridColumn: "1 / -1"}}>The VIP Lounge is currently empty. Check back later!</p>}
-                        </div>
-                    )}
+                    {activeTab === 'vip_lounge' && <div className="pc-grid">{generalVipPcs.map(renderPc)}</div>}
 
                     {(activeTab === 'vip_rooms' || activeTab === 'private') && (
                         <div className="rooms-layout">
                             {[0,1,2,3,4].map(idx => {
-                                const pcs = activeTab === 'vip_rooms' 
-                                    ? vipRoomPcs.slice(idx*5, (idx+1)*5)
-                                    : privateVipPcs.slice(idx*2, (idx+1)*2);
-                                
+                                const pcs = activeTab === 'vip_rooms' ? vipRoomPcs.slice(idx*5, (idx+1)*5) : privateVipPcs.slice(idx*2, (idx+1)*2);
                                 if (pcs.length === 0) return null;
                                 const isRoomAvailable = pcs.every(p => availableIds.includes(p.id));
                                 const roomRate = pcs.reduce((sum, p) => sum + (p.pc_rate || 0), 0);
@@ -257,12 +227,7 @@ const ReservationPage = () => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <button 
-                                            className="book-room-btn" 
-                                            onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
-                                        >
-                                            Book Full Room ({roomRate} CR/hr)
-                                        </button>
+                                        <button className="book-room-btn" onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}>Book Full Room ({roomRate} CR/hr)</button>
                                     </div>
                                 );
                             })}
@@ -271,109 +236,54 @@ const ReservationPage = () => {
                 </div>
 
                 {(selectedPC || selectedRoom) && (() => { 
-                    const isCurrentlyAvailable = selectedRoom 
-                        ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
-                        : (selectedPC && availableIds.includes(selectedPC.id));
-                    
+                    const isCurrentlyAvailable = selectedRoom ? selectedRoom.pcs.every(p => availableIds.includes(p.id)) : (selectedPC && availableIds.includes(selectedPC.id));
                     const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
-                    const totalCost = targetRate * duration;
-                    const hasEnoughCredits = (user?.credits || 0) >= totalCost;
-
+                    
                     return (
                         <div className="modal-overlay">
                             <div className="modal-content modal-large">
                                 <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
-                                
                                 {!selectedRoom && selectedPC && (
                                     <div className="pc-dynamic-details">
                                         <h4>Specifications:</h4>
-                                        <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p>
-                                        <p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p>
-                                        <p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p>
-                                        <p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedPC.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedPC.gpu || 'N/A'}</p><p className="specs-text"><strong>RAM:</strong> {selectedPC.ram ? `${selectedPC.ram} GB` : 'N/A'}</p><p className="specs-text"><strong>Monitor:</strong> {selectedPC.monitor_hz ? `${selectedPC.monitor_hz} Hz` : 'N/A'}</p>
                                     </div>
                                 )}
-
                                 {selectedRoom && (
                                     <div className="pc-dynamic-details">
-                                        <p style={{color: '#555', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                        <p style={{color: '#6c757d', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
                                         <h4>Room Specifications:</h4>
-                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
-                                        <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
-                                        <p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p>
-                                        <p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
                                     </div>
                                 )}
 
-                                <div className="modal-time-selector" style={{ marginTop: '20px' }}>
-                                    <div className="input-group">
-                                        <label>Start Time:</label>
-                                        <input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>Duration (Hours):</label>
-                                        <input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} />
-                                    </div>
+                                <div className="modal-time-selector">
+                                    <div className="input-group"><label>Start Time:</label><input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} /></div>
+                                    <div className="input-group"><label>Duration (Hours):</label><input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} /></div>
                                 </div>
 
-                                {!isCurrentlyAvailable && (
-                                    <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>
-                                        ⚠️ This {selectedRoom ? 'room' : 'PC'} is already booked during this time slot. Please adjust the Start Time or Duration.
-                                    </div>
-                                )}
+                                {!isCurrentlyAvailable && <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>⚠️ This slot is already booked. Please adjust parameters.</div>}
 
                                 <div className="booking-summary">
-                                    <hr style={{ margin: '15px 0', borderTop: '1px solid #ccc' }}/>
-                                    
+                                    <hr style={{ margin: '15px 0', borderTop: '1px solid #ced4da' }}/>
                                     {(() => {
-                                        const userPoints = user?.points || 0;
-                                        let rank = "Bronze";
-                                        let discountRate = 0;
-
+                                        const userPoints = user?.points || 0; let rank = "Bronze"; let discountRate = 0;
                                         if (userPoints >= 350) { rank = "Radiant"; discountRate = 0.15; }
                                         else if (userPoints >= 175) { rank = "Platinum"; discountRate = 0.10; }
                                         else if (userPoints >= 75) { rank = "Gold"; discountRate = 0.06; }
                                         else if (userPoints >= 25) { rank = "Silver"; discountRate = 0.03; }
 
-                                        const originalCost = targetRate * duration;
-                                        const discountAmount = Math.round(originalCost * discountRate);
-                                        const finalCost = originalCost - discountAmount;
+                                        const originalCost = targetRate * duration; const discountAmount = Math.round(originalCost * discountRate); const finalCost = originalCost - discountAmount;
                                         const hasEnoughCredits = (user?.credits || 0) >= finalCost;
 
                                         return (
                                             <>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                                    <span>Original Price:</span>
-                                                    <span>{originalCost} CR</span>
-                                                </div>
-                                                
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}>
-                                                    <span>Rank Discount ({rank}):</span>
-                                                    <span>-{discountRate * 100}% ({discountAmount} CR)</span>
-                                                </div>
-
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-                                                    <strong>Final Total Cost:</strong> 
-                                                    <strong style={{ color: '#d84315', fontSize: '1.2em' }}>{finalCost} CR</strong>
-                                                </div>
-
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                                    <strong>Your Credits:</strong> 
-                                                    <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
-                                                        {user?.credits || 0} CR
-                                                    </span>
-                                                </div>
-
+                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '5px' }}><span>Original Price:</span><span>{originalCost} CR</span></div>
+                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}><span>Rank Discount ({rank}):</span><span>-{discountRate * 100}% ({discountAmount} CR)</span></div>
+                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}><strong>Final Cost:</strong><strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong></div>
+                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '20px' }}><strong>Your Credits:</strong><span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>{user?.credits || 0} CR</span></div>
                                                 <div className="modal-actions">
-                                                    {/* Disable the button if processing to prevent spam clicks */}
-                                                    <button 
-                                                        className="confirm-btn" 
-                                                        onClick={handleBooking}
-                                                        disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}
-                                                        style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable && !isBooking) ? 1 : 0.5 }}
-                                                    >
-                                                        {isBooking ? 'Processing...' : 'Confirm'}
-                                                    </button>
+                                                    <button className="confirm-btn" onClick={handleBooking} disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}>{isBooking ? 'Processing...' : 'Confirm'}</button>
                                                     <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
                                                 </div>
                                             </>

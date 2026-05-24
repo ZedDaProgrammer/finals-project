@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../pictures/logo.png';
 import { useFeedback } from '../../context/feedbackContext';
+import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, CheckSquare, Laptop, AlertCircle, Play, Trash2, CheckCircle } from 'lucide-react';
 
 const AdminPanel = () => {
     const { token, user, logout } = useAuth();
     const navigate = useNavigate();
     const { showFeedback } = useFeedback();
-    
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/admin`;
     
@@ -16,14 +16,8 @@ const AdminPanel = () => {
     const [bookings, setBookings] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
-    const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-    
-   useEffect(() => {
         if (user && user.role !== 'admin') {
             navigate('/dashboard', { replace: true });
         }
@@ -59,15 +53,10 @@ const AdminPanel = () => {
             const originalStart = new Date(booking.start);
             const originalEnd = new Date(booking.end);
             const durationMs = originalEnd.getTime() - originalStart.getTime();
-
             const newStart = new Date();
             const newEnd = new Date(newStart.getTime() + durationMs);
 
-            bodyData = {
-                status: 'active',
-                start: newStart.toISOString(),
-                end: newEnd.toISOString()
-            };
+            bodyData = { status: 'active', start: newStart.toISOString(), end: newEnd.toISOString() };
         }
 
         const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
@@ -76,27 +65,15 @@ const AdminPanel = () => {
             body: JSON.stringify(bodyData)
         });
 
-        if(res.ok) {
-            showFeedback('success', 'Reservation started successfully!');
-            fetchData(); 
-        } else {
-            showFeedback('error', 'Failed to start reservation.');
-        }
+        if(res.ok) { showFeedback('success', 'Reservation started successfully!'); fetchData(); } 
+        else { showFeedback('error', 'Failed to start reservation.'); }
     };
 
     const handleDeleteBooking = async (id) => {
         if(!window.confirm("Delete this reservation?")) return;
-        const res = await fetch(`${BASE_URL}/bookings/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if(res.ok) {
-            showFeedback('success', 'Reservation deleted successfully!');
-            fetchData();
-        } else {
-            showFeedback('error', 'Failed to delete reservation.');
-        }
+        const res = await fetch(`${BASE_URL}/bookings/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        if(res.ok) { showFeedback('success', 'Reservation deleted successfully!'); fetchData(); } 
+        else { showFeedback('error', 'Failed to delete reservation.'); }
     };
 
     const handleToggleComputer = async (id, currentStatus) => {
@@ -107,12 +84,8 @@ const AdminPanel = () => {
             body: JSON.stringify({ availability: newStatus })
         });
 
-        if(res.ok) {
-            showFeedback('success', `Computer status updated to ${newStatus.toUpperCase()}!`);
-            fetchData();
-        } else {
-            showFeedback('error', 'Failed to update computer status.');
-        }
+        if(res.ok) { showFeedback('success', `Computer status updated to ${newStatus.toUpperCase()}!`); fetchData(); } 
+        else { showFeedback('error', 'Failed to update computer status.'); }
     };
 
     const handleResolveTicket = async (id) => {
@@ -122,16 +95,13 @@ const AdminPanel = () => {
             body: JSON.stringify({ status: 'resolved' })
         });
 
-        if(res.ok) {
-            showFeedback('success', 'Support ticket marked as resolved!');
-            fetchData();
-        } else {
-            showFeedback('error', 'Failed to resolve support ticket.');
-        }
+        if(res.ok) { showFeedback('success', 'Support ticket marked as resolved!'); fetchData(); } 
+        else { showFeedback('error', 'Failed to resolve support ticket.'); }
     };
 
     const handleLogout = () => {
         localStorage.removeItem('token'); 
+        logout();
         navigate('/login', { replace: true }); 
     };
 
@@ -141,23 +111,18 @@ const AdminPanel = () => {
                 <div className="sidebar-brand">
                     <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
                 </div>
-                
                 <nav className="sidebar-nav">
                     <div className="nav-section">
                         <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item">Dashboard</a>
-                        <a href="/booking" className="nav-item">Reservation</a>
-                        
-                        {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
-                        )}
+                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
+                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
+                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item active"><Shield size={18} /> Admin Panel</a>}
                     </div>
-
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item">Profile</a>
-                        <a href="/settings" className="nav-item">Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn">Logout</button>
+                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
+                        <a href="/settings" className="nav-item"><Settings size={18} /> Settings</a>
+                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
                     </div>
                 </nav>
             </aside>
@@ -165,28 +130,25 @@ const AdminPanel = () => {
             <main className="dashboard-content" style={{ padding: '30px' }}>
                 <h2>Admin Control Panel</h2>
                 <div className="category-tabs" style={{ marginBottom: '20px' }}>
-                    <button className={`tab-btn ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>Reservations</button>
-                    <button className={`tab-btn ${activeTab === 'tickets' ? 'active' : ''}`} onClick={() => setActiveTab('tickets')}>Support Tickets</button>
-                    <button className={`tab-btn ${activeTab === 'computers' ? 'active' : ''}`} onClick={() => setActiveTab('computers')}>PC Status</button>
+                    <button className={`tab-btn ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}><CheckSquare size={16} /> Reservations</button>
+                    <button className={`tab-btn ${activeTab === 'tickets' ? 'active' : ''}`} onClick={() => setActiveTab('tickets')}><AlertCircle size={16} /> Support Tickets</button>
+                    <button className={`tab-btn ${activeTab === 'computers' ? 'active' : ''}`} onClick={() => setActiveTab('computers')}><Laptop size={16} /> PC Status</button>
                 </div>
 
                 {activeTab === 'reservations' && (
-                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#333' }}>
+                    <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #ccc' }}>
-                                <th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th>
-                            </tr>
+                            <tr style={{ borderBottom: '2px solid #ccc' }}><th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             {bookings.map(b => (
-                                <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '45px' }}>
+                                <tr key={b.id} style={{ borderBottom: '1px solid #eee', height: '50px' }}>
                                     <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
-                                    <td>{new Date(b.start).toLocaleString()}</td>
-                                    <td>{new Date(b.end).toLocaleString()}</td>
-                                    <td>{b.status}</td>
+                                    <td>{new Date(b.start).toLocaleString()}</td><td>{new Date(b.end).toLocaleString()}</td>
+                                    <td><span className={`status-badge ${b.status === 'active' ? 'active' : 'pending'}`}>{b.status}</span></td>
                                     <td>
-                                        {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '5px 10px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Start</button>}
-                                        <button onClick={() => handleDeleteBooking(b.id)} style={{ padding: '5px 10px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                                        {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '6px 12px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Play size={12} /> Start</button>}
+                                        <button onClick={() => handleDeleteBooking(b.id)} style={{ padding: '6px 12px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Trash2 size={12} /> Delete</button>
                                     </td>
                                 </tr>
                             ))}
@@ -195,89 +157,32 @@ const AdminPanel = () => {
                 )}
 
                 {activeTab === 'tickets' && (
-                    <div style={{ color: '#333' }}>
+                    <div>
                         {tickets.map(t => (
                             <div key={t.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
-                                    <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#d84315'}}>(Station PC-{t.station_id})</span>}</h4>
-                                    <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#f44336' : '#4CAF50' }}>
-                                        {t.status.toUpperCase()}
-                                    </span>
+                                    <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#e94560'}}>(Station PC-{t.station_id})</span>}</h4>
+                                    <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#dc3545' : '#28a745' }}>{t.status.toUpperCase()}</span>
                                 </div>
-                                <div style={{ fontSize: '0.9em', color: '#555', marginBottom: '10px' }}>
-                                    <strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}
-                                </div>
-                                <div style={{ background: '#fff', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}>
-                                    {t.issue}
-                                </div>
-                                
-                                {t.status === 'open' && (
-                                    <button 
-                                        onClick={() => handleResolveTicket(t.id)} 
-                                        style={{ padding: '8px 15px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                    >
-                                        Mark as Resolved
-                                    </button>
-                                )}
+                                <div style={{ fontSize: '0.9em', color: '#6c757d', marginBottom: '10px' }}><strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}</div>
+                                <div style={{ background: '#f8f9fa', padding: '10px', borderRadius: '5px', marginBottom: '10px', color: '#333' }}>{t.issue}</div>
+                                {t.status === 'open' && <button onClick={() => handleResolveTicket(t.id)} style={{ padding: '8px 15px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Mark as Resolved</button>}
                             </div>
                         ))}
-                        {tickets.length === 0 && <p>No support tickets submitted yet.</p>}
+                        {tickets.length === 0 && <p style={{textAlign: 'center', color: '#6c757d', padding: '20px'}}>No support tickets submitted yet.</p>}
                     </div>
                 )}
 
                 {activeTab === 'computers' && (
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-                        gap: '15px', 
-                        color: '#333' 
-                    }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
                         {computers.map(c => (
-                            <div key={c.id} style={{ 
-                                background: '#fff', 
-                                border: '1px solid #ddd', 
-                                padding: '15px', 
-                                borderRadius: '8px', 
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                gap: '10px'
-                            }}>
+                            <div key={c.id} style={{ background: '#fff', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
                                 <div>
-                                    <h4 style={{ margin: '0 0 5px', fontSize: '1.1em' }}>
-                                        {(c.name || c.pcname) || `PC-${c.id}`}
-                                    </h4>
-                                    <span style={{ fontSize: '0.85em', color: '#666', textTransform: 'uppercase' }}>
-                                        {c.type}
-                                    </span>
+                                    <h4 style={{ margin: '0 0 5px', fontSize: '1.1em' }}>{c.name || c.pcname || `PC-${c.id}`}</h4>
+                                    <span style={{ fontSize: '0.85em', color: '#6c757d', textTransform: 'uppercase' }}>{c.type}</span>
                                 </div>
-                                
-                                <span style={{ 
-                                    fontWeight: 'bold', 
-                                    fontSize: '0.9em',
-                                    padding: '4px 8px',
-                                    borderRadius: '12px',
-                                    backgroundColor: c.availability === 'maintenance' ? 'rgba(244, 67, 54, 0.1)' : 'rgba(76, 175, 80, 0.1)',
-                                    color: c.availability === 'maintenance' ? '#f44336' : '#4CAF50' 
-                                }}>
-                                    {c.availability.toUpperCase()}
-                                </span>
-
-                                <button 
-                                    onClick={() => handleToggleComputer(c.id, c.availability)} 
-                                    style={{ 
-                                        padding: '8px', 
-                                        cursor: 'pointer',
-                                        background: c.availability === 'maintenance' ? '#4CAF50' : '#f44336',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        marginTop: '5px'
-                                    }}
-                                >
-                                    Set {c.availability === 'maintenance' ? 'Available' : 'Maintenance'}
-                                </button>
+                                <span style={{ fontWeight: 'bold', fontSize: '0.9em', padding: '4px 8px', borderRadius: '12px', backgroundColor: c.availability === 'maintenance' ? 'rgba(220, 53, 69, 0.1)' : 'rgba(40, 167, 69, 0.1)', color: c.availability === 'maintenance' ? '#dc3545' : '#28a745' }}>{c.availability.toUpperCase()}</span>
+                                <button onClick={() => handleToggleComputer(c.id, c.availability)} style={{ padding: '8px', cursor: 'pointer', background: c.availability === 'maintenance' ? '#28a745' : '#dc3545', color: '#fff', border: 'none', borderRadius: '6px', marginTop: '5px' }}>Set {c.availability === 'maintenance' ? 'Available' : 'Maintenance'}</button>
                             </div>
                         ))}
                     </div>
