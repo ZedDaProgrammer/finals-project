@@ -214,6 +214,11 @@ const ReservationPage = () => {
     };
 
     const layoutDetails = getLayoutDetails();
+    const handleLogout = () => {
+        localStorage.removeItem('token'); 
+        logout();
+        navigate('/login', { replace: true }); 
+    };
 
     return (
         <div className="dashboard-layout">
