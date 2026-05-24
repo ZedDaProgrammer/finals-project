@@ -33,7 +33,7 @@ const userRegister = async(req, res) => {
 
     //returns an error message if user exists
     if(userExist.rows.length > 0){
-        return res.status(400).json({message: 'This nigga exist already'});
+        return res.status(400).json({message: 'This user exist already'});
     }
     
     //password hashing 
@@ -57,13 +57,13 @@ const userRegister = async(req, res) => {
 const userLogin = async (req, res) =>{
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ message: 'Provinigga all required fields'});
+        return res.status(400).json({ message: 'Provide all required fields'});
     }
 
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (user.rows.length === 0) {
-        return res.status(400).json({ message: 'Iniggavalid Credentials'});
+        return res.status(400).json({ message: 'Invalid Credentials'});
     }
 
     const userData = user.rows[0];
@@ -71,7 +71,7 @@ const userLogin = async (req, res) =>{
     const isMatch = await bcrypt.compare(password, userData.password);
 
     if (!isMatch) {
-        return res.status(400).json({ message: 'Iniggavalid Credentials'});
+        return res.status(400).json({ message: 'Invalid Credentials'});
     }
 
     const token = generateToken(userData.id);
