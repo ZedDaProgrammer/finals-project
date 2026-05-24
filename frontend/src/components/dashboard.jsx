@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../pictures/logo.png';
@@ -16,52 +16,59 @@ const Dashboard = () => {
     const [rawSessions, setRawSessions] = useState([]); 
     const [currentTime, setCurrentTime] = useState(new Date()); 
     const [isLoading, setIsLoading] = useState(true);
+    const currentTimeRef = useRef(new Date());
 
-    // Live Timer ticks every 1 second
+    // OPTIMIZATION: Update time in ref without causing re-renders
     useEffect(() => {
         const timer = setInterval(() => {
+            currentTimeRef.current = new Date();
+            // Update state every 5 seconds to refresh UI without constant re-renders
             setCurrentTime(new Date());
-        }, 1000);
+        }, 5000);
         return () => clearInterval(timer);
     }, []);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const BASE_URL = `${API_URL}/api/reservation`;
-                const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    // Fetch dashboard data with refresh capability
+    const fetchDashboardData = async () => {
+        try {
+            const BASE_URL = `${API_URL}/api/reservation`;
+            const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-                const statsRes = await fetch(`${BASE_URL}/stats`, { headers, cache: 'no-store' });
-                if (statsRes.status === 401) return logout(); 
-                if (!statsRes.ok) throw new Error("Stats fetch failed");
-                const stats = await statsRes.json();
+            const statsRes = await fetch(`${BASE_URL}/stats`, { headers, cache: 'no-store' });
+            if (statsRes.status === 401) return logout(); 
+            if (!statsRes.ok) throw new Error("Stats fetch failed");
+            const stats = await statsRes.json();
 
-                const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers, cache: 'no-store' });
-                const dashboard = await dashboardRes.json();
+            const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers, cache: 'no-store' });
+            const dashboard = await dashboardRes.json();
 
-                const historyRes = await fetch(`${BASE_URL}/history`, { headers, cache: 'no-store' });
-                const history = await historyRes.json();
-                
-                setDashboardData({
-                    availablePCs: Number(stats.availableStandardPc) || 0,
-                    availableVipPCs: Number(stats.availableVipPc) || 0,
-                    userTotalBooked: Number(stats.totalBookedPc) || 0,
-                    orderHistory: Number(history.count) || 0 
-                });
+            const historyRes = await fetch(`${BASE_URL}/history`, { headers, cache: 'no-store' });
+            const history = await historyRes.json();
+            
+            setDashboardData({
+                availablePCs: Number(stats.availableStandardPc) || 0,
+                availableVipPCs: Number(stats.availableVipPc) || 0,
+                userTotalBooked: Number(stats.totalBookedPc) || 0,
+                orderHistory: Number(history.count) || 0 
+            });
 
-                if (dashboard.activeSessions) {
-                    setRawSessions(dashboard.activeSessions); 
-                }
-
-                setIsLoading(false);
-            } catch (error) {
-                console.error("Error fetching dashboard data:", error);
-                setIsLoading(false);
+            if (dashboard.activeSessions) {
+                setRawSessions(dashboard.activeSessions); 
             }
-        };
 
+            setIsLoading(false);
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error("Error fetching dashboard data:", error);
+            }
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (token) fetchDashboardData();
     }, [token, logout]);
+
     const handleLogout = () => {
         localStorage.removeItem('token'); 
         navigate('/login', { replace: true }); 
@@ -130,7 +137,7 @@ const Dashboard = () => {
                 <section className="recent-activity-panel">
                     <div className="panel-header">
                         <h2>Your Active Sessions</h2>
-                        <button className="view-all-btn" onClick={() => window.location.reload()}>Refresh</button>
+                        <button className="view-all-btn" onClick={fetchDashboardData}>Refresh</button>
                     </div>
                     
                     <div className="table-container">
@@ -154,6 +161,7 @@ const Dashboard = () => {
                                         
                                         const start = new Date(res.start);
                                         const end = new Date(res.end);
+                                        const now = currentTimeRef.current;
 
                                         let statusStr = "";
                                         let badgeClass = "";
@@ -163,32 +171,56 @@ const Dashboard = () => {
                                         const durationHours = Math.round((end - start) / 3600000);
                                         const allottedTimeStr = `${durationHours} Hour${durationHours > 1 ? 's' : ''}`;
 
+                                        // FEATURE: Late booking grace period (30 min) with red text
+                                        const GRACE_PERIOD_MS = 30 * 60 * 1000; // 30 minutes
+                                        const timeOverMs = now - end;
+                                        const isInGracePeriod = timeOverMs > 0 && timeOverMs <= GRACE_PERIOD_MS;
+                                        const isOverGracePeriod = timeOverMs > GRACE_PERIOD_MS;
+
                                         if (res.status === 'pending') {
                                             statusStr = "Pending";
                                             badgeClass = "pending";
                                             timeColor = "gray";
                                             displayTimeStr = allottedTimeStr;
                                         } 
-                                        else if (res.status === 'active' && currentTime < start) {
+                                        else if (res.status === 'active' && now < start) {
                                             statusStr = "Upcoming";
                                             badgeClass = "upcoming"; 
                                             timeColor = "#0056b3";  
                                             displayTimeStr = allottedTimeStr;
                                         } 
-                                        else if (res.status === 'active' && currentTime >= start && currentTime < end) {
+                                        else if (res.status === 'active' && now >= start && now < end) {
                                             statusStr = "Active";
                                             badgeClass = "active";   
                                             timeColor = "#28a745"; 
                                             
-                                            const diffMs = end - currentTime;
+                                            const diffMs = end - now;
                                             const hours = Math.floor(diffMs / 3600000);
                                             const mins = Math.floor((diffMs % 3600000) / 60000);
                                             const secs = Math.floor((diffMs % 60000) / 1000);
                                             
                                             displayTimeStr = `${hours}h ${mins}m ${secs}s`;
-                                        } 
+                                        }
+                                        else if (isInGracePeriod) {
+                                            // FEATURE: Show red text for bookings in grace period
+                                            statusStr = "Grace Period";
+                                            badgeClass = "completed"; 
+                                            timeColor = "#ff0000"; // RED for grace period
+                                            
+                                            const remainingMs = GRACE_PERIOD_MS - timeOverMs;
+                                            const mins = Math.floor(remainingMs / 60000);
+                                            const secs = Math.floor((remainingMs % 60000) / 1000);
+                                            
+                                            displayTimeStr = `${mins}m ${secs}s left`;
+                                        }
+                                        else if (isOverGracePeriod) {
+                                            // FEATURE: Auto-delete after grace period (handled by backend)
+                                            statusStr = "Expired";
+                                            badgeClass = "completed"; 
+                                            timeColor = "#f44336";
+                                            displayTimeStr = "0h 0m 0s";
+                                        }
                                         else {
-                                            // ADDED FALLBACK: If time has passed, clearly mark it as expired
                                             statusStr = "Expired";
                                             badgeClass = "completed"; 
                                             timeColor = "#f44336";
