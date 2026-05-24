@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
 import { useNavigate } from 'react-router-dom';
+import { Monitor, Star, Calendar } from 'lucide-react';
 import logoImg from '../../pictures/logo.png';
 
 const Dashboard = () => {
@@ -58,7 +59,8 @@ const Dashboard = () => {
 
             setIsLoading(false);
         } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
+            // Vite-compatible logging replacement to avoid uncaught process ReferenceErrors
+            if (import.meta.env.DEV) {
                 console.error("Error fetching dashboard data:", error);
             }
             setIsLoading(false);
@@ -71,6 +73,7 @@ const Dashboard = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token'); 
+        logout();
         navigate('/login', { replace: true }); 
     };
 
@@ -78,7 +81,6 @@ const Dashboard = () => {
         <div className="dashboard-layout">
             <aside className="sidebar">
                 <div className="sidebar-brand">
-                    {/* Replaced the <h2> with the dynamic logo */}
                     <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
                 </div>
                 
@@ -88,7 +90,7 @@ const Dashboard = () => {
                         <a href="/dashboard" className="nav-item active">Dashboard</a>
                         <a href="/booking" className="nav-item">Reservation</a>
                         {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
+                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
                         )}                    
                     </div>
 
@@ -109,7 +111,9 @@ const Dashboard = () => {
 
                 <div className="widgets-grid">
                     <div className="widget-card">
-                        <div className="widget-icon standard-pc">🖥️</div>
+                        <div className="widget-icon standard-pc">
+                            <Monitor size={24} />
+                        </div>
                         <div className="widget-info">
                             <h3>Available PC</h3>
                             <p className="widget-value">{isLoading ? '...' : dashboardData.availablePCs}</p>
@@ -117,7 +121,9 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="widget-card">
-                        <div className="widget-icon vip-pc">⭐</div>
+                        <div className="widget-icon vip-pc">
+                            <Star size={24} />
+                        </div>
                         <div className="widget-info">
                             <h3>Available VIP PC</h3>
                             <p className="widget-value">{isLoading ? '...' : dashboardData.availableVipPCs}</p>
@@ -125,7 +131,9 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="widget-card">
-                        <div className="widget-icon booked">📅</div>
+                        <div className="widget-icon booked">
+                            <Calendar size={24} />
+                        </div>
                         <div className="widget-info">
                             <h3>Total Booked</h3>
                             <p className="widget-value">{isLoading ? '...' : dashboardData.userTotalBooked}</p>
@@ -202,7 +210,6 @@ const Dashboard = () => {
                                             displayTimeStr = `${hours}h ${mins}m ${secs}s`;
                                         }
                                         else if (isInGracePeriod) {
-                                            // FEATURE: Show red text for bookings in grace period
                                             statusStr = "Grace Period";
                                             badgeClass = "completed"; 
                                             timeColor = "#ff0000"; // RED for grace period
@@ -214,7 +221,6 @@ const Dashboard = () => {
                                             displayTimeStr = `${mins}m ${secs}s left`;
                                         }
                                         else if (isOverGracePeriod) {
-                                            // FEATURE: Auto-delete after grace period (handled by backend)
                                             statusStr = "Expired";
                                             badgeClass = "completed"; 
                                             timeColor = "#f44336";
