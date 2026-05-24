@@ -26,14 +26,8 @@ body {
     flex-direction: column;
 }
 
-h1 {
-    font-weight: bold;
-    margin: 0;
-}
-
-h2 {
-    text-align: center;
-}
+h1 { font-weight: bold; margin: 0; }
+h2 { text-align: center; }
 
 p {
     font-size: 14px;
@@ -43,9 +37,7 @@ p {
     margin: 20px 0 30px;
 }
 
-span {
-    font-size: 12px;
-}
+span { font-size: 12px; }
 
 a {
     color: #333;
@@ -79,6 +71,7 @@ input {
     margin: 8px 0;
     width: 100%;
 }
+
 
 /* =========================================
    LOGIN & REGISTER FORMS
@@ -272,7 +265,7 @@ input {
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .nav-item:hover {
@@ -423,10 +416,11 @@ input {
 .status-badge.active { background: rgba(40, 167, 69, 0.1); color: #28a745; }
 .status-badge.completed { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
 .status-badge.upcoming { background: rgba(77, 166, 255, 0.1); color: #0056b3; }
+.status-badge.pending { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
 
 /* =========================================
-   ADMIN PANEL & TICKET LISTS
+   ADMIN PANEL & TECHNICAL CHANNELS
    ========================================= */
 .admin-container {
     padding: 40px;
@@ -449,7 +443,6 @@ input {
     display: inline-block;
 }
 
-/* PC Status Grid Setup */
 .computer-status-grid {
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
@@ -578,18 +571,24 @@ input {
 
 .room-box h4 {
     font-size: 1.5rem;
-    color: #222;
+    color: #2b2d42;
     margin-bottom: 12px;
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 10px;
 }
 
 .room-specs-preview {
-    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 10px 0 20px 0;
     font-size: 13px;
     color: #6c757d;
-    line-height: 1.6;
+    flex-wrap: wrap;
+    border-bottom: 1px dashed #edf2f4;
+    padding-bottom: 12px;
 }
+.room-specs-preview span { font-size: 13px; }
 
 .room-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; }
 
@@ -626,8 +625,23 @@ input {
 
 
 /* =========================================
-   MODAL POPUPS & ANIMATIONS
+   MODAL POPUPS & SUSPENSE PAGE SPINNERS
    ========================================= */
+.loading-fallback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #FDFBF7;
+    z-index: 9999;
+}
+.loading-fallback h2 { color: #2b2d42; font-size: 24px; margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.loading-fallback p { color: #6c757d; margin: 0; font-size: 14px; }
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -836,7 +850,7 @@ input {
 .btn-confirm { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
 
 
-/* Valorant Ranks Tiers */
+/* Valorant Ranks Light Tiers */
 .rank-bronze { background: rgba(165, 113, 82, 0.1); color: #a57152; border: 1px solid #a57152; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-silver { background: rgba(158, 158, 158, 0.1); color: #8e8e8e; border: 1px solid #9e9e9e; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-gold { background: rgba(229, 197, 99, 0.1); color: #b89326; border: 1px solid #e5c563; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
@@ -858,7 +872,7 @@ input {
 
 .settings-btn { background: #e94560; color: white; border: none; padding: 14px 25px; border-radius: 8px; font-weight: bold; width: 100%; }
 
-/* Custom Isolated Toggle Switch Layouts */
+/* Isolated Switch Components */
 .theme-switch-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee; }
 .theme-switch { display: inline-block; height: 30px; position: relative; width: 54px; }
 .theme-switch input { display: none; }
@@ -871,7 +885,11 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
 /* =========================================
    GLOBAL DARK MODE OVERRIDES (BULLETPROOF)
    ========================================= */
-body.dark-mode, body.dark-mode .dashboard-content, body.dark-mode .admin-container { background-color: #121212 !important; color: #e0e0e0 !important; }
+body.dark-mode { 
+    background: #121212 !important; /* FIXED: Overwrites light gradient layout completely */
+    color: #e0e0e0 !important; 
+}
+body.dark-mode .dashboard-content, body.dark-mode .admin-container { background-color: #121212 !important; }
 
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4,
 body.dark-mode p, body.dark-mode span, body.dark-mode strong, body.dark-mode label,
@@ -885,9 +903,10 @@ body.dark-mode .rank-badge, body.dark-mode .wallet-card, body.dark-mode .ticket-
     background: #1e1e1e !important; border-color: #333 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
 }
 
-body.dark-mode .room-specs-preview { color: #a5a5a5 !important; }
+body.dark-mode .room-specs-preview { color: #a5a5a5 !important; border-bottom-color: #333 !important; }
+body.dark-mode .room-specs-preview strong { color: #e94560 !important; }
 
-/* FIX: Table row hover background overrides for Dark Mode */
+/* Table hover contrast mechanics update */
 body.dark-mode .activity-table tr:hover td { background-color: #26262b !important; color: #ffffff !important; }
 
 body.dark-mode .theme-switch-wrapper { background: #252525 !important; border-color: #3a3a3a !important; }
@@ -895,7 +914,6 @@ body.dark-mode .toggle-slider { background-color: #444 !important; }
 body.dark-mode input:checked + .toggle-slider { background-color: #e94560 !important; }
 
 body.dark-mode .ticket-issue { background: #2a2a2a !important; color: #e0e0e0 !important; border: 1px solid #3a3a3a; }
-
 body.dark-mode td, body.dark-mode th { color: #e0e0e0 !important; border-bottom-color: #333 !important; }
 
 body.dark-mode .form-input, body.dark-mode .input-group input, body.dark-mode .slider { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
@@ -903,6 +921,8 @@ body.dark-mode .modal-content, body.dark-mode .price-calculation, body.dark-mode
 body.dark-mode .breakdown-item { color: #b0b0b0; }
 body.dark-mode .breakdown-item.total { border-top-color: #555; color: #e0e0e0 !important; }
 body.dark-mode .btn-cancel { background: #2a2a2a; color: #e0e0e0; }
+
+body.dark-mode .loading-fallback { background: #121212 !important; }
 
 body.dark-mode .rank-bronze { background: rgba(165, 113, 82, 0.2) !important; color: #c98b67 !important; }
 body.dark-mode .rank-silver { background: rgba(178, 178, 178, 0.2) !important; color: #d1d1d1 !important; }
@@ -933,3 +953,14 @@ body.dark-mode .pc-seat.occupied { background: rgba(220, 53, 69, 0.15) !importan
 
 .brand-logo { height: 70px; width: auto; transition: filter 0.3s ease; display: block; }
 body.dark-mode .brand-logo { filter: brightness(0) invert(1); }
+
+
+/* =========================================
+   SUCCESS / ERROR MESSAGE MODALS
+   ========================================= */
+.message-icon { font-size: 50px; margin-bottom: 10px; }
+.message-icon.success { color: #28a745; }
+.message-icon.error { color: #dc3545; }
+.message-text { font-size: 16px; color: #4a4e69; margin-bottom: 25px; line-height: 1.5; }
+.close-message-btn { background: #e94560; color: white; border: none; padding: 12px 35px; border-radius: 8px; font-weight: bold; }
+body.dark-mode .message-text { color: #e0e0e0 !important; }

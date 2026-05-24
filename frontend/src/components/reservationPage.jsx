@@ -220,6 +220,13 @@ const ReservationPage = () => {
                                 return (
                                     <div key={idx} className={`room-box ${isRoomAvailable ? '' : 'room-occupied'}`}>
                                         <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} {idx + 1}</h4>
+                                        
+                                        {/* UNIFORMITY FIX: Displays the complete hardware setup blueprint right on the category grid */}
+                                        <div className="room-specs-preview">
+                                            <div><strong>CPU:</strong> {pcs[0]?.cpu || 'Intel Core i7'} | <strong>GPU:</strong> {pcs[0]?.gpu || 'NVIDIA RTX'}</div>
+                                            <div><strong>RAM:</strong> {pcs[0]?.ram ? `${pcs[0].ram} GB` : '16 GB'} | <strong>Display:</strong> {pcs[0]?.monitor_hz ? `${pcs[0].monitor_hz}Hz` : '240Hz'}</div>
+                                        </div>
+
                                         <div className="room-grid">
                                             {pcs.map(p => (
                                                 <div key={p.id} className={`pc-mini ${availableIds.includes(p.id) ? 'free' : 'busy'}`}>
@@ -251,9 +258,9 @@ const ReservationPage = () => {
                                 )}
                                 {selectedRoom && (
                                     <div className="pc-dynamic-details">
-                                        <p style={{color: '#6c757d', fontStyle: 'italic', marginBottom: '15px'}}>You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                        <p style={{ fontStyle: 'italic', marginBottom: '15px' }} className="specs-text">You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
                                         <h4>Room Specifications:</h4>
-                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
+                                        <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p><p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p><p className="specs-text"><strong>RAM:</strong> {selectedRoom.pcs[0]?.ram ? `${selectedRoom.pcs[0].ram} GB` : 'N/A'}</p><p className="specs-text"><strong>Monitor:</strong> {selectedRoom.pcs[0]?.monitor_hz ? `${selectedRoom.pcs[0].monitor_hz} Hz` : 'N/A'}</p>
                                     </div>
                                 )}
 
@@ -262,7 +269,7 @@ const ReservationPage = () => {
                                     <div className="input-group"><label>Duration (Hours):</label><input type="number" min="1" value={duration} onChange={e => setDuration(Number(e.target.value))} /></div>
                                 </div>
 
-                                {!isCurrentlyAvailable && <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>⚠️ This slot is already booked. Please adjust parameters.</div>}
+                                {!isCurrentlyAvailable && <div style={{ color: '#dc3545', marginTop: '15px', fontWeight: 'bold', textAlign: 'center', backgroundColor: 'rgba(220,53,69,0.1)', padding: '10px', borderRadius: '5px' }}>⚠️ This slot is already booked. Please adjust parameters.</div>}
 
                                 <div className="booking-summary">
                                     <hr style={{ margin: '15px 0', borderTop: '1px solid #ced4da' }}/>
@@ -278,10 +285,10 @@ const ReservationPage = () => {
 
                                         return (
                                             <>
-                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '5px' }}><span>Original Price:</span><span>{originalCost} CR</span></div>
-                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}><span>Rank Discount ({rank}):</span><span>-{discountRate * 100}% ({discountAmount} CR)</span></div>
-                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}><strong>Final Cost:</strong><strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong></div>
-                                                <div style={{ display: 'flex', justifyBetween: 'space-between', marginBottom: '20px' }}><strong>Your Credits:</strong><span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>{user?.credits || 0} CR</span></div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><span>Original Price:</span><span>{originalCost} CR</span></div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}><span>Rank Discount ({rank}):</span><span>-{discountRate * 100}% ({discountAmount} CR)</span></div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}><strong>Final Cost:</strong><strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong></div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}><strong>Your Credits:</strong><span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>{user?.credits || 0} CR</span></div>
                                                 <div className="modal-actions">
                                                     <button className="confirm-btn" onClick={handleBooking} disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}>{isBooking ? 'Processing...' : 'Confirm'}</button>
                                                     <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>

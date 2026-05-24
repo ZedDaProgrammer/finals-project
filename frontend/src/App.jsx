@@ -23,8 +23,11 @@ function App() {
     }, []);
 
     const LoadingSpinner = () => (
-        <div className="loading-fallback" style={{ display: 'flex', justifyContent: 'center', marginTop: '20vh' }}>
-            <h2>Loading...</h2>
+        <div className="loading-fallback">
+            <div className="spinner-content">
+                <h2>Loading Workspace...</h2>
+                <p>Configuring terminal environment options...</p>
+            </div>
         </div>
     );
 
