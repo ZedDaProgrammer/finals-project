@@ -6,7 +6,7 @@ import logoImg from '../../pictures/logo.png';
 import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Monitor, Gem, Layers, ShieldCheck, Map, X } from 'lucide-react';
 
 // Import tab-specific layout blueprints from the pictures folder
-import standardLayoutImg from '../../pictures/standard.jpg';
+import standardLayoutImg from '../../pictures/standard_layout.jpg';
 import vipLoungeLayoutImg from '../../pictures/vip.jpg';
 import vipRoomsLayoutImg from '../../pictures/vip_room.jpg';
 import privateLayoutImg from '../../pictures/private_lounge.jpg';
