@@ -1,4 +1,5 @@
 const pool = require('../database/db');
+const { getDiscountTier } = require('./utils/discountHelper');
 
 const getDashboardStats = async (req, res) => {
     try {
@@ -43,7 +44,9 @@ const getDashboardStats = async (req, res) => {
             availableVipPc
         });
     } catch (err) {
-        console.error("Dashboard Stats Error:", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Dashboard Stats Error:", err.message);
+        }
         res.status(500).json({ error: "Failed to load dashboard stats." });
     }
 };
@@ -68,11 +71,13 @@ const checkAvailability = async (req, res) => {
                 )
                 ORDER BY c.id ASC
             `, [start, end]);
-            
+             
         res.status(200).json({ availableStation: availableStation.rows });
 
     } catch (err) {
-        console.error(err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(err.message);
+        }
         res.status(500).json({ error: "Server error checking availability"});
     }
 };
@@ -97,13 +102,8 @@ const createBooking = async (req, res) => {
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        let discountRate = 0;
-        let rank = "Bronze";
-        if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
-        else if (currentPoints >= 175) { discountRate = 0.10; rank = "Platinum"; }
-        else if (currentPoints >= 75) { discountRate = 0.06; rank = "Gold"; }
-        else if (currentPoints >= 25) { discountRate = 0.03; rank = "Silver"; }
-
+        // OPTIMIZATION: Use extracted discount helper function
+        const { rate: discountRate, rank } = getDiscountTier(currentPoints);
         const finalCost = Math.round(originalCost * (1 - discountRate));
 
         if (userCredits < finalCost) {
@@ -130,7 +130,9 @@ const createBooking = async (req, res) => {
         });
     } catch(err) {
         await client.query('ROLLBACK');
-        console.error("Booking Error", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Booking Error", err.message);
+        }
         res.status(400).json({ error: err.message });
     } finally {
         client.release();
@@ -165,7 +167,9 @@ const getHistory = async (req, res) => {
             count: parseInt(countQuery.rows[0].count)
         });
     } catch (err) {
-        console.error("History retrieval error", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("History retrieval error", err.message);
+        }
         res.status(500).json({ error: "Server error during history retrieval"});
     }
 };
@@ -192,7 +196,9 @@ const deleteBooking = async (req, res) => {
         res.status(200).json({ message: "Booking Cancelled Successfully" });
 
     } catch (err) {
-        console.error("Cancellation error:", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Cancellation error:", err.message);
+        }
         res.status(500).json({ error: "Server error during cancellation" });
     }
 };
@@ -214,7 +220,9 @@ const filterComputers = async (req, res) => {
         const computers = await pool.query(query, values);
         res.status(200).json(computers.rows);
     } catch (err) {
-        console.error("Filter error:", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Filter error:", err.message);
+        }
         res.status(500).json({ error: "Server error during filtering" });
     }
 };
@@ -229,6 +237,9 @@ const upgradeMembership = async (req, res) => {
         await pool.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, user_id]);
         res.status(200).json({ message: "Points updated", points: newPoints });
     } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Membership upgrade error:", err.message);
+        }
         res.status(500).json({ error: "Server error" });
     }
 };
@@ -261,13 +272,8 @@ const groupBooking = async (req, res) => {
         const userCredits = userQuery.rows[0].credits || 0;
         const currentPoints = userQuery.rows[0].points || 0;
 
-        let discountRate = 0;
-        let rank = "Bronze";
-        if (currentPoints >= 350) { discountRate = 0.15; rank = "Radiant"; }
-        else if (currentPoints >= 175) { discountRate = 0.10; rank = "Platinum"; }
-        else if (currentPoints >= 75) { discountRate = 0.06; rank = "Gold"; }
-        else if (currentPoints >= 25) { discountRate = 0.03; rank = "Silver"; }
-
+        // OPTIMIZATION: Use extracted discount helper function
+        const { rate: discountRate, rank } = getDiscountTier(currentPoints);
         const finalCost = Math.round(originalCost * (1 - discountRate));
 
         if (userCredits < finalCost) {
@@ -296,7 +302,9 @@ const groupBooking = async (req, res) => {
         });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error("Group Booking Error:", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Group Booking Error:", err.message);
+        }
         res.status(400).json({ error: err.message || "Failed to make group booking" });
     } finally {
         client.release();
@@ -317,7 +325,9 @@ const createTicket = async (req, res) => {
         
         res.status(201).json({ message: "Support ticket created", ticket: newTicket.rows[0] });
     } catch (err) {
-        console.error("Ticket creation error:", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Ticket creation error:", err.message);
+        }
         res.status(500).json({ error: "Server error creating ticket" });
     }
 };
@@ -328,6 +338,17 @@ const dashboardData = async (req, res) => {
             return res.status(401).json({ error: "User session expired." });
         }
         const user_id = req.user.id;
+
+        const GRACE_PERIOD_MS = 30 * 60 * 1000; // 30 minutes
+        const now = new Date();
+
+        // FEATURE: Auto-delete reservations that exceeded grace period (30 min late)
+        await pool.query(`
+            DELETE FROM reservations 
+            WHERE user_id = $1 
+            AND status = 'active' 
+            AND "end" < NOW() - INTERVAL '30 minutes'
+        `, [user_id]);
 
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type
@@ -340,7 +361,9 @@ const dashboardData = async (req, res) => {
         
         res.status(200).json({ activeSessions: activeSessions.rows });
     } catch (err) {
-        console.error("Dashboard data error", err.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Dashboard data error", err.message);
+        }
         res.status(500).json({ error: "Server error during dashboard data retrieval" });
     }
 };
@@ -349,7 +372,12 @@ const getUserTickets = async (req, res) => {
     try {
         const tickets = await pool.query('SELECT * FROM tickets WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
         res.status(200).json({ tickets: tickets.rows });
-    } catch (error) { res.status(500).json({ message: "Server error" }); }
+    } catch (error) { 
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Ticket retrieval error:", error.message);
+        }
+        res.status(500).json({ message: "Server error" }); 
+    }
 };
 
 module.exports = { 
