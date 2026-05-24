@@ -4,23 +4,32 @@ const isAdmin = require('../middleware/authMiddleware').isAdmin;
 const token = require('../middleware/authMiddleware').token;
 const pool = require('../database/db');
 
+// OPTIMIZATION: Added pagination to prevent loading huge datasets
 const getBookings = async (req, res) => {
     try {
-        const allBookings = await pool.query(`
-            SELECT 
-                r.reservation_id, 
-                r.start, 
-                r."end", 
-                r.status, 
-                u.username, 
-                c.id AS station_id
-            FROM reservations r
-            JOIN users u ON r.user_id = u.id
-            JOIN computers c ON r.station_id = c.id
-            ORDER BY r.start DESC
-        `);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = (page - 1) * limit;
+
+        const [bookingsQuery, countQuery] = await Promise.all([
+            pool.query(`
+                SELECT 
+                    r.reservation_id, 
+                    r.start, 
+                    r."end", 
+                    r.status, 
+                    u.username, 
+                    c.id AS station_id
+                FROM reservations r
+                JOIN users u ON r.user_id = u.id
+                JOIN computers c ON r.station_id = c.id
+                ORDER BY r.start DESC
+                LIMIT $1 OFFSET $2
+            `, [limit, offset]),
+            pool.query('SELECT COUNT(*) FROM reservations')
+        ]);
         
-        const formattedBookings = allBookings.rows.map(b => ({
+        const formattedBookings = bookingsQuery.rows.map(b => ({
             id: b.reservation_id,
             start: b.start,
             end: b.end,
@@ -29,9 +38,19 @@ const getBookings = async (req, res) => {
             station_name: `PC-${b.station_id}` 
         }));
 
-        res.status(200).json({ bookings: formattedBookings });
+        res.status(200).json({ 
+            bookings: formattedBookings,
+            pagination: {
+                page,
+                limit,
+                total: parseInt(countQuery.rows[0].count),
+                pages: Math.ceil(parseInt(countQuery.rows[0].count) / limit)
+            }
+        });
     } catch (error) {
-        console.error("Database error in getBookings:", error); 
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Database error in getBookings:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -65,29 +84,51 @@ const updateReservationStatus = async (req, res) => {
         res.status(200).json({ message: "Status updated successfully", reservation: updateStatus.rows[0]});
         
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Reservation status update error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
 
 const getTicket = async (req, res) => {
     try {
-        const tickets = await pool.query(`
-            SELECT 
-                t.id, 
-                t.station_id,
-                t.subject,
-                t.description AS issue,
-                t.status, 
-                t.created_at,
-                u.username
-            FROM tickets t
-            JOIN users u ON t.user_id = u.id
-            ORDER BY t.created_at DESC
-        `);
-        res.status(200).json({ tickets: tickets.rows });
+        // OPTIMIZATION: Added pagination support
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = (page - 1) * limit;
+
+        const [ticketsQuery, countQuery] = await Promise.all([
+            pool.query(`
+                SELECT 
+                    t.id, 
+                    t.station_id,
+                    t.subject,
+                    t.description AS issue,
+                    t.status, 
+                    t.created_at,
+                    u.username
+                FROM tickets t
+                JOIN users u ON t.user_id = u.id
+                ORDER BY t.created_at DESC
+                LIMIT $1 OFFSET $2
+            `, [limit, offset]),
+            pool.query('SELECT COUNT(*) FROM tickets')
+        ]);
+
+        res.status(200).json({ 
+            tickets: ticketsQuery.rows,
+            pagination: {
+                page,
+                limit,
+                total: parseInt(countQuery.rows[0].count),
+                pages: Math.ceil(parseInt(countQuery.rows[0].count) / limit)
+            }
+        });
     } catch (error) {
-        console.error("Ticket fetch error:", error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Ticket fetch error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -110,7 +151,9 @@ const updateTicketStatus = async (req, res) => {
              message: "Ticket status updated successfully", ticket: updateTicket.rows[0]
             });
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Ticket status update error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -124,7 +167,9 @@ const deleteReservation = async (req, res) => {
         }
         res.status(200).json({ message: "Reservation deleted successfully" });
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Reservation deletion error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -134,7 +179,9 @@ const getComputers = async (req, res) => {
         const computers = await pool.query(`SELECT * FROM computers ORDER BY id ASC`);
         res.status(200).json({ computers: computers.rows });
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Computer fetch error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
@@ -152,7 +199,9 @@ const updateComputerStatus = async (req, res) => {
         }
         res.status(200).json({ message: "Status updated successfully", computer: updateStatus.rows[0]});
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Computer status update error:", error);
+        }
         res.status(500).json({ message: "Server error"});
     }
 };
