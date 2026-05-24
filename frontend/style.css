@@ -694,7 +694,14 @@ input {
 /* =========================================
    PROFILE PAGE & VALORANT RANKS
    ========================================= */
-.profile-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.profile-container { 
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px; 
+    margin: 0 auto; 
+    padding: 20px 0; 
+}
 
 .profile-card {
     background: white;
@@ -703,47 +710,188 @@ input {
     display: flex;
     align-items: center;
     gap: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     border: 1px solid rgba(0,0,0,0.05);
-    margin-bottom: 30px;
+    margin-bottom: 0;
+    grid-column: span 1;
 }
 
 .profile-avatar {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     background: linear-gradient(135deg, #e94560, #ff6b6b);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 40px;
+    font-size: 36px;
     font-weight: bold;
-    box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
+    box-shadow: 0 4px 10px rgba(233, 69, 96, 0.2);
 }
 
 .profile-details { flex: 1; }
-.profile-details h2 { margin: 0 0 10px 0; color: #2b2d42; text-align: left; }
-.profile-details p { margin: 5px 0; color: #6c757d; display: flex; align-items: center; gap: 10px; }
+.profile-details h2 { margin: 0 0 6px 0; color: #2b2d42; text-align: left; font-size: 22px; }
+.profile-details p { margin: 0; color: #6c757d; font-size: 14px; }
 
-.credits-badge {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-weight: bold;
+/* Standalone Grid Wallet Component */
+.wallet-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.05);
+    grid-column: span 1;
+}
+
+.wallet-header {
+    display: flex;
+    align-items: center;
+    color: #e94560;
+    font-weight: 700;
     font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
 }
 
-.rank-badge {
-    background: #f8f9fa;
-    color: #4a4e69;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 13px;
-    border: 1px solid #ced4da;
+.wallet-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
 }
+
+.credits-display {
+    display: flex;
+    flex-direction: column;
+}
+
+.credits-amount {
+    font-size: 36px;
+    font-weight: 800;
+    color: #2b2d42;
+    line-height: 1;
+}
+
+.credits-label {
+    font-size: 11px;
+    color: #8d99ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.wallet-topup-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #e94560;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.wallet-topup-btn:hover {
+    background: #d83a50;
+    transform: translateY(-2px);
+}
+
+.history-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    grid-column: span 2;
+}
+
+/* Modal Inner Structures and Slider Enhancements */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    margin: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: #8d99ae;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.modal-close:hover { color: #e94560; }
+
+.modal-body { padding: 5px 0; }
+
+.slider-container { margin-bottom: 25px; text-align: left; }
+.slider-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.slider-label { font-weight: 600; color: #4a4e69; font-size: 14px; }
+.slider-value { font-size: 16px; font-weight: 800; color: #e94560; background: rgba(233, 69, 96, 0.1); padding: 4px 10px; border-radius: 6px; }
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #edf2f4;
+    outline: none;
+    margin: 10px 0;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e94560;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+.slider-marks { display: flex; justify-content: space-between; color: #8d99ae; font-size: 11px; padding: 0 2px; }
+
+.credit-breakdown { background: #f8f9fa; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #edf2f4; text-align: left; }
+.breakdown-item { display: flex; justify-content: space-between; font-size: 13px; color: #4a4e69; margin-bottom: 8px; }
+.breakdown-item:last-child { margin-bottom: 0; }
+.breakdown-item.total { border-top: 1px dashed #ced4da; padding-top: 10px; margin-top: 10px; font-weight: 700; color: #2b2d42; font-size: 14px; }
+.breakdown-item .new-balance { color: #28a745; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
+.btn-cancel { background: #edf2f4; color: #4a4e69; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-cancel:hover { background: #e2e6ea; }
+.btn-confirm { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-confirm:hover { background: #d83a50; }
 
 /* Valorant Rank Colors (Light Mode) */
 .rank-bronze { background: rgba(165, 113, 82, 0.1); color: #a57152; border: 1px solid #a57152; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
@@ -752,14 +900,11 @@ input {
 .rank-platinum { background: rgba(62, 181, 172, 0.1); color: #3eb5ac; border: 1px solid #3eb5ac; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 .rank-radiant { background: rgba(255, 234, 138, 0.1); color: #d4af37; border: 1px solid #ffea8a; padding: 2px 8px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
 
-.history-section {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
-    overflow: hidden;
+/* Responsive Fallbacks */
+@media (max-width: 768px) {
+    .profile-container { grid-template-columns: 1fr; gap: 20px; }
+    .profile-card, .wallet-card, .history-section { grid-column: span 1; }
 }
-.history-section .panel-header { background: #f8f9fa; }
 
 
 /* =========================================
@@ -1029,6 +1174,20 @@ body.dark-mode .cancel-btn {
     border-color: #444 !important;
 }
 body.dark-mode .cancel-btn:hover { background: #333 !important; }
+
+
+/* Global Dark Mode Overrides for added features */
+body.dark-mode .wallet-card { background: #1e1e1e !important; border-color: #333 !important; }
+body.dark-mode .credits-amount { color: #e0e0e0 !important; }
+body.dark-mode .modal-header { border-bottom-color: #333; }
+body.dark-mode .modal-footer { border-top-color: #333; }
+body.dark-mode .slider-label { color: #b0b0b0; }
+body.dark-mode .slider { background: #333; }
+body.dark-mode .credit-breakdown { background: #2a2a2a !important; border-color: #444 !important; }
+body.dark-mode .breakdown-item { color: #b0b0b0; }
+body.dark-mode .breakdown-item.total { border-top-color: #555; color: #e0e0e0 !important; }
+body.dark-mode .btn-cancel { background: #2a2a2a; color: #e0e0e0; }
+body.dark-mode .btn-cancel:hover { background: #333; }
 
 
 /* === AUTH PAGE MATCHING DASHBOARD COLORS === */

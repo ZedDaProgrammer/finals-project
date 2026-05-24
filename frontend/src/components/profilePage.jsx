@@ -51,7 +51,7 @@ const ProfilePage = () => {
         };
 
         if (token) fetchHistory();
-    }, [token]);
+    }, [token, BASE_URL]);
 
     const handleAddCredits = async () => {
         setIsAddingCredits(true);
@@ -69,7 +69,6 @@ const ProfilePage = () => {
                 setShowWalletModal(false);
                 setCreditSlider(20);
                 
-                // Reactive context state refresh instead of harsh window reloads
                 if (refreshUser) {
                     await refreshUser();
                 }
@@ -91,6 +90,7 @@ const ProfilePage = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token'); 
+        logout();
         navigate('/login', { replace: true }); 
     };
 
@@ -107,7 +107,7 @@ const ProfilePage = () => {
                         <a href="/dashboard" className="nav-item">Dashboard</a>
                         <a href="/booking" className="nav-item">Reservation</a>
                         {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item active">Admin Panel</a>
+                            <a href="/admin" className="nav-item admin-item">Admin Panel</a>
                         )}
                     </div>
 
@@ -122,8 +122,10 @@ const ProfilePage = () => {
 
             <main className="dashboard-content">
                 <header className="dashboard-header">
-                    <h1>My Profile</h1>
-                    <p>Manage your account and view your past activity.</p>
+                    <div>
+                        <h1>My Profile</h1>
+                        <p>Manage your account and view your past activity.</p>
+                    </div>
                 </header>
 
                 <div className="profile-container">
@@ -135,108 +137,39 @@ const ProfilePage = () => {
                         <div className="profile-details">
                             <h2>{user?.username}</h2>
                             <p>{user?.email}</p>
-                            <div className="rank-badge">
-                                <strong>Rank:</strong> <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
-                            </div>
-                            
-                            {/* FEATURE: Wallet Card with Top-Up Button */}
-                            <div className="wallet-card">
-                                <div className="wallet-header">
-                                    <Wallet size={20} style={{ marginRight: '8px' }} />
-                                    <span className="wallet-label">BlackByte Wallet</span>
-                                </div>
-                                <div className="wallet-content">
-                                    <div className="credits-display">
-                                        <span className="credits-amount">{credits}</span>
-                                        <span className="credits-label">Credits</span>
-                                    </div>
-                                    <button 
-                                        className="wallet-topup-btn"
-                                        onClick={() => setShowWalletModal(true)}
-                                    >
-                                        <Plus size={18} />
-                                        Top Up
-                                    </button>
-                                </div>
+                            <div className="rank-container" style={{ marginTop: '12px' }}>
+                                <strong style={{ marginRight: '8px' }}>Rank:</strong> 
+                                <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Wallet Top-Up Modal */}
-                    {showWalletModal && (
-                        <div className="modal-overlay" onClick={() => setShowWalletModal(false)}>
-                            <div className="modal-content" onClick={e => e.stopPropagation()}>
-                                <div className="modal-header">
-                                    <h3>Top Up Credits</h3>
-                                    <button 
-                                        className="modal-close"
-                                        onClick={() => setShowWalletModal(false)}
-                                    >
-                                        <X size={24} />
-                                    </button>
-                                </div>
-
-                                <div className="modal-body">
-                                    <div className="slider-container">
-                                        <div className="slider-info">
-                                            <span className="slider-label">Select Amount</span>
-                                            <span className="slider-value">{creditSlider} CR</span>
-                                        </div>
-                                        <input 
-                                            type="range" 
-                                            min="20" 
-                                            max="1000" 
-                                            step="20" 
-                                            value={creditSlider}
-                                            onChange={(e) => setCreditSlider(parseInt(e.target.value))}
-                                            className="slider"
-                                        />
-                                        <div className="slider-marks">
-                                            <span>20</span>
-                                            <span>500</span>
-                                            <span>1000</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="credit-breakdown">
-                                        <div className="breakdown-item">
-                                            <span>Amount:</span>
-                                            <span className="amount">{creditSlider} CR</span>
-                                        </div>
-                                        <div className="breakdown-item">
-                                            <span>Current Balance:</span>
-                                            <span className="balance">{credits} CR</span>
-                                        </div>
-                                        <div className="breakdown-item total">
-                                            <span>New Balance:</span>
-                                            <span className="new-balance">{credits + creditSlider} CR</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="modal-footer">
-                                    <button 
-                                        className="btn-cancel"
-                                        onClick={() => setShowWalletModal(false)}
-                                        disabled={isAddingCredits}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button 
-                                        className="btn-confirm"
-                                        onClick={handleAddCredits}
-                                        disabled={isAddingCredits}
-                                    >
-                                        {isAddingCredits ? 'Processing...' : `Add ${creditSlider} CR`}
-                                    </button>
-                                </div>
-                            </div>
+                    {/* Standalone Wallet Card for a sleek Dashboard Grid layout */}
+                    <div className="wallet-card">
+                        <div className="wallet-header">
+                            <Wallet size={20} style={{ marginRight: '8px' }} />
+                            <span className="wallet-label">BlackByte Wallet</span>
                         </div>
-                    )}
+                        <div className="wallet-content">
+                            <div className="credits-display">
+                                <span className="credits-amount">{credits}</span>
+                                <span className="credits-label">Credits Available</span>
+                            </div>
+                            <button 
+                                className="wallet-topup-btn"
+                                onClick={() => setShowWalletModal(true)}
+                            >
+                                <Plus size={18} />
+                                Top Up
+                            </button>
+                        </div>
+                    </div>
 
-                    {/* History Table */}
+                    {/* History Table - Spans full width underneath both cards */}
                     <div className="history-section">
-                        <h2>Reservation History</h2>
+                        <div className="panel-header">
+                            <h3>Reservation History</h3>
+                        </div>
                         <div className="table-container">
                             {isLoading ? (
                                 <p style={{textAlign: 'center', padding: '20px'}}>Loading history...</p>
@@ -291,6 +224,78 @@ const ProfilePage = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Wallet Top-Up Modal */}
+                {showWalletModal && (
+                    <div className="modal-overlay" onClick={() => setShowWalletModal(false)}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>Top Up Credits</h3>
+                                <button 
+                                    className="modal-close"
+                                    onClick={() => setShowWalletModal(false)}
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="modal-body">
+                                <div className="slider-container">
+                                    <div className="slider-info">
+                                        <span className="slider-label">Select Amount</span>
+                                        <span className="slider-value">{creditSlider} CR</span>
+                                    </div>
+                                    <input 
+                                        type="range" 
+                                        min="20" 
+                                        max="1000" 
+                                        step="20" 
+                                        value={creditSlider}
+                                        onChange={(e) => setCreditSlider(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
+                                    <div className="slider-marks">
+                                        <span>20</span>
+                                        <span>500</span>
+                                        <span>1000</span>
+                                    </div>
+                                </div>
+
+                                <div className="credit-breakdown">
+                                    <div className="breakdown-item">
+                                        <span>Amount:</span>
+                                        <span className="amount">{creditSlider} CR</span>
+                                    </div>
+                                    <div className="breakdown-item">
+                                        <span>Current Balance:</span>
+                                        <span className="balance">{credits} CR</span>
+                                    </div>
+                                    <div className="breakdown-item total">
+                                        <span>New Balance:</span>
+                                        <span className="new-balance">{credits + creditSlider} CR</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button 
+                                    className="btn-cancel"
+                                    onClick={() => setShowWalletModal(false)}
+                                    disabled={isAddingCredits}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    className="btn-confirm"
+                                    onClick={handleAddCredits}
+                                    disabled={isAddingCredits}
+                                >
+                                    {isAddingCredits ? 'Processing...' : `Add ${creditSlider} CR`}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
