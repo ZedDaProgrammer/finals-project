@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Wallet, Plus, X } from 'lucide-react';
 import logoImg from '../../pictures/logo.png';
 
 const ProfilePage = () => {
     const { user, token, logout } = useAuth();
-    
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    
     const BASE_URL = `${API_URL}/api/reservation`;
 
     const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showWalletModal, setShowWalletModal] = useState(false);
+    const [creditSlider, setCreditSlider] = useState(20);
+    const [isAddingCredits, setIsAddingCredits] = useState(false);
 
     const points = user?.points || 0;
     const credits = user?.credits || 0;
@@ -39,7 +41,9 @@ const ProfilePage = () => {
                     setHistory(data.history);
                 }
             } catch (err) {
-                console.error("Failed to fetch history:", err);
+                if (process.env.NODE_ENV === 'development') {
+                    console.error("Failed to fetch history:", err);
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -48,10 +52,37 @@ const ProfilePage = () => {
         if (token) fetchHistory();
     }, [token]);
 
-    const rank = evaluatePoints(points);
+    const handleAddCredits = async () => {
+        setIsAddingCredits(true);
+        try {
+            const response = await fetch(`${API_URL}/api/auth/add-credits`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ amount: creditSlider })
+            });
 
-    // Remove the restrictive `now > end` filter so you can actually see upcoming bookings.
-    // We will still filter out cancelled ones, or you can remove the filter entirely to see cancelled ones too.
+            if (response.ok) {
+                setShowWalletModal(false);
+                setCreditSlider(20);
+                // Trigger a refresh by updating user context (you may need to add this to AuthContext)
+                window.location.reload();
+            } else {
+                alert('Failed to add credits');
+            }
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error("Credit addition error:", error);
+            }
+            alert('Error adding credits');
+        } finally {
+            setIsAddingCredits(false);
+        }
+    };
+
+    const rank = evaluatePoints(points);
     const visibleHistory = history.filter(res => res.status !== 'cancelled');
 
     const handleLogout = () => {
@@ -103,11 +134,101 @@ const ProfilePage = () => {
                             <div className="rank-badge">
                                 <strong>Rank:</strong> <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
                             </div>
-                            <div className="credits-badge">
-                                <strong>Credits:</strong> {credits} CR
+                            
+                            {/* FEATURE: Wallet Card with Top-Up Button */}
+                            <div className="wallet-card">
+                                <div className="wallet-header">
+                                    <Wallet size={20} style={{ marginRight: '8px' }} />
+                                    <span className="wallet-label">BlackByte Wallet</span>
+                                </div>
+                                <div className="wallet-content">
+                                    <div className="credits-display">
+                                        <span className="credits-amount">{credits}</span>
+                                        <span className="credits-label">Credits</span>
+                                    </div>
+                                    <button 
+                                        className="wallet-topup-btn"
+                                        onClick={() => setShowWalletModal(true)}
+                                    >
+                                        <Plus size={18} />
+                                        Top Up
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Wallet Top-Up Modal */}
+                    {showWalletModal && (
+                        <div className="modal-overlay" onClick={() => setShowWalletModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3>Top Up Credits</h3>
+                                    <button 
+                                        className="modal-close"
+                                        onClick={() => setShowWalletModal(false)}
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="modal-body">
+                                    <div className="slider-container">
+                                        <div className="slider-info">
+                                            <span className="slider-label">Select Amount</span>
+                                            <span className="slider-value">{creditSlider} CR</span>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            min="20" 
+                                            max="1000" 
+                                            step="20" 
+                                            value={creditSlider}
+                                            onChange={(e) => setCreditSlider(parseInt(e.target.value))}
+                                            className="slider"
+                                        />
+                                        <div className="slider-marks">
+                                            <span>20</span>
+                                            <span>500</span>
+                                            <span>1000</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="credit-breakdown">
+                                        <div className="breakdown-item">
+                                            <span>Amount:</span>
+                                            <span className="amount">{creditSlider} CR</span>
+                                        </div>
+                                        <div className="breakdown-item">
+                                            <span>Current Balance:</span>
+                                            <span className="balance">{credits} CR</span>
+                                        </div>
+                                        <div className="breakdown-item total">
+                                            <span>New Balance:</span>
+                                            <span className="new-balance">{credits + creditSlider} CR</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer">
+                                    <button 
+                                        className="btn-cancel"
+                                        onClick={() => setShowWalletModal(false)}
+                                        disabled={isAddingCredits}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="btn-confirm"
+                                        onClick={handleAddCredits}
+                                        disabled={isAddingCredits}
+                                    >
+                                        {isAddingCredits ? 'Processing...' : `Add ${creditSlider} CR`}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* History Table */}
                     <div className="history-section">
@@ -135,7 +256,6 @@ const ProfilePage = () => {
                                             const now = new Date();
                                             const durationHrs = Math.round(Math.abs(end - start) / 36e5);
 
-                                            // Dynamically calculate the real status
                                             let displayStatus = 'UPCOMING';
                                             let badgeClass = 'pending';
 
@@ -144,7 +264,7 @@ const ProfilePage = () => {
                                                 badgeClass = 'completed';
                                             } else if (now >= start && now <= end) {
                                                 displayStatus = 'ACTIVE';
-                                                badgeClass = 'active'; // You might need to add an .active CSS class in your style.css
+                                                badgeClass = 'active';
                                             }
 
                                             return (
