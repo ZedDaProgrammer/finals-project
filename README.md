@@ -31,12 +31,3 @@ The primary advanced technical feature implemented within this system is **Granu
 
 1. **Client-Side Authorization Guards:** Utilizes the React `useEffect` ecosystem to actively analyze the global authentication state. Non-admin users attempting to reach administrative endpoints are instantly neutralized and routed cleanly to safe zones using an optimized `replace: true` navigation stack layout to preserve pristine browser history.
 2. **Server-Side Authorization Middleware:** Protects endpoints at the database/API level. Before any controller logic executes, server-side middleware decodes HTTP-only JWT cookies and cross-checks the user's role criteria directly against database privileges, preventing unauthorized API queries (e.g., via Postman or malicious scripts).
-
----
-
-##  Setup Instructions
-
-### Prerequisites
-Ensure you have the following installed on your local machine:
-- [Node.js](https://nodejs.org/) (v16.x or higher recommended)
-- [PostgreSQL](https://www.postgresql.org/) (Local instance or a hosted URI like Neon/Render)
