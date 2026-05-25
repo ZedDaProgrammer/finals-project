@@ -1,5 +1,12 @@
 require('dotenv').config();
-const { Pool } = require('pg');
+const pg = require('pg');
+
+// OID 1114 is for TIMESTAMP WITHOUT TIME ZONE
+pg.types.setTypeParser(1114, (stringValue) => {
+    return new Date(stringValue.replace(' ', 'T') + 'Z');
+});
+
+const { Pool } = pg;
 
 const poolConfig = {
     connectionString: process.env.DATABASE_URL
