@@ -6,6 +6,10 @@ const getDashboardStats = async (req, res) => {
         if (!req.user || !req.user.id) {
             return res.status(401).json({ error: "User session expired." });
         }
+
+        // Auto-delete expired reservations globally
+        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
+
         const user_id = req.user.id;
         
         const historyQuery = await pool.query(
@@ -57,6 +61,9 @@ const checkAvailability = async (req, res) => {
         if (!start || !end) {
             return res.status(401).json({ error: "Please provide the needed details."});
         }
+
+        // Auto-delete expired reservations globally
+        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
 
         // OPTIMIZATION: Swapped 'NOT IN' for 'NOT EXISTS'
         const availableStation = await pool.query(`
@@ -340,13 +347,8 @@ const dashboardData = async (req, res) => {
         const user_id = req.user.id;
 
 
-        // FEATURE: Auto-delete reservations that exceeded grace period (30 min late)
-        await pool.query(`
-            DELETE FROM reservations 
-            WHERE user_id = $1 
-            AND status = 'active' 
-            AND "end" < NOW() - INTERVAL '30 minutes'
-        `, [user_id]);
+        // Auto-delete expired reservations globally
+        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
 
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type

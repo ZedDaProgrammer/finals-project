@@ -7,6 +7,9 @@ const getBookings = async (req, res) => {
         const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
         const offset = (page - 1) * limit;
 
+        // Auto-delete expired reservations globally
+        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
+
         const [bookingsQuery, countQuery] = await Promise.all([
             pool.query(`
                 SELECT 

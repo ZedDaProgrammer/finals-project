@@ -27,16 +27,23 @@ const Dashboard = () => {
             const BASE_URL = `${API_URL}/api/reservation`;
             const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-            const statsRes = await fetch(`${BASE_URL}/stats`, { headers, cache: 'no-store' });
+            // Fetch stats, active sessions, and history in parallel
+            const [statsRes, dashboardRes, historyRes] = await Promise.all([
+                fetch(`${BASE_URL}/stats`, { headers, cache: 'no-store' }),
+                fetch(`${BASE_URL}/dashboard`, { headers, cache: 'no-store' }),
+                fetch(`${BASE_URL}/history`, { headers, cache: 'no-store' })
+            ]);
+
             if (statsRes.status === 401) return logout(); 
-            if (!statsRes.ok) throw new Error("Stats fetch failed");
-            const stats = await statsRes.json();
+            if (!statsRes.ok || !dashboardRes.ok || !historyRes.ok) {
+                throw new Error("One or more dashboard requests failed");
+            }
 
-            const dashboardRes = await fetch(`${BASE_URL}/dashboard`, { headers, cache: 'no-store' });
-            const dashboard = await dashboardRes.json();
-
-            const historyRes = await fetch(`${BASE_URL}/history`, { headers, cache: 'no-store' });
-            const history = await historyRes.json();
+            const [stats, dashboard, history] = await Promise.all([
+                statsRes.json(),
+                dashboardRes.json(),
+                historyRes.json()
+            ]);
             
             setDashboardData({
                 availablePCs: Number(stats.availableStandardPc) || 0,
