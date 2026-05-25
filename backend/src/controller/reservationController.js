@@ -7,7 +7,6 @@ const getDashboardStats = async (req, res) => {
             return res.status(401).json({ error: "User session expired." });
         }
 
-        // Auto-delete expired reservations globally
         await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
 
         const user_id = req.user.id;

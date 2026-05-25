@@ -1,14 +1,14 @@
+const express = require('express');
+const router = express.Router();
+const isAdmin = require('../middleware/authMiddleware').isAdmin;
+const token = require('../middleware/authMiddleware').token;
 const pool = require('../database/db');
 
-// OPTIMIZATION: Added pagination to prevent loading huge datasets
 const getBookings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
+        const limit = parseInt(req.query.limit) || 20;
         const offset = (page - 1) * limit;
-
-        // Auto-delete expired reservations globally
-        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
 
         const [bookingsQuery, countQuery] = await Promise.all([
             pool.query(`
@@ -27,17 +27,17 @@ const getBookings = async (req, res) => {
             `, [limit, offset]),
             pool.query('SELECT COUNT(*) FROM reservations')
         ]);
-        
+
         const formattedBookings = bookingsQuery.rows.map(b => ({
             id: b.reservation_id,
             start: b.start,
             end: b.end,
             status: b.status,
             username: b.username,
-            station_name: `PC-${b.station_id}` 
+            station_name: `PC-${b.station_id}`
         }));
 
-        res.status(200).json({ 
+        res.status(200).json({
             bookings: formattedBookings,
             pagination: {
                 page,
@@ -50,47 +50,43 @@ const getBookings = async (req, res) => {
         if (process.env.NODE_ENV === 'development') {
             console.error("Database error in getBookings:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
     // Extract the perfectly formatted local times from React
-    const { status, start, end } = req.body; 
+    const { status, start, end } = req.body;
 
     try {
-        // Retrieve target reservation to check if it belongs to a group booking
-        const targetRes = await pool.query('SELECT * FROM reservations WHERE reservation_id = $1', [id]);
-        if (targetRes.rows.length === 0) {
-            return res.status(404).json({ message: "Reservation not found"});
-        }
-        
-        const original = targetRes.rows[0];
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
-        
+
         // Save the exact local times the frontend sent us!
-        // If updating a pending reservation to active, also start any matching group reservations
-        if (status === 'active' && original.status === 'pending' && start && end) {
+        if (status === 'active' && start && end) {
             query = `
                 UPDATE reservations 
                 SET status = $1, start = $3, "end" = $4
-                WHERE (reservation_id = $2 OR (user_id = $5 AND start = $6::timestamp AND "end" = $7::timestamp AND status = 'pending'))
+                WHERE reservation_id = $2 
                 RETURNING *
             `;
-            values = [status, id, start, end, original.user_id, original.start, original.end];
+            values = [status, id, start, end];
         }
 
         const updateStatus = await pool.query(query, values);
-        
-        res.status(200).json({ message: "Status updated successfully", reservation: updateStatus.rows[0]});
-        
+
+        if (updateStatus.rows.length === 0) {
+            return res.status(404).json({ message: "Reservation not found" });
+        }
+
+        res.status(200).json({ message: "Status updated successfully", reservation: updateStatus.rows[0] });
+
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Reservation status update error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -98,7 +94,7 @@ const getTicket = async (req, res) => {
     try {
         // OPTIMIZATION: Added pagination support
         const page = parseInt(req.query.page) || 1;
-        const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
+        const limit = parseInt(req.query.limit) || 20;
         const offset = (page - 1) * limit;
 
         const [ticketsQuery, countQuery] = await Promise.all([
@@ -119,7 +115,7 @@ const getTicket = async (req, res) => {
             pool.query('SELECT COUNT(*) FROM tickets')
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             tickets: ticketsQuery.rows,
             pagination: {
                 page,
@@ -132,7 +128,7 @@ const getTicket = async (req, res) => {
         if (process.env.NODE_ENV === 'development') {
             console.error("Ticket fetch error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -145,19 +141,19 @@ const updateTicketStatus = async (req, res) => {
             `UPDATE tickets SET status = $1 WHERE id = $2 RETURNING *`,
             [status, ticketId]
         );
-        
+
         if (updateTicket.rows.length === 0) {
-            return res.status(404).json({ message: "Ticket not found"});
+            return res.status(404).json({ message: "Ticket not found" });
         }
 
         res.status(200).json({
-             message: "Ticket status updated successfully", ticket: updateTicket.rows[0]
-            });
+            message: "Ticket status updated successfully", ticket: updateTicket.rows[0]
+        });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Ticket status update error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -166,14 +162,14 @@ const deleteReservation = async (req, res) => {
     try {
         const deleteObj = await pool.query(`DELETE FROM reservations WHERE reservation_id = $1 RETURNING *`, [id]);
         if (deleteObj.rows.length === 0) {
-            return res.status(404).json({ message: "Reservation not found"});
+            return res.status(404).json({ message: "Reservation not found" });
         }
         res.status(200).json({ message: "Reservation deleted successfully" });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Reservation deletion error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -185,7 +181,7 @@ const getComputers = async (req, res) => {
         if (process.env.NODE_ENV === 'development') {
             console.error("Computer fetch error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -198,23 +194,23 @@ const updateComputerStatus = async (req, res) => {
             [availability, id]
         );
         if (updateStatus.rows.length === 0) {
-            return res.status(404).json({ message: "Computer not found"});
+            return res.status(404).json({ message: "Computer not found" });
         }
-        res.status(200).json({ message: "Status updated successfully", computer: updateStatus.rows[0]});
+        res.status(200).json({ message: "Status updated successfully", computer: updateStatus.rows[0] });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Computer status update error:", error);
         }
-        res.status(500).json({ message: "Server error"});
+        res.status(500).json({ message: "Server error" });
     }
 };
 
-module.exports = { 
-    getBookings, 
-    updateReservationStatus, 
-    getTicket, 
-    updateTicketStatus, 
-    deleteReservation, 
-    getComputers, 
-    updateComputerStatus 
+module.exports = {
+    getBookings,
+    updateReservationStatus,
+    getTicket,
+    updateTicketStatus,
+    deleteReservation,
+    getComputers,
+    updateComputerStatus
 };
