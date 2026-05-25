@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useFeedback } from '../../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
@@ -73,13 +73,13 @@ const ReservationPage = () => {
         if (token) checkAvailability();
     }, [token, startTime, duration, BASE_URL]);
 
-    const sortedComputers = [...allComputers].sort((a, b) => a.id - b.id);
-    const allStandardPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard');
-    const standardPcs = allStandardPcs.slice(0, 20); 
-    const allVipPcs = sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip');
-    const generalVipPcs = allVipPcs.slice(0, 20);      
-    const vipRoomPcs = allVipPcs.slice(20, 45);        
-    const privateVipPcs = allVipPcs.slice(45, 55);    
+    const sortedComputers = useMemo(() => [...allComputers].sort((a, b) => a.id - b.id), [allComputers]);
+    const allStandardPcs = useMemo(() => sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard'), [sortedComputers]);
+    const standardPcs = useMemo(() => allStandardPcs.slice(0, 20), [allStandardPcs]); 
+    const allVipPcs = useMemo(() => sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip'), [sortedComputers]);
+    const generalVipPcs = useMemo(() => allVipPcs.slice(0, 20), [allVipPcs]);      
+    const vipRoomPcs = useMemo(() => allVipPcs.slice(20, 45), [allVipPcs]);        
+    const privateVipPcs = useMemo(() => allVipPcs.slice(45, 55), [allVipPcs]);    
 
     const handleBooking = async () => {
         if (isBooking) return;

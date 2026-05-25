@@ -18,6 +18,11 @@ const AdminPanel = () => {
     const [tickets, setTickets] = useState([]);
     const [computers, setComputers] = useState([]);
 
+    const [bookingsPage, setBookingsPage] = useState(1);
+    const [bookingsTotalPages, setBookingsTotalPages] = useState(1);
+    const [ticketsPage, setTicketsPage] = useState(1);
+    const [ticketsTotalPages, setTicketsTotalPages] = useState(1);
+
     useEffect(() => {
         if (user && user.role !== 'admin') {
             navigate('/dashboard', { replace: true });
@@ -26,18 +31,24 @@ const AdminPanel = () => {
 
     useEffect(() => {
         if(token) fetchData();
-    }, [token, activeTab]);
+    }, [token, activeTab, bookingsPage, ticketsPage]);
 
     const fetchData = async () => {
         try {
             if (activeTab === 'reservations') {
-                const res = await fetch(`${BASE_URL}/bookings`, { headers: { Authorization: `Bearer ${token}` } });
+                const res = await fetch(`${BASE_URL}/bookings?page=${bookingsPage}&limit=20`, { headers: { Authorization: `Bearer ${token}` } });
                 const data = await res.json();
-                if(data.bookings) setBookings(data.bookings);
+                if(data.bookings) {
+                    setBookings(data.bookings);
+                    setBookingsTotalPages(data.pagination?.pages || 1);
+                }
             } else if (activeTab === 'tickets') {
-                const res = await fetch(`${BASE_URL}/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+                const res = await fetch(`${BASE_URL}/tickets?page=${ticketsPage}&limit=10`, { headers: { Authorization: `Bearer ${token}` } });
                 const data = await res.json();
-                if(data.tickets) setTickets(data.tickets);
+                if(data.tickets) {
+                    setTickets(data.tickets);
+                    setTicketsTotalPages(data.pagination?.pages || 1);
+                }
             } else if (activeTab === 'computers') {
                 const res = await fetch(`${BASE_URL}/computers`, { headers: { Authorization: `Bearer ${token}` } });
                 const data = await res.json();
@@ -137,41 +148,85 @@ const AdminPanel = () => {
                 </div>
 
                 {activeTab === 'reservations' && (
-                    <table className="activity-table">
-                        <thead>
-                            <tr><th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody>
-                            {bookings.map(b => (
-                                <tr key={b.id}>
-                                    <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
-                                    <td>{new Date(b.start).toLocaleString()}</td><td>{new Date(b.end).toLocaleString()}</td>
-                                    <td><span className={`status-badge ${b.status === 'active' ? 'active' : 'pending'}`}>{b.status}</span></td>
-                                    <td>
-                                        {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '6px 12px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Play size={12} /> Start</button>}
-                                        <button onClick={() => handleDeleteBooking(b.id)} style={{ padding: '6px 12px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Trash2 size={12} /> Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <>
+                        <table className="activity-table">
+                            <thead>
+                                <tr><th>ID</th><th>User</th><th>Station</th><th>Start Time</th><th>End Time</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                {bookings.map(b => (
+                                    <tr key={b.id}>
+                                        <td>{b.id}</td><td>{b.username}</td><td>{b.station_name}</td>
+                                        <td>{new Date(b.start).toLocaleString()}</td><td>{new Date(b.end).toLocaleString()}</td>
+                                        <td><span className={`status-badge ${b.status === 'active' ? 'active' : 'pending'}`}>{b.status}</span></td>
+                                        <td>
+                                            {b.status === 'pending' && <button onClick={() => handleStartBooking(b.id)} style={{ marginRight: '10px', padding: '6px 12px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Play size={12} /> Start</button>}
+                                            <button onClick={() => handleDeleteBooking(b.id)} style={{ padding: '6px 12px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Trash2 size={12} /> Delete</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '20px' }}>
+                            <button 
+                                className="pagination-btn" 
+                                onClick={() => setBookingsPage(prev => Math.max(prev - 1, 1))}
+                                disabled={bookingsPage === 1}
+                                style={{ padding: '8px 16px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px', cursor: bookingsPage === 1 ? 'not-allowed' : 'pointer', opacity: bookingsPage === 1 ? 0.5 : 1 }}
+                            >
+                                Previous
+                            </button>
+                            <span className="pagination-info" style={{ color: '#fff' }}>Page {bookingsPage} of {bookingsTotalPages}</span>
+                            <button 
+                                className="pagination-btn" 
+                                onClick={() => setBookingsPage(prev => Math.min(prev + 1, bookingsTotalPages))}
+                                disabled={bookingsPage === bookingsTotalPages}
+                                style={{ padding: '8px 16px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px', cursor: bookingsPage === bookingsTotalPages ? 'not-allowed' : 'pointer', opacity: bookingsPage === bookingsTotalPages ? 0.5 : 1 }}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
                 )}
 
                 {activeTab === 'tickets' && (
-                    <div className="tickets-list-wrapper">
-                        {tickets.map(t => (
-                            <div key={t.id} className="ticket-card">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '10px', marginBottom: '10px' }}>
-                                    <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#e94560'}}>(Station PC-{t.station_id})</span>}</h4>
-                                    <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#dc3545' : '#28a745' }}>{t.status.toUpperCase()}</span>
+                    <>
+                        <div className="tickets-list-wrapper">
+                            {tickets.map(t => (
+                                <div key={t.id} className="ticket-card">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '10px', marginBottom: '10px' }}>
+                                        <h4 style={{ margin: 0 }}>{t.subject} {t.station_id && <span style={{color: '#e94560'}}>(Station PC-{t.station_id})</span>}</h4>
+                                        <span style={{ fontWeight: 'bold', color: t.status === 'open' ? '#dc3545' : '#28a745' }}>{t.status.toUpperCase()}</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.9em', color: '#6c757d', marginBottom: '10px' }}><strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}</div>
+                                    <div className="ticket-issue">{t.issue}</div>
+                                    {t.status === 'open' && <button onClick={() => handleResolveTicket(t.id)} style={{ padding: '8px 15px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Mark as Resolved</button>}
                                 </div>
-                                <div style={{ fontSize: '0.9em', color: '#6c757d', marginBottom: '10px' }}><strong>Reported by:</strong> {t.username} | <strong>Date:</strong> {new Date(t.created_at).toLocaleString()}</div>
-                                <div className="ticket-issue">{t.issue}</div>
-                                {t.status === 'open' && <button onClick={() => handleResolveTicket(t.id)} style={{ padding: '8px 15px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Mark as Resolved</button>}
+                            ))}
+                            {tickets.length === 0 && <p style={{textAlign: 'center', color: '#6c757d', padding: '20px'}}>No support tickets submitted yet.</p>}
+                        </div>
+                        {tickets.length > 0 && (
+                            <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '20px' }}>
+                                <button 
+                                    className="pagination-btn" 
+                                    onClick={() => setTicketsPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={ticketsPage === 1}
+                                    style={{ padding: '8px 16px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px', cursor: ticketsPage === 1 ? 'not-allowed' : 'pointer', opacity: ticketsPage === 1 ? 0.5 : 1 }}
+                                >
+                                    Previous
+                                </button>
+                                <span className="pagination-info" style={{ color: '#fff' }}>Page {ticketsPage} of {ticketsTotalPages}</span>
+                                <button 
+                                    className="pagination-btn" 
+                                    onClick={() => setTicketsPage(prev => Math.min(prev + 1, ticketsTotalPages))}
+                                    disabled={ticketsPage === ticketsTotalPages}
+                                    style={{ padding: '8px 16px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '6px', cursor: ticketsPage === ticketsTotalPages ? 'not-allowed' : 'pointer', opacity: ticketsPage === ticketsTotalPages ? 0.5 : 1 }}
+                                >
+                                    Next
+                                </button>
                             </div>
-                        ))}
-                        {tickets.length === 0 && <p style={{textAlign: 'center', color: '#6c757d', padding: '20px'}}>No support tickets submitted yet.</p>}
-                    </div>
+                        )}
+                    </>
                 )}
 
                 {activeTab === 'computers' && (

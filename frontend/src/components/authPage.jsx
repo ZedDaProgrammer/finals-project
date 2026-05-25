@@ -8,7 +8,12 @@ const AuthPage = () => {
   const { login } = useAuth(); 
   const { showFeedback } = useFeedback();
   
-  const [formData, setFormData] = useState({
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const [registerData, setRegisterData] = useState({
     name: '',
     email: '',
     password: ''
@@ -27,8 +32,8 @@ const AuthPage = () => {
         },
         body: JSON.stringify({
           // Converts email to lowercase upon submission
-          email: formData.email.toLowerCase(),
-          password: formData.password,
+          email: loginData.email.toLowerCase().trim(),
+          password: loginData.password,
         }),
       });
 
@@ -58,9 +63,9 @@ const AuthPage = () => {
         },
         body: JSON.stringify({
           // Converts both username and email to lowercase upon submission
-          username: formData.name.toLowerCase(),
-          email: formData.email.toLowerCase(),
-          password: formData.password,
+          username: registerData.name.toLowerCase().trim(),
+          email: registerData.email.toLowerCase().trim(),
+          password: registerData.password,
         }),
       });
 
@@ -91,19 +96,22 @@ const AuthPage = () => {
           <input 
             type="text" 
             placeholder="Name" 
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            value={registerData.name}
+            onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
             required
           />
           <input 
             type="email"
             placeholder="Email"
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            value={registerData.email}
+            onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
             required
           />
           <input 
             type="password"
             placeholder="Password"
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            value={registerData.password}
+            onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
             required
           />
           <button type="submit">Sign Up</button>
@@ -116,13 +124,15 @@ const AuthPage = () => {
           <input 
             type="email" 
             placeholder="Email" 
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            value={loginData.email}
+            onChange={(e) => setLoginData({...loginData, email: e.target.value})}
             required
           />
           <input 
             type="password" 
             placeholder="Password" 
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            value={loginData.password}
+            onChange={(e) => setLoginData({...loginData, password: e.target.value})}
             required
           />
           <a href="#">Forgot your password?</a>

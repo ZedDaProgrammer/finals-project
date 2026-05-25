@@ -28,28 +28,35 @@ const userRegister = async(req, res) => {
         return res.status(400).json({message: 'provide all the details that are required'});
     }
 
-    //checks if user exist in the database
-    const userExist = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    try {
+        //checks if user exist in the database
+        const userExist = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-    //returns an error message if user exists
-    if(userExist.rows.length > 0){
-        return res.status(400).json({message: 'This user exist already'});
+        //returns an error message if user exists
+        if(userExist.rows.length > 0){
+            return res.status(400).json({message: 'This user exist already'});
+        }
+        
+        //password hashing 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        //Registers user in the database with the hashed password
+        const newUser = await pool.query(
+            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+            [username, email, hashedPassword]
+        );
+
+        const token = generateToken(newUser.rows[0].id);
+        
+        res.cookie('token', token, cookieOptions);
+
+        return res.status(201).json({ user: newUser.rows[0] });
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Register Error:", error);
+        }
+        return res.status(500).json({ message: "Server error during registration" });
     }
-    
-    //password hashing 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    //Registers user in the database with the hashed password
-    const newUser = await pool.query(
-        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-        [username, email, hashedPassword]
-    );
-
-    const token = generateToken(newUser.rows[0].id);
-    
-    res.cookie('token', token, cookieOptions);
-
-    return res.status(201).json({ user: newUser.rows[0] });
 };
 
 //Login 
@@ -60,28 +67,35 @@ const userLogin = async (req, res) =>{
         return res.status(400).json({ message: 'Provide all required fields'});
     }
 
-    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    try {
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-    if (user.rows.length === 0) {
-        return res.status(400).json({ message: 'Invalid Credentials'});
+        if (user.rows.length === 0) {
+            return res.status(400).json({ message: 'Invalid Credentials'});
+        }
+
+        const userData = user.rows[0];
+
+        const isMatch = await bcrypt.compare(password, userData.password);
+
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid Credentials'});
+        }
+
+        const token = generateToken(userData.id);
+
+        res.cookie('token', token, cookieOptions);
+
+        res.json({
+            token: token,
+            user: { id: userData.id, username: userData.username, email: userData.email} 
+        });
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Login Error:", error);
+        }
+        return res.status(500).json({ message: "Server error during login" });
     }
-
-    const userData = user.rows[0];
-
-    const isMatch = await bcrypt.compare(password, userData.password);
-
-    if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid Credentials'});
-    }
-
-    const token = generateToken(userData.id);
-
-    res.cookie('token', token, cookieOptions);
-
-    res.json({
-        token: token,
-        user: { id: userData.id, username: userData.username, email: userData.email} 
-    });
 };
 
 //profile

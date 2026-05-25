@@ -8,7 +8,7 @@ const pool = require('../database/db');
 const getBookings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
         const offset = (page - 1) * limit;
 
         const [bookingsQuery, countQuery] = await Promise.all([
@@ -61,26 +61,30 @@ const updateReservationStatus = async (req, res) => {
     const { status, start, end } = req.body; 
 
     try {
+        // Retrieve target reservation to check if it belongs to a group booking
+        const targetRes = await pool.query('SELECT * FROM reservations WHERE reservation_id = $1', [id]);
+        if (targetRes.rows.length === 0) {
+            return res.status(404).json({ message: "Reservation not found"});
+        }
+        
+        const original = targetRes.rows[0];
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
         
         // Save the exact local times the frontend sent us!
-        if (status === 'active' && start && end) {
+        // If updating a pending reservation to active, also start any matching group reservations
+        if (status === 'active' && original.status === 'pending' && start && end) {
             query = `
                 UPDATE reservations 
                 SET status = $1, start = $3, "end" = $4
-                WHERE reservation_id = $2 
+                WHERE (reservation_id = $2 OR (user_id = $5 AND start = $6 AND "end" = $7 AND status = 'pending'))
                 RETURNING *
             `;
-            values = [status, id, start, end];
+            values = [status, id, start, end, original.user_id, original.start, original.end];
         }
 
         const updateStatus = await pool.query(query, values);
         
-        if (updateStatus.rows.length === 0) {
-            return res.status(404).json({ message: "Reservation not found"});
-        }
-
         res.status(200).json({ message: "Status updated successfully", reservation: updateStatus.rows[0]});
         
     } catch (error) {
@@ -95,7 +99,7 @@ const getTicket = async (req, res) => {
     try {
         // OPTIMIZATION: Added pagination support
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
         const offset = (page - 1) * limit;
 
         const [ticketsQuery, countQuery] = await Promise.all([

@@ -142,7 +142,7 @@ const createBooking = async (req, res) => {
 const getHistory = async (req, res) => {
     const user_id = req.user.id;
     // OPTIMIZATION: Implemented pagination to prevent fetching massive payloads
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 1000;
     const offset = parseInt(req.query.offset) || 0;
 
     try {

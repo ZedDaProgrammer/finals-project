@@ -1,0 +1,1 @@
+var e=`/assets/logo-DLKFgkkM.png`;export{e as t};
