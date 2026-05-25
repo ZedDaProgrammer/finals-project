@@ -76,7 +76,7 @@ const updateReservationStatus = async (req, res) => {
             query = `
                 UPDATE reservations 
                 SET status = $1, start = $3, "end" = $4
-                WHERE (reservation_id = $2 OR (user_id = $5 AND start = $6 AND "end" = $7 AND status = 'pending'))
+                WHERE (reservation_id = $2 OR (user_id = $5 AND start = $6::timestamp AND "end" = $7::timestamp AND status = 'pending'))
                 RETURNING *
             `;
             values = [status, id, start, end, original.user_id, original.start, original.end];
