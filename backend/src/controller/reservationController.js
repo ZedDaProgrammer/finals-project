@@ -339,8 +339,6 @@ const dashboardData = async (req, res) => {
         }
         const user_id = req.user.id;
 
-        const GRACE_PERIOD_MS = 30 * 60 * 1000; // 30 minutes
-        const now = new Date();
 
         // FEATURE: Auto-delete reservations that exceeded grace period (30 min late)
         await pool.query(`

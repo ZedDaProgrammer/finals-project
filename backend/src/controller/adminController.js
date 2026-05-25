@@ -1,7 +1,3 @@
-const express = require('express');
-const router = express.Router();
-const isAdmin = require('../middleware/authMiddleware').isAdmin;
-const token = require('../middleware/authMiddleware').token;
 const pool = require('../database/db');
 
 // OPTIMIZATION: Added pagination to prevent loading huge datasets
