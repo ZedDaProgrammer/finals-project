@@ -56,14 +56,12 @@ const getBookings = async (req, res) => {
 
 const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
-    // Extract the perfectly formatted local times from React
     const { status, start, end } = req.body;
 
     try {
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
 
-        // Save the exact local times the frontend sent us!
         if (status === 'active' && start && end) {
             query = `
                 UPDATE reservations 
@@ -92,7 +90,7 @@ const updateReservationStatus = async (req, res) => {
 
 const getTicket = async (req, res) => {
     try {
-        // OPTIMIZATION: Added pagination support
+
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const offset = (page - 1) * limit;

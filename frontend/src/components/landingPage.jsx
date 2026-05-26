@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logoImg from '../../pictures/logo.png';
-import bgImg from '../../pictures/landingpage.jpg';
+import logoImg from '../assets/logo.png';
+import bgImg from '../assets/landingpage.jpg';
 const LandingPage = () => {
   return (
     <div className="landing-page">

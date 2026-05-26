@@ -7,8 +7,6 @@ const getDashboardStats = async (req, res) => {
             return res.status(401).json({ error: "User session expired." });
         }
 
-        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
-
         const user_id = req.user.id;
         
         const historyQuery = await pool.query(
@@ -61,9 +59,6 @@ const checkAvailability = async (req, res) => {
             return res.status(401).json({ error: "Please provide the needed details."});
         }
 
-        // Auto-delete expired reservations globally
-        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
-
         // OPTIMIZATION: Swapped 'NOT IN' for 'NOT EXISTS'
         const availableStation = await pool.query(`
                 SELECT c.* FROM computers c
@@ -98,6 +93,20 @@ const createBooking = async (req, res) => {
 
         const checkStation = await client.query(`SELECT * FROM computers WHERE id = $1 FOR UPDATE`, [station_id]);
         if (checkStation.rows.length === 0) throw new Error("Station not found.");
+
+        const overlapping = await client.query(`
+            SELECT 1 FROM reservations
+            WHERE station_id = $1
+            AND status != 'cancelled'
+            AND start < $3::timestamp
+            AND "end" > $2::timestamp
+            AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))
+            LIMIT 1
+        `, [station_id, start, end]);
+
+        if (overlapping.rows.length > 0) {
+            throw new Error("This station is already booked during the selected time slot.");
+        }
         
         const startTime = new Date(start);
         const endTime = new Date(end);
@@ -264,6 +273,21 @@ const groupBooking = async (req, res) => {
         );
 
         if (checkStations.rows.length === 0) throw new Error("Stations not found.");
+
+        const overlapping = await client.query(`
+            SELECT station_id FROM reservations
+            WHERE station_id = ANY($1::int[])
+            AND status != 'cancelled'
+            AND start < $3::timestamp
+            AND "end" > $2::timestamp
+            AND NOT (status = 'pending' AND CURRENT_TIMESTAMP > (start + INTERVAL '15 minutes'))
+            LIMIT 1
+        `, [stations, start, end]);
+
+        if (overlapping.rows.length > 0) {
+            throw new Error(`Station PC-${overlapping.rows[0].station_id} is already booked during the selected time slot.`);
+        }
+
         const totalHourlyRate = checkStations.rows.reduce((sum, row) => sum + (row.pc_rate || 0), 0);
 
         const startTime = new Date(start);
@@ -344,10 +368,6 @@ const dashboardData = async (req, res) => {
             return res.status(401).json({ error: "User session expired." });
         }
         const user_id = req.user.id;
-
-
-        // Auto-delete expired reservations globally
-        await pool.query(`DELETE FROM reservations WHERE "end" < NOW()`);
 
         const activeSessions = await pool.query(`
             SELECT r.*, c.type AS computer_type

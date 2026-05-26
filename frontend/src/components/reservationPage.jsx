@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useFeedback } from '../../context/feedbackContext';
+import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
-import logoImg from '../../pictures/logo.png';
+import logoImg from '../assets/logo.png';
 import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Monitor, Gem, Layers, ShieldCheck, Map, X } from 'lucide-react';
 
-// Import tab-specific layout blueprints from the pictures folder
-import standardLayoutImg from '../../pictures/standard_layout.jpg';
-import vipLoungeLayoutImg from '../../pictures/vip.jpg';
-import vipRoomsLayoutImg from '../../pictures/vip_room.jpg';
-import privateLayoutImg from '../../pictures/private_lounge.jpg';
+// Import tab-specific layout blueprints from the assets folder
+import standardLayoutImg from '../assets/standard_layout.jpg';
+import vipLoungeLayoutImg from '../assets/vip.jpg';
+import vipRoomsLayoutImg from '../assets/vip_room.jpg';
+import privateLayoutImg from '../assets/private_lounge.jpg';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
@@ -472,7 +472,7 @@ const ReservationPage = () => {
                                             </div>
                                             <span className="placeholder-text">{layoutDetails.title} Blueprint Placeholder</span>
                                             <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: '#8d99ae', lineHeight: '1.4' }}>
-                                                Image file missing. Place a <strong>{layoutDetails.filename}</strong> image asset file inside your <code>frontend/pictures/</code> directory workspace to swap this dashboard placeholder out.
+                                                Image file missing. Place a <strong>{layoutDetails.filename}</strong> image asset file inside your <code>frontend/src/assets/</code> directory workspace to swap this dashboard placeholder out.
                                             </p>
                                         </div>
                                     )}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, Plus, X, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
-import logoImg from '../../pictures/logo.png';
+import logoImg from '../assets/logo.png';
 
 const ProfilePage = () => {
     const { user, token, logout, refreshUser } = useAuth();

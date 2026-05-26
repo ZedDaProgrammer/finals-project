@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext'; 
 import { useNavigate } from 'react-router-dom';
 import { Monitor, Star, Calendar, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
-import logoImg from '../../pictures/logo.png';
+import logoImg from '../assets/logo.png';
 
 const Dashboard = () => {
     const { user, token, logout } = useAuth();
@@ -10,17 +10,7 @@ const Dashboard = () => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [dashboardData, setDashboardData] = useState({ availablePCs: 0, availableVipPCs: 0, userTotalBooked: 0, orderHistory: 0 });
     const [rawSessions, setRawSessions] = useState([]); 
-    const [currentTime, setCurrentTime] = useState(new Date()); 
     const [isLoading, setIsLoading] = useState(true);
-    const currentTimeRef = useRef(new Date());
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            currentTimeRef.current = new Date();
-            setCurrentTime(new Date());
-        }, 5000);
-        return () => clearInterval(timer);
-    }, []);
 
     const fetchDashboardData = async () => {
         try {
@@ -145,51 +135,98 @@ const Dashboard = () => {
                                     ))}
                                 </tbody>
                             </table>
-                        ) : rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime).length === 0 ? (
-                            <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>
                         ) : (
-                            <table className="activity-table">
-                                <thead>
-                                    <tr><th>Reservation ID</th><th>PC Details</th><th>Reserved Time</th><th>Duration / Time Left</th><th>Status</th></tr>
-                                </thead>
-                                <tbody>
-                                    {rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime).map((res) => {
-                                        const start = new Date(res.start); const end = new Date(res.end); const now = currentTimeRef.current;
-                                        let statusStr = ""; let badgeClass = ""; let timeColor = ""; let displayTimeStr = "";
-                                        const durationHours = Math.round((end - start) / 3600000);
-                                        const allottedTimeStr = `${durationHours} Hour${durationHours > 1 ? 's' : ''}`;
-                                        const GRACE_PERIOD_MS = 30 * 60 * 1000; const timeOverMs = now - end;
-                                        const isInGracePeriod = timeOverMs > 0 && timeOverMs <= GRACE_PERIOD_MS;
-
-                                        if (res.status === 'pending') { statusStr = "Pending"; badgeClass = "pending"; timeColor = "gray"; displayTimeStr = allottedTimeStr; } 
-                                        else if (res.status === 'active' && now < start) { statusStr = "Upcoming"; badgeClass = "upcoming"; timeColor = "#0056b3"; displayTimeStr = allottedTimeStr; } 
-                                        else if (res.status === 'active' && now >= start && now < end) {
-                                            statusStr = "Active"; badgeClass = "active"; timeColor = "#28a745"; 
-                                            const diffMs = end - now; const hours = Math.floor(diffMs / 3600000); const mins = Math.floor((diffMs % 3600000) / 60000); const secs = Math.floor((diffMs % 60000) / 1000);
-                                            displayTimeStr = `${hours}h ${mins}m ${secs}s`;
-                                        } else if (isInGracePeriod) {
-                                            statusStr = "Grace Period"; badgeClass = "completed"; timeColor = "#ff0000";
-                                            const remainingMs = GRACE_PERIOD_MS - timeOverMs; const mins = Math.floor(remainingMs / 60000); const secs = Math.floor((remainingMs % 60000) / 1000);
-                                            displayTimeStr = `${mins}m ${secs}s left`;
-                                        } else { statusStr = "Expired"; badgeClass = "completed"; timeColor = "#f44336"; displayTimeStr = "0h 0m 0s"; }
-
-                                        return (
-                                            <tr key={res.reservation_id}>
-                                                <td className="fw-bold">#RES-{res.reservation_id}</td>
-                                                <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
-                                                <td>{start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
-                                                <td className="fw-bold" style={{ color: timeColor, fontVariantNumeric: 'tabular-nums' }}>{displayTimeStr}</td>
-                                                <td><span className={`status-badge ${badgeClass}`}>{statusStr}</span></td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                            <ActiveSessionsTable rawSessions={rawSessions} />
                         )}
                     </div>
                 </section>
             </main>
         </div>
+    );
+};
+
+const ActiveSessionsTable = ({ rawSessions }) => {
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000); // Smooth 1-second countdown updates
+        return () => clearInterval(timer);
+    }, []);
+
+    const activeSessions = rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime);
+
+    if (activeSessions.length === 0) {
+        return <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>;
+    }
+
+    return (
+        <table className="activity-table">
+            <thead>
+                <tr><th>Reservation ID</th><th>PC Details</th><th>Reserved Time</th><th>Duration / Time Left</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {activeSessions.map((res) => {
+                    const start = new Date(res.start);
+                    const end = new Date(res.end);
+                    const now = currentTime;
+                    let statusStr = "";
+                    let badgeClass = "";
+                    let timeColor = "";
+                    let displayTimeStr = "";
+                    const durationHours = Math.round((end - start) / 3600000);
+                    const allottedTimeStr = `${durationHours} Hour${durationHours > 1 ? 's' : ''}`;
+                    const GRACE_PERIOD_MS = 30 * 60 * 1000;
+                    const timeOverMs = now - end;
+                    const isInGracePeriod = timeOverMs > 0 && timeOverMs <= GRACE_PERIOD_MS;
+
+                    if (res.status === 'pending') {
+                        statusStr = "Pending";
+                        badgeClass = "pending";
+                        timeColor = "gray";
+                        displayTimeStr = allottedTimeStr;
+                    } else if (res.status === 'active' && now < start) {
+                        statusStr = "Upcoming";
+                        badgeClass = "upcoming";
+                        timeColor = "#0056b3";
+                        displayTimeStr = allottedTimeStr;
+                    } else if (res.status === 'active' && now >= start && now < end) {
+                        statusStr = "Active";
+                        badgeClass = "active";
+                        timeColor = "#28a745";
+                        const diffMs = end - now;
+                        const hours = Math.floor(diffMs / 3600000);
+                        const mins = Math.floor((diffMs % 3600000) / 60000);
+                        const secs = Math.floor((diffMs % 60000) / 1000);
+                        displayTimeStr = `${hours}h ${mins}m ${secs}s`;
+                    } else if (isInGracePeriod) {
+                        statusStr = "Grace Period";
+                        badgeClass = "completed";
+                        timeColor = "#ff0000";
+                        const remainingMs = GRACE_PERIOD_MS - timeOverMs;
+                        const mins = Math.floor(remainingMs / 60000);
+                        const secs = Math.floor((remainingMs % 60000) / 1000);
+                        displayTimeStr = `${mins}m ${secs}s left`;
+                    } else {
+                        statusStr = "Expired";
+                        badgeClass = "completed";
+                        timeColor = "#f44336";
+                        displayTimeStr = "0h 0m 0s";
+                    }
+
+                    return (
+                        <tr key={res.reservation_id}>
+                            <td className="fw-bold">#RES-{res.reservation_id}</td>
+                            <td>{(res.computer_type || 'Unknown').toUpperCase()} PC (Station {res.station_id})</td>
+                            <td>{start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })}</td>
+                            <td className="fw-bold" style={{ color: timeColor, fontVariantNumeric: 'tabular-nums' }}>{displayTimeStr}</td>
+                            <td><span className={`status-badge ${badgeClass}`}>{statusStr}</span></td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
     );
 };
 

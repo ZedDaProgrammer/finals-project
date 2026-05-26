@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useFeedback } from '../../context/feedbackContext';
+import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
-import logoImg from '../../pictures/logo.png';
+import logoImg from '../assets/logo.png';
 import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
 
 const SettingsPage = () => {

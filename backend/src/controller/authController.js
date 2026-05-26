@@ -15,17 +15,17 @@ const cookieOptions = {
 
 //generates token
 const generateToken = (id) => {
-    return jwt.sign({id}, process.env.JWT_SECRET, {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d'
     });
 }
 
 //register
-const userRegister = async(req, res) => {
+const userRegister = async (req, res) => {
     const { username, email, password } = req.body;
     //checks if all details are inputted
-    if(!username || !email || !password){
-        return res.status(400).json({message: 'provide all the details that are required'});
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'provide all the details that are required' });
     }
 
     try {
@@ -33,10 +33,10 @@ const userRegister = async(req, res) => {
         const userExist = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
         //returns an error message if user exists
-        if(userExist.rows.length > 0){
-            return res.status(400).json({message: 'This user exist already'});
+        if (userExist.rows.length > 0) {
+            return res.status(400).json({ message: 'This user exist already' });
         }
-        
+
         //password hashing 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -47,10 +47,13 @@ const userRegister = async(req, res) => {
         );
 
         const token = generateToken(newUser.rows[0].id);
-        
+
         res.cookie('token', token, cookieOptions);
 
-        return res.status(201).json({ user: newUser.rows[0] });
+        const user = { ...newUser.rows[0] };
+        delete user.password;
+
+        return res.status(201).json({ user });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Register Error:", error);
@@ -61,17 +64,17 @@ const userRegister = async(req, res) => {
 
 //Login 
 
-const userLogin = async (req, res) =>{
+const userLogin = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ message: 'Provide all required fields'});
+        return res.status(400).json({ message: 'Provide all required fields' });
     }
 
     try {
         const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
         if (user.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid Credentials'});
+            return res.status(400).json({ message: 'Invalid Credentials' });
         }
 
         const userData = user.rows[0];
@@ -79,7 +82,7 @@ const userLogin = async (req, res) =>{
         const isMatch = await bcrypt.compare(password, userData.password);
 
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid Credentials'});
+            return res.status(400).json({ message: 'Invalid Credentials' });
         }
 
         const token = generateToken(userData.id);
@@ -88,7 +91,7 @@ const userLogin = async (req, res) =>{
 
         res.json({
             token: token,
-            user: { id: userData.id, username: userData.username, email: userData.email} 
+            user: { id: userData.id, username: userData.username, email: userData.email }
         });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
@@ -99,7 +102,7 @@ const userLogin = async (req, res) =>{
 };
 
 //profile
-const userProfile =  async (req, res) => {
+const userProfile = async (req, res) => {
     res.json(req.user);
 };
 
