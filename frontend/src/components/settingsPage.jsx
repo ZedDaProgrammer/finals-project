@@ -15,10 +15,14 @@ const SettingsPage = () => {
 
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
     const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
-    
+
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('darkMode') === 'true';
     });
+
+    useEffect(() => {
+        document.title = "BlackByte | Settings";
+    }, []);
 
     useEffect(() => {
         if (isDarkMode) {
@@ -69,9 +73,9 @@ const SettingsPage = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); 
+        localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true }); 
+        navigate('/login', { replace: true });
     };
 
     return (
@@ -104,9 +108,9 @@ const SettingsPage = () => {
                             <p>Manage your system visibility, security configurations, and support details.</p>
                         </div>
                     </header>
-                    
+
                     <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                        
+
                         {/* Appearance / Dark Mode */}
                         <section className="settings-card" style={{ margin: 0 }}>
                             <h3>🖥️ Appearance</h3>
@@ -130,15 +134,15 @@ const SettingsPage = () => {
                             <form onSubmit={handleChangePassword} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                                     <label>Current Account Password</label>
-                                    <input type="password" className="form-input" value={passwords.current} onChange={e => setPasswords({...passwords, current: e.target.value})} required />
+                                    <input type="password" className="form-input" value={passwords.current} onChange={e => setPasswords({ ...passwords, current: e.target.value })} required />
                                 </div>
                                 <div className="form-group" style={{ marginBottom: 0 }}>
                                     <label>New Passphrase</label>
-                                    <input type="password" className="form-input" value={passwords.new} onChange={e => setPasswords({...passwords, new: e.target.value})} required />
+                                    <input type="password" className="form-input" value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })} required />
                                 </div>
                                 <div className="form-group" style={{ marginBottom: 0 }}>
                                     <label>Confirm Passphrase Verification</label>
-                                    <input type="password" className="form-input" value={passwords.confirm} onChange={e => setPasswords({...passwords, confirm: e.target.value})} required />
+                                    <input type="password" className="form-input" value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} required />
                                 </div>
                                 <button type="submit" className="settings-btn" style={{ gridColumn: '1 / -1', background: '#222', marginTop: '10px' }}>Update Secure Password</button>
                             </form>
@@ -152,16 +156,16 @@ const SettingsPage = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label>PC Station ID</label>
-                                        <input type="number" className="form-input" placeholder="e.g. Node-12" value={ticket.station_id} onChange={e => setTicket({...ticket, station_id: e.target.value})} />
+                                        <input type="number" className="form-input" placeholder="e.g. Node-12" value={ticket.station_id} onChange={e => setTicket({ ...ticket, station_id: e.target.value })} />
                                     </div>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label>Fault Classification (Subject)</label>
-                                        <input type="text" className="form-input" placeholder="e.g. Peripheral Disconnected" value={ticket.subject} onChange={e => setTicket({...ticket, subject: e.target.value})} required />
+                                        <input type="text" className="form-input" placeholder="e.g. Peripheral Disconnected" value={ticket.subject} onChange={e => setTicket({ ...ticket, subject: e.target.value })} required />
                                     </div>
                                 </div>
                                 <div className="form-group" style={{ marginBottom: 0 }}>
                                     <label>Detailed System Diagnostics Description</label>
-                                    <textarea className="form-input" placeholder="Specify failure context, error codes, or hardware symptoms..." value={ticket.description} onChange={e => setTicket({...ticket, description: e.target.value})} required style={{ height: '100%', minHeight: '135px', resize: 'none' }} />
+                                    <textarea className="form-input" placeholder="Specify failure context, error codes, or hardware symptoms..." value={ticket.description} onChange={e => setTicket({ ...ticket, description: e.target.value })} required style={{ height: '100%', minHeight: '135px', resize: 'none' }} />
                                 </div>
                                 <button type="submit" className="settings-btn" style={{ gridColumn: '1 / -1', background: '#e94560', marginTop: '10px' }}>Dispatch Support Ticket</button>
                             </form>

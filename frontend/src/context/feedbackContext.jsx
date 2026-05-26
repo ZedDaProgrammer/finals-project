@@ -30,17 +30,23 @@ export const FeedbackProvider = ({ children }) => {
             
             {/* The Global Modal UI - Renders anywhere in the app when triggered */}
             {modalConfig.isOpen && (
-                <div className="modal-overlay" style={{ zIndex: 9999 }}>
-                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px' }}>
+                <div className="glass-overlay" style={{ zIndex: 9999 }}>
+                    <div className="glass-modal modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px' }}>
+                        <div className="placeholder-icon-wrapper" style={{ marginBottom: '15px' }}>
+                            <span style={{ fontSize: '48px' }}>
+                                {modalConfig.type === 'success' ? '✅' : '❌'}
+                            </span>
+                        </div>
                         <h3 style={{ 
                             color: modalConfig.type === 'success' ? '#28a745' : '#dc3545', 
                             borderBottom: 'none', 
                             marginBottom: '10px',
-                            fontSize: '24px'
+                            fontSize: '24px',
+                            fontWeight: 'bold'
                         }}>
-                            {modalConfig.type === 'success' ? '✅ Success' : '❌ Error'}
+                            {modalConfig.type === 'success' ? 'Success' : 'Error'}
                         </h3>
-                        <p style={{ fontSize: '16px', margin: '15px 0 25px 0', lineHeight: '1.5' }}>
+                        <p style={{ fontSize: '15px', margin: '15px 0 25px 0', lineHeight: '1.5' }}>
                             {modalConfig.message}
                         </p>
                         <button 
@@ -50,10 +56,13 @@ export const FeedbackProvider = ({ children }) => {
                                 width: '100%', 
                                 background: modalConfig.type === 'success' ? '#28a745' : '#dc3545',
                                 fontSize: '16px',
-                                padding: '12px'
+                                padding: '12px',
+                                borderRadius: '10px',
+                                border: 'none',
+                                fontWeight: 'bold'
                             }}
                         >
-                            OK
+                            Continue
                         </button>
                     </div>
                 </div>

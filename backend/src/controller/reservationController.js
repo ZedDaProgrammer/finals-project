@@ -8,7 +8,7 @@ const getDashboardStats = async (req, res) => {
         }
 
         const user_id = req.user.id;
-        
+
         const historyQuery = await pool.query(
             `SELECT COUNT(*) FROM reservations WHERE user_id = $1`,
             [user_id]
@@ -30,7 +30,7 @@ const getDashboardStats = async (req, res) => {
              )
              GROUP BY c.type`, [currentDate]
         );
-     
+
         let availableStandardPc = 0;
         let availableVipPc = 0;
 
@@ -56,7 +56,7 @@ const checkAvailability = async (req, res) => {
     try {
         const { start, end } = req.query;
         if (!start || !end) {
-            return res.status(401).json({ error: "Please provide the needed details."});
+            return res.status(401).json({ error: "Please provide the needed details." });
         }
 
         // OPTIMIZATION: Swapped 'NOT IN' for 'NOT EXISTS'
@@ -72,14 +72,14 @@ const checkAvailability = async (req, res) => {
                 )
                 ORDER BY c.id ASC
             `, [start, end]);
-             
+
         res.status(200).json({ availableStation: availableStation.rows });
 
     } catch (err) {
         if (process.env.NODE_ENV === 'development') {
             console.error(err.message);
         }
-        res.status(500).json({ error: "Server error checking availability"});
+        res.status(500).json({ error: "Server error checking availability" });
     }
 };
 
@@ -107,10 +107,10 @@ const createBooking = async (req, res) => {
         if (overlapping.rows.length > 0) {
             throw new Error("This station is already booked during the selected time slot.");
         }
-        
+
         const startTime = new Date(start);
         const endTime = new Date(end);
-        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
+        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5);
         const originalCost = (checkStation.rows[0].pc_rate || 0) * durationHours;
 
         const userQuery = await client.query(`SELECT credits, points FROM users WHERE id = $1 FOR UPDATE`, [user_id]);
@@ -139,11 +139,11 @@ const createBooking = async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(200).json({ 
-            message: `Rank ${rank}: ${discountRate * 100}% Discount applied! Earned ${earnedPoints} rank points.`, 
+        res.status(200).json({
+            message: `Rank ${rank}: ${discountRate * 100}% Discount applied! Earned ${earnedPoints} rank points.`,
             booking: newBooking.rows[0]
         });
-    } catch(err) {
+    } catch (err) {
         await client.query('ROLLBACK');
         if (process.env.NODE_ENV === 'development') {
             console.error("Booking Error", err.message);
@@ -177,7 +177,7 @@ const getHistory = async (req, res) => {
             )
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             history: historyQuery.rows,
             count: parseInt(countQuery.rows[0].count)
         });
@@ -185,7 +185,7 @@ const getHistory = async (req, res) => {
         if (process.env.NODE_ENV === 'development') {
             console.error("History retrieval error", err.message);
         }
-        res.status(500).json({ error: "Server error during history retrieval"});
+        res.status(500).json({ error: "Server error during history retrieval" });
     }
 };
 
@@ -200,7 +200,7 @@ const deleteBooking = async (req, res) => {
         );
 
         if (checkBooking.rows.length === 0) {
-            return res.status(404).json({ error: "Booking not found or unauthorized"});
+            return res.status(404).json({ error: "Booking not found or unauthorized" });
         }
 
         await pool.query(
@@ -221,17 +221,17 @@ const deleteBooking = async (req, res) => {
 const filterComputers = async (req, res) => {
     try {
         const { type } = req.body;
-        
-        let query = 'SELECT * FROM computers'; 
+
+        let query = 'SELECT * FROM computers';
         let values = [];
-        
+
         if (type && type !== 'all') {
             query += ' WHERE type = $1';
             values.push(type.toLowerCase());
         }
-        
+
         query += ' ORDER BY id ASC';
-        
+
         const computers = await pool.query(query, values);
         res.status(200).json(computers.rows);
     } catch (err) {
@@ -247,8 +247,8 @@ const upgradeMembership = async (req, res) => {
     const { amount } = req.body;
     try {
         const user = await pool.query('SELECT points FROM users WHERE id = $1', [user_id]);
-        const newPoints = (user.rows[0].points || 0) + Math.floor(amount / 50); 
-        
+        const newPoints = (user.rows[0].points || 0) + Math.floor(amount / 50);
+
         await pool.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, user_id]);
         res.status(200).json({ message: "Points updated", points: newPoints });
     } catch (err) {
@@ -292,7 +292,7 @@ const groupBooking = async (req, res) => {
 
         const startTime = new Date(start);
         const endTime = new Date(end);
-        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5); 
+        const durationHours = Math.round(Math.abs(endTime - startTime) / 36e5);
         const originalCost = totalHourlyRate * durationHours;
 
         const userQuery = await client.query(
@@ -326,9 +326,9 @@ const groupBooking = async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(200).json({ 
-            message: `Group booking confirmed! ${discountRate * 100}% Discount applied. Earned ${earnedPoints} rank points!`, 
-            bookings: newBookings.rows 
+        res.status(200).json({
+            message: `Group booking confirmed! ${discountRate * 100}% Discount applied. Earned ${earnedPoints} rank points!`,
+            bookings: newBookings.rows
         });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -343,16 +343,16 @@ const groupBooking = async (req, res) => {
 
 const createTicket = async (req, res) => {
     const user_id = req.user.id;
-    const { station_id, subject, description } = req.body;  
+    const { station_id, subject, description } = req.body;
     const safeStationId = (station_id === '' || !station_id) ? null : parseInt(station_id);
 
     try {
         const newTicket = await pool.query(
             `INSERT INTO tickets (user_id, station_id, subject, description, status)
              VALUES ($1, $2, $3, $4, 'open') RETURNING *`,
-            [user_id, safeStationId, subject, description] 
+            [user_id, safeStationId, subject, description]
         );
-        
+
         res.status(201).json({ message: "Support ticket created", ticket: newTicket.rows[0] });
     } catch (err) {
         if (process.env.NODE_ENV === 'development') {
@@ -377,7 +377,7 @@ const dashboardData = async (req, res) => {
             AND r.status != 'cancelled'
             ORDER BY r.start DESC 
         `, [user_id]);
-        
+
         res.status(200).json({ activeSessions: activeSessions.rows });
     } catch (err) {
         if (process.env.NODE_ENV === 'development') {
@@ -391,24 +391,24 @@ const getUserTickets = async (req, res) => {
     try {
         const tickets = await pool.query('SELECT * FROM tickets WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
         res.status(200).json({ tickets: tickets.rows });
-    } catch (error) { 
+    } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Ticket retrieval error:", error.message);
         }
-        res.status(500).json({ message: "Server error" }); 
+        res.status(500).json({ message: "Server error" });
     }
 };
 
-module.exports = { 
-    checkAvailability, 
-    createBooking, 
-    getHistory, 
-    deleteBooking, 
-    filterComputers, 
-    upgradeMembership, 
-    groupBooking, 
-    createTicket, 
-    getDashboardStats, 
+module.exports = {
+    checkAvailability,
+    createBooking,
+    getHistory,
+    deleteBooking,
+    filterComputers,
+    upgradeMembership,
+    groupBooking,
+    createTicket,
+    getDashboardStats,
     dashboardData,
     getUserTickets
 };

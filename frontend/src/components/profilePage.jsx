@@ -20,14 +20,15 @@ const ProfilePage = () => {
     const credits = user?.credits || 0;
 
     const evaluatePoints = (points) => {
-        if(points >= 350) return 'Radiant';
-        if(points >= 175) return 'Platinum';
-        if(points >= 75) return 'Gold';
-        if(points >= 25) return 'Silver';
+        if (points >= 350) return 'Radiant';
+        if (points >= 175) return 'Platinum';
+        if (points >= 75) return 'Gold';
+        if (points >= 25) return 'Silver';
         return 'Bronze';
     };
 
     useEffect(() => {
+        document.title = "BlackByte | My Profile";
         const fetchHistory = async () => {
             try {
                 const response = await fetch(`${BASE_URL}/history`, {
@@ -80,12 +81,12 @@ const ProfilePage = () => {
     };
 
     const rank = evaluatePoints(points);
-    const visibleHistory = history.filter(res => res.status !== 'cancelled');
+    const visibleHistory = history;
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); 
+        localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true }); 
+        navigate('/login', { replace: true });
     };
 
     return (
@@ -129,7 +130,7 @@ const ProfilePage = () => {
                             <h2>{user?.username}</h2>
                             <p>{user?.email}</p>
                             <div className="rank-container" style={{ marginTop: '12px' }}>
-                                <strong style={{ marginRight: '8px' }}>Rank:</strong> 
+                                <strong style={{ marginRight: '8px' }}>Rank:</strong>
                                 <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
                             </div>
                         </div>
@@ -155,9 +156,9 @@ const ProfilePage = () => {
                         <div className="panel-header"><h3>Reservation History</h3></div>
                         <div className="table-container">
                             {isLoading ? (
-                                <p style={{textAlign: 'center', padding: '20px'}}>Loading history...</p>
+                                <p style={{ textAlign: 'center', padding: '20px' }}>Loading history...</p>
                             ) : visibleHistory.length === 0 ? (
-                                <p style={{textAlign: 'center', padding: '20px'}}>You have no reservation history.</p>
+                                <p style={{ textAlign: 'center', padding: '20px' }}>You have no reservation history.</p>
                             ) : (
                                 <table className="activity-table">
                                     <thead>
@@ -175,9 +176,10 @@ const ProfilePage = () => {
                                             let displayStatus = 'UPCOMING';
                                             let badgeClass = 'upcoming';
 
-                                            /* FIX LOGIC BOUNDARIES: If reservation status in database is explicitly 'pending', 
-                                               it cannot be classified as active or completed because it was never authorized by an admin */
-                                            if (res.status === 'pending') {
+                                            if (res.status === 'cancelled') {
+                                                displayStatus = 'CANCELLED';
+                                                badgeClass = 'completed';
+                                            } else if (res.status === 'pending') {
                                                 if (now > end) {
                                                     displayStatus = 'EXPIRED';
                                                     badgeClass = 'completed';

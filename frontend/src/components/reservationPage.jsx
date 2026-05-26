@@ -13,7 +13,7 @@ import privateLayoutImg from '../assets/private_lounge.jpg';
 
 const ReservationPage = () => {
     const { token, user, logout } = useAuth();
-    const { showFeedback } = useFeedback(); 
+    const { showFeedback } = useFeedback();
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/reservation`;
@@ -21,18 +21,23 @@ const ReservationPage = () => {
     const [allComputers, setAllComputers] = useState([]);
     const [availableIds, setAvailableIds] = useState([]);
     const [selectedPC, setSelectedPC] = useState(null);
-    const [selectedRoom, setSelectedRoom] = useState(null); 
+    const [selectedRoom, setSelectedRoom] = useState(null);
     const [activeTab, setActiveTab] = useState('standard');
     const [isBooking, setIsBooking] = useState(false);
     const [showLayoutModal, setShowLayoutModal] = useState(false);
     const [imageError, setImageError] = useState(false);
-            
+    const [hoveredPCId, setHoveredPCId] = useState(null);
+
     const [startTime, setStartTime] = useState(() => {
         const now = new Date();
-        const tzOffset = now.getTimezoneOffset() * 60000; 
+        const tzOffset = now.getTimezoneOffset() * 60000;
         return (new Date(now - tzOffset)).toISOString().slice(0, 16);
-    });   
-    const [duration, setDuration] = useState(1); 
+    });
+    const [duration, setDuration] = useState(1);
+
+    useEffect(() => {
+        document.title = "BlackByte | Book a PC";
+    }, []);
 
     useEffect(() => {
         setImageError(false);
@@ -75,11 +80,11 @@ const ReservationPage = () => {
 
     const sortedComputers = useMemo(() => [...allComputers].sort((a, b) => a.id - b.id), [allComputers]);
     const allStandardPcs = useMemo(() => sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'standard'), [sortedComputers]);
-    const standardPcs = useMemo(() => allStandardPcs.slice(0, 20), [allStandardPcs]); 
+    const standardPcs = useMemo(() => allStandardPcs.slice(0, 20), [allStandardPcs]);
     const allVipPcs = useMemo(() => sortedComputers.filter(pc => pc.type && pc.type.toLowerCase().trim() === 'vip'), [sortedComputers]);
-    const generalVipPcs = useMemo(() => allVipPcs.slice(0, 20), [allVipPcs]);      
-    const vipRoomPcs = useMemo(() => allVipPcs.slice(20, 45), [allVipPcs]);        
-    const privateVipPcs = useMemo(() => allVipPcs.slice(45, 55), [allVipPcs]);    
+    const generalVipPcs = useMemo(() => allVipPcs.slice(0, 20), [allVipPcs]);
+    const vipRoomPcs = useMemo(() => allVipPcs.slice(20, 45), [allVipPcs]);
+    const privateVipPcs = useMemo(() => allVipPcs.slice(45, 55), [allVipPcs]);
 
     const handleBooking = async () => {
         if (isBooking) return;
@@ -87,7 +92,7 @@ const ReservationPage = () => {
 
         const isRoom = !!selectedRoom;
         const endpoint = isRoom ? '/group-booking' : '/book';
-        
+
         const startTimestamp = new Date(startTime);
         const endTimestamp = new Date(startTimestamp.getTime() + duration * 36e5);
 
@@ -99,7 +104,7 @@ const ReservationPage = () => {
             station_id: selectedPC.id,
             start: startTimestamp.toISOString(),
             end: endTimestamp.toISOString(),
-            total_price: (Number(selectedPC.pc_rate) || 0) * duration 
+            total_price: (Number(selectedPC.pc_rate) || 0) * duration
         };
 
         try {
@@ -109,16 +114,16 @@ const ReservationPage = () => {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
-            
+
             if (response.ok) {
                 showFeedback('success', 'Booking Successful!', () => window.location.reload());
             } else {
                 showFeedback('error', `Booking failed: ${data.error}`);
-                setIsBooking(false); 
+                setIsBooking(false);
             }
-        } catch (error) { 
+        } catch (error) {
             showFeedback('error', 'An error occurred while booking. Please try again.');
-            setIsBooking(false); 
+            setIsBooking(false);
         }
     };
 
@@ -127,43 +132,43 @@ const ReservationPage = () => {
     const [monitorFilter, setMonitorFilter] = useState('all');
 
     const isMatch = (pc) => {
-         let match = true;
-         if (cpuFilter !== 'all') {
-             if (cpuFilter === 'Intel' && (!pc.cpu || !pc.cpu.toLowerCase().includes('i'))) match = false;
-             if (cpuFilter === 'Ryzen' && (!pc.cpu || !pc.cpu.toLowerCase().includes('ryzen'))) match = false;
-         }
-         if (gpuFilter !== 'all') {
-             if (gpuFilter === 'GTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('gtx'))) match = false;
-             if (gpuFilter === 'RTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('rtx'))) match = false;
-         }
-         if (monitorFilter !== 'all') {
-             if (monitorFilter === '144' && parseInt(pc.monitor_hz) !== 144) match = false;
-             if (monitorFilter === '240' && parseInt(pc.monitor_hz) !== 240) match = false;
-             if (monitorFilter === '360' && parseInt(pc.monitor_hz) !== 360) match = false;
-         }
-         return match;
+        let match = true;
+        if (cpuFilter !== 'all') {
+            if (cpuFilter === 'Intel' && (!pc.cpu || !pc.cpu.toLowerCase().includes('i'))) match = false;
+            if (cpuFilter === 'Ryzen' && (!pc.cpu || !pc.cpu.toLowerCase().includes('ryzen'))) match = false;
+        }
+        if (gpuFilter !== 'all') {
+            if (gpuFilter === 'GTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('gtx'))) match = false;
+            if (gpuFilter === 'RTX' && (!pc.gpu || !pc.gpu.toLowerCase().includes('rtx'))) match = false;
+        }
+        if (monitorFilter !== 'all') {
+            if (monitorFilter === '144' && parseInt(pc.monitor_hz) !== 144) match = false;
+            if (monitorFilter === '240' && parseInt(pc.monitor_hz) !== 240) match = false;
+            if (monitorFilter === '360' && parseInt(pc.monitor_hz) !== 360) match = false;
+        }
+        return match;
     };
 
     const renderPc = (pc) => {
         const isMaintenance = pc.availability === 'maintenance';
         const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
         const match = isMatch(pc);
-        
+
         return (
-            <div key={pc.id} 
-                 className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`} 
-                 onClick={() => { if (match && !isMaintenance) setSelectedPC(pc); }}
-                 style={{ 
-                     opacity: match ? 1 : 0.3, 
-                     cursor: isMaintenance ? 'not-allowed' : match ? 'pointer' : 'not-allowed', 
-                     filter: isMaintenance || !match ? 'grayscale(100%)' : 'none',
-                     pointerEvents: match && !isMaintenance ? 'auto' : 'none',
-                     position: 'relative',
-                     overflow: 'hidden'
-                 }}>
+            <div key={pc.id}
+                className={`pc-seat ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'} ${match ? '' : 'unmatched-pc'}`}
+                onClick={() => { if (match && !isMaintenance) setSelectedPC(pc); }}
+                style={{
+                    opacity: match ? 1 : 0.3,
+                    cursor: isMaintenance ? 'not-allowed' : match ? 'pointer' : 'not-allowed',
+                    filter: isMaintenance || !match ? 'grayscale(100%)' : 'none',
+                    pointerEvents: match && !isMaintenance ? 'auto' : 'none',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
                 <span className="pc-name">{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</span>
                 <span className="pc-rate">{pc.pc_rate} CR/hr</span>
-                
+
                 {isMaintenance && (
                     <div style={{
                         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -213,11 +218,51 @@ const ReservationPage = () => {
         }
     };
 
+    const renderFloorNode = (pc) => {
+        if (!pc) return null;
+        const isMaintenance = pc.availability === 'maintenance';
+        const isAvailable = availableIds.includes(pc.id) && !isMaintenance;
+        
+        return (
+            <div
+                key={pc.id}
+                className={`floor-node ${isMaintenance ? 'maintenance' : isAvailable ? 'available' : 'occupied'}`}
+                onMouseEnter={() => !isMaintenance && setHoveredPCId(pc.id)}
+                onMouseLeave={() => setHoveredPCId(null)}
+                onClick={() => {
+                    if (!isMaintenance) {
+                        setSelectedPC(pc);
+                        setShowLayoutModal(false);
+                    }
+                }}
+            >
+                {pc.id}
+                {hoveredPCId === pc.id && (
+                    <div className="tooltip-card">
+                        <strong>{(pc.pc_name || pc.pcname) || `PC-${pc.id}`}</strong>
+                        <p><strong>CPU:</strong> {pc.cpu || 'N/A'}</p>
+                        <p><strong>GPU:</strong> {pc.gpu || 'N/A'}</p>
+                        <p><strong>RAM:</strong> {pc.ram ? `${pc.ram} GB` : 'N/A'}</p>
+                        <p><strong>Monitor:</strong> {pc.monitor_hz ? `${pc.monitor_hz}Hz` : 'N/A'}</p>
+                        <p><strong>Rate:</strong> {pc.pc_rate} CR/hr</p>
+                        <p style={{
+                            color: isMaintenance ? '#868e96' : isAvailable ? '#28a745' : '#dc3545',
+                            fontWeight: 'bold',
+                            marginTop: '5px'
+                        }}>
+                            {isMaintenance ? 'Maintenance' : isAvailable ? 'Available' : 'Occupied'}
+                        </p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const layoutDetails = getLayoutDetails();
     const handleLogout = () => {
-        localStorage.removeItem('token'); 
+        localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true }); 
+        navigate('/login', { replace: true });
     };
 
     return (
@@ -233,7 +278,7 @@ const ReservationPage = () => {
                         <a href="/booking" className="nav-item active"><CalendarDays size={18} /> Reservation</a>
                         {user?.role === 'admin' && (
                             <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>
-                        )}                       
+                        )}
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
@@ -247,7 +292,7 @@ const ReservationPage = () => {
             <main className="dashboard-content">
                 <div className="reservation-container">
                     <h2>Reservations</h2>
-                    
+
                     <div className="category-tabs">
                         <button className={`tab-btn ${activeTab === 'standard' ? 'active' : ''}`} onClick={() => setActiveTab('standard')}><Monitor size={16} /> Standard Lounge</button>
                         <button className={`tab-btn ${activeTab === 'vip_lounge' ? 'active' : ''}`} onClick={() => setActiveTab('vip_lounge')}><Gem size={16} /> VIP Lounge</button>
@@ -256,7 +301,7 @@ const ReservationPage = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
-                        <button 
+                        <button
                             className="layout-toggle-btn"
                             onClick={() => setShowLayoutModal(true)}
                         >
@@ -291,11 +336,11 @@ const ReservationPage = () => {
 
                     {(activeTab === 'vip_rooms' || activeTab === 'private') && (
                         <div className="rooms-layout">
-                            {[0,1,2,3,4].map(idx => {
-                                const pcs = activeTab === 'vip_rooms' 
-                                    ? vipRoomPcs.slice(idx*5, (idx+1)*5)
-                                    : privateVipPcs.slice(idx*2, (idx+1)*2);
-                                
+                            {[0, 1, 2, 3, 4].map(idx => {
+                                const pcs = activeTab === 'vip_rooms'
+                                    ? vipRoomPcs.slice(idx * 5, (idx + 1) * 5)
+                                    : privateVipPcs.slice(idx * 2, (idx + 1) * 2);
+
                                 if (pcs.length === 0) return null;
                                 const isRoomAvailable = pcs.every(p => availableIds.includes(p.id));
                                 const roomRate = pcs.reduce((sum, p) => sum + (p.pc_rate || 0), 0);
@@ -303,7 +348,7 @@ const ReservationPage = () => {
                                 return (
                                     <div key={idx} className={`room-box ${isRoomAvailable ? '' : 'room-occupied'}`}>
                                         <h4>{activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} {idx + 1}</h4>
-                                        
+
                                         <div className="room-specs-preview">
                                             <span><strong>CPU:</strong> {pcs[0]?.cpu || 'N/A'}</span>
                                             <span><strong>GPU:</strong> {pcs[0]?.gpu || 'N/A'}</span>
@@ -318,9 +363,9 @@ const ReservationPage = () => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <button 
-                                            className="book-room-btn" 
-                                            onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx+1}`, pcs, rate: roomRate })}
+                                        <button
+                                            className="book-room-btn"
+                                            onClick={() => setSelectedRoom({ name: `${activeTab === 'vip_rooms' ? 'VIP Room' : 'Private Suite'} ${idx + 1}`, pcs, rate: roomRate })}
                                         >
                                             Book Full Room ({roomRate} CR/hr)
                                         </button>
@@ -332,11 +377,11 @@ const ReservationPage = () => {
                 </div>
 
                 {/* Confirm Booking Modal Dialog */}
-                {(selectedPC || selectedRoom) && (() => { 
-                    const isCurrentlyAvailable = selectedRoom 
+                {(selectedPC || selectedRoom) && (() => {
+                    const isCurrentlyAvailable = selectedRoom
                         ? selectedRoom.pcs.every(p => availableIds.includes(p.id))
                         : (selectedPC && availableIds.includes(selectedPC.id));
-                    
+
                     const targetRate = selectedRoom ? selectedRoom.rate : (selectedPC?.pc_rate || 0);
                     const totalCost = targetRate * duration;
 
@@ -344,7 +389,7 @@ const ReservationPage = () => {
                         <div className="modal-overlay">
                             <div className="modal-content modal-large">
                                 <h3>Confirm Booking for {selectedRoom ? selectedRoom.name : ((selectedPC.pc_name || selectedPC.pcname) || `PC-${selectedPC.id}`)}</h3>
-                                
+
                                 {!selectedRoom && selectedPC && (
                                     <div className="pc-dynamic-details">
                                         <h4>Specifications:</h4>
@@ -357,7 +402,7 @@ const ReservationPage = () => {
 
                                 {selectedRoom && (
                                     <div className="pc-dynamic-details">
-                                        <p style={{color: '#6c757d', fontStyle: 'italic', marginBottom: '15px'}} className="specs-text">You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
+                                        <p style={{ color: '#6c757d', fontStyle: 'italic', marginBottom: '15px' }} className="specs-text">You are booking all {selectedRoom.pcs.length} PCs in this room for the selected time slot.</p>
                                         <h4>Room Specifications:</h4>
                                         <p className="specs-text"><strong>CPU:</strong> {selectedRoom.pcs[0]?.cpu || 'N/A'}</p>
                                         <p className="specs-text"><strong>GPU:</strong> {selectedRoom.pcs[0]?.gpu || 'N/A'}</p>
@@ -384,8 +429,8 @@ const ReservationPage = () => {
                                 )}
 
                                 <div className="booking-summary">
-                                    <hr style={{ margin: '15px 0', borderTop: '1px solid #ced4da' }}/>
-                                    
+                                    <hr style={{ margin: '15px 0', borderTop: '1px solid #ced4da' }} />
+
                                     {(() => {
                                         const userPoints = user?.points || 0;
                                         let rank = "Bronze";
@@ -407,34 +452,34 @@ const ReservationPage = () => {
                                                     <span>Original Price:</span>
                                                     <span>{originalCost} CR</span>
                                                 </div>
-                                                
+
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#28a745', fontSize: '0.9em' }}>
                                                     <span>Rank Discount ({rank}):</span>
                                                     <span>-{discountRate * 100}% ({discountAmount} CR)</span>
                                                 </div>
 
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-                                                    <strong>Final Total Cost:</strong> 
+                                                    <strong>Final Total Cost:</strong>
                                                     <strong style={{ color: '#e94560', fontSize: '1.2em' }}>{finalCost} CR</strong>
                                                 </div>
 
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                                    <strong>Your Credits:</strong> 
+                                                    <strong>Your Credits:</strong>
                                                     <span style={{ color: hasEnoughCredits ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
                                                         {user?.credits || 0} CR
                                                     </span>
                                                 </div>
 
                                                 <div className="modal-actions">
-                                                    <button 
-                                                        className="confirm-btn" 
+                                                    <button
+                                                        className="confirm-btn"
                                                         onClick={handleBooking}
                                                         disabled={!hasEnoughCredits || !isCurrentlyAvailable || isBooking}
                                                         style={{ opacity: (hasEnoughCredits && isCurrentlyAvailable && !isBooking) ? 1 : 0.5 }}
                                                     >
                                                         {isBooking ? 'Processing...' : 'Confirm'}
                                                     </button>
-                                                    <button className="cancel-btn" onClick={() => {setSelectedPC(null); setSelectedRoom(null);}}>Cancel</button>
+                                                    <button className="cancel-btn" onClick={() => { setSelectedPC(null); setSelectedRoom(null); }}>Cancel</button>
                                                 </div>
                                             </>
                                         );
@@ -459,8 +504,8 @@ const ReservationPage = () => {
                             <div className="modal-body">
                                 <div className="layout-image-wrapper" style={{ margin: '15px 0', textAlign: 'center' }}>
                                     {!imageError && layoutDetails.image ? (
-                                        <img 
-                                            src={layoutDetails.image} 
+                                        <img
+                                            src={layoutDetails.image}
                                             alt={layoutDetails.title}
                                             onError={() => setImageError(true)}
                                             style={{ maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }}

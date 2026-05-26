@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Monitor, Star, Calendar, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
 import logoImg from '../assets/logo.png';
@@ -9,7 +9,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [dashboardData, setDashboardData] = useState({ availablePCs: 0, availableVipPCs: 0, userTotalBooked: 0, orderHistory: 0 });
-    const [rawSessions, setRawSessions] = useState([]); 
+    const [rawSessions, setRawSessions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchDashboardData = async () => {
@@ -24,7 +24,7 @@ const Dashboard = () => {
                 fetch(`${BASE_URL}/history`, { headers, cache: 'no-store' })
             ]);
 
-            if (statsRes.status === 401) return logout(); 
+            if (statsRes.status === 401) return logout();
             if (!statsRes.ok || !dashboardRes.ok || !historyRes.ok) {
                 throw new Error("One or more dashboard requests failed");
             }
@@ -34,15 +34,15 @@ const Dashboard = () => {
                 dashboardRes.json(),
                 historyRes.json()
             ]);
-            
+
             setDashboardData({
                 availablePCs: Number(stats.availableStandardPc) || 0,
                 availableVipPCs: Number(stats.availableVipPc) || 0,
                 userTotalBooked: Number(stats.totalBookedPc) || 0,
-                orderHistory: Number(history.count) || 0 
+                orderHistory: Number(history.count) || 0
             });
 
-            if (dashboard.activeSessions) setRawSessions(dashboard.activeSessions); 
+            if (dashboard.activeSessions) setRawSessions(dashboard.activeSessions);
             setIsLoading(false);
         } catch (error) {
             if (import.meta.env.DEV) console.error("Error fetching data:", error);
@@ -51,13 +51,14 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
+        document.title = "BlackByte | Dashboard";
         if (token) fetchDashboardData();
     }, [token]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); 
+        localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true }); 
+        navigate('/login', { replace: true });
     };
 
     return (
@@ -71,7 +72,7 @@ const Dashboard = () => {
                         <span className="nav-section-title">Main Menu</span>
                         <a href="/dashboard" className="nav-item active"><LayoutDashboard size={18} /> Dashboard</a>
                         <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}                    
+                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}
                     </div>
                     <div className="nav-section account-section">
                         <span className="nav-section-title">Account</span>
@@ -158,7 +159,7 @@ const ActiveSessionsTable = ({ rawSessions }) => {
     const activeSessions = rawSessions.filter(res => res.status === 'pending' || new Date(res.end) > currentTime);
 
     if (activeSessions.length === 0) {
-        return <p style={{textAlign: 'center', padding: '20px', color: '#8892a0'}}>You have no active PC sessions right now.</p>;
+        return <p style={{ textAlign: 'center', padding: '20px', color: '#8892a0' }}>You have no active PC sessions right now.</p>;
     }
 
     return (

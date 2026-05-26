@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/feedbackContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
   const { showFeedback } = useFeedback();
-  
+
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
@@ -24,7 +24,7 @@ const AuthPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try{
+    try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -40,7 +40,7 @@ const AuthPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        login(data.token); 
+        login(data.token);
         showFeedback('success', 'Login Successful!', () => navigate('/dashboard'));
       } else {
         showFeedback('error', data.message || "Login failed");
@@ -53,7 +53,7 @@ const AuthPage = () => {
   };
 
   const handleRegister = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
 
     try {
       const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -93,25 +93,25 @@ const AuthPage = () => {
         <form onSubmit={handleRegister}>
           <h1>Create Account</h1>
           <span>or use your email for registration</span>
-          <input 
-            type="text" 
-            placeholder="Name" 
+          <input
+            type="text"
+            placeholder="Name"
             value={registerData.name}
-            onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
+            onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
             required
           />
-          <input 
+          <input
             type="email"
             placeholder="Email"
             value={registerData.email}
-            onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+            onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
             required
           />
-          <input 
+          <input
             type="password"
             placeholder="Password"
             value={registerData.password}
-            onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+            onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
             required
           />
           <button type="submit">Sign Up</button>
@@ -121,18 +121,18 @@ const AuthPage = () => {
       <div className="form-container sign-in-container">
         <form onSubmit={handleLogin}>
           <h1>Sign in</h1>
-          <input 
-            type="email" 
-            placeholder="Email" 
+          <input
+            type="email"
+            placeholder="Email"
             value={loginData.email}
-            onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
             required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
+          <input
+            type="password"
+            placeholder="Password"
             value={loginData.password}
-            onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
             required
           />
           <a href="#">Forgot your password?</a>

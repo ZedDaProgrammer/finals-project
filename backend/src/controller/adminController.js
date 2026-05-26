@@ -56,12 +56,14 @@ const getBookings = async (req, res) => {
 
 const updateReservationStatus = async (req, res) => {
     const id = req.params.id;
+
     const { status, start, end } = req.body;
 
     try {
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
 
+        // Save the exact local times the frontend sent us!
         if (status === 'active' && start && end) {
             query = `
                 UPDATE reservations 
@@ -90,7 +92,7 @@ const updateReservationStatus = async (req, res) => {
 
 const getTicket = async (req, res) => {
     try {
-
+        // OPTIMIZATION: Added pagination support
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const offset = (page - 1) * limit;
@@ -203,6 +205,47 @@ const updateComputerStatus = async (req, res) => {
     }
 };
 
+const getAnalytics = async (req, res) => {
+    try {
+        const [hourStats, zoneStats, ticketStats, computerStats] = await Promise.all([
+            pool.query(`
+                SELECT EXTRACT(HOUR FROM start) AS hour, COUNT(*) AS count
+                FROM reservations
+                GROUP BY hour
+                ORDER BY hour ASC
+            `),
+            pool.query(`
+                SELECT c.type, COUNT(*) AS count
+                FROM reservations r
+                JOIN computers c ON r.station_id = c.id
+                GROUP BY c.type
+            `),
+            pool.query(`
+                SELECT status, COUNT(*) AS count
+                FROM tickets
+                GROUP BY status
+            `),
+            pool.query(`
+                SELECT availability, COUNT(*) AS count
+                FROM computers
+                GROUP BY availability
+            `)
+        ]);
+
+        res.status(200).json({
+            hours: hourStats.rows.map(r => ({ hour: parseInt(r.hour), count: parseInt(r.count) })),
+            zones: zoneStats.rows.map(r => ({ type: r.type, count: parseInt(r.count) })),
+            tickets: ticketStats.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
+            computers: computerStats.rows.map(r => ({ availability: r.availability, count: parseInt(r.count) }))
+        });
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Database error in getAnalytics:", error);
+        }
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 module.exports = {
     getBookings,
     updateReservationStatus,
@@ -210,5 +253,6 @@ module.exports = {
     updateTicketStatus,
     deleteReservation,
     getComputers,
-    updateComputerStatus
+    updateComputerStatus,
+    getAnalytics
 };
