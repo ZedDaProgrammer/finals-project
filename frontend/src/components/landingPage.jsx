@@ -36,35 +36,24 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* Hero Section - Modern Split Layout */}
-      <header className="landing-hero">
-        <div className="hero-text-pane">
+      {/* Full-bleed Centered Hero Section */}
+      <header className="landing-hero-fullscreen" style={{
+        backgroundImage: `radial-gradient(circle at center, rgba(10, 10, 20, 0.72) 0%, rgba(6, 6, 12, 0.95) 100%), url(${bgImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}>
+        <div className="hero-content-centered">
           <div className="hero-badge">Esports-Grade Arena</div>
-          <h1 className="hero-title">
+          <h1 className="hero-title-centered">
             THE ULTIMATE <br />
-            <span className="gradient-text">GAMING SANCTUARY</span>
+            <span className="gradient-text-centered">GAMING SANCTUARY</span>
           </h1>
-          <p className="hero-description">
+          <p className="hero-description-centered">
             Experience gaming at its absolute peak. Reserve elite battle stations configured for competitive gaming, solo performance, and tactical team play.
           </p>
-          <div className="hero-actions">
-            <Link to="/login" className="hero-primary-btn">SECURE YOUR STATION</Link>
-          </div>
-        </div>
-        <div className="hero-visual-pane">
-          <div className="hero-glow-backplane"></div>
-          <div className="hero-image-wrapper">
-            <img src={bgImg} alt="Esports Gaming Setup" className="hero-main-image" />
-            <div className="glass-overlay-card">
-              <div className="status-indicator">
-                <span className="pulse-dot"></span>
-                <span>SYSTEMS ONLINE</span>
-              </div>
-              <div className="specs-minilist">
-                <div className="spec-mini-item">RTX 4090 Equipped</div>
-                <div className="spec-mini-item">360Hz Refresh Rate</div>
-              </div>
-            </div>
+          <div className="hero-actions-centered">
+            <Link to="/login" className="hero-primary-btn-centered">SECURE YOUR STATION</Link>
           </div>
         </div>
       </header>
@@ -91,80 +80,74 @@ const LandingPage = () => {
           <span className="stat-label">Tactical Support</span>
         </div>
       </section>
- 
-      {/* Choose Your Battleground Section */}
-      <section className="landing-sectors">
-        <div className="sectors-header">
-          <h2 className="sectors-title">CHOOSE YOUR BATTLEGROUND</h2>
-          <p className="sectors-subtitle">Select from three distinct gaming environments tailored to your gaming style</p>
+
+      {/* Alternating Showcase Rows */}
+      <section className="landing-showcase-section">
+        <div className="showcase-header">
+          <h2 className="showcase-title">CHOOSE YOUR BATTLEGROUND</h2>
+          <p className="showcase-subtitle">Select from three distinct gaming environments tailored to your competitive style</p>
         </div>
- 
-        <div className="sectors-grid">
-          {/* Card 1: Standard */}
-          <article className="sector-card vanguard">
-            <div className="sector-image-container">
-              <img src={standardImg} alt="Standard Lounge" className="sector-image" />
-              <div className="sector-tag-chip">STANDARD</div>
+
+        <div className="showcase-rows-container">
+          {/* Row 1: Standard (Left Image, Right Text) */}
+          <article className="showcase-row left-image">
+            <div className="showcase-image-wrapper">
+              <img src={standardImg} alt="Standard Lounge" className="showcase-row-image" />
+              <div className="showcase-badge-overlay">STANDARD</div>
             </div>
-            <div className="sector-content">
-              <div className="sector-meta">
-                <span className="sector-code">01 / TIER I</span>
-              </div>
-              <h3 className="sector-name">Standard Lounge</h3>
-              <p className="sector-desc">
-                High-performance gaming setups designed for seamless responsiveness and competitive standard gameplay.
+            <div className="showcase-content-wrapper">
+              <span className="showcase-meta-code">01 / TIER I</span>
+              <h3 className="showcase-row-title">Standard Lounge</h3>
+              <p className="showcase-row-description">
+                High-performance gaming setups designed for seamless responsiveness and competitive standard gameplay. Equipped with tournament-ready peripherals and fast network response.
               </p>
-              <div className="sector-tags">
-                <span className="sector-spec">GTX / RTX GPU</span>
-                <span className="sector-spec">Core i7 / Ryzen 7</span>
-                <span className="sector-spec">144Hz Display</span>
-                <span className="sector-spec">Pro Gear</span>
+              <div className="showcase-row-tags">
+                <span className="showcase-tag-item">GTX / RTX GPU</span>
+                <span className="showcase-tag-item">Core i7 / Ryzen 7</span>
+                <span className="showcase-tag-item">144Hz Display</span>
+                <span className="showcase-tag-item">Pro Gear</span>
               </div>
             </div>
           </article>
- 
-          {/* Card 2: VIP */}
-          <article className="sector-card apex">
-            <div className="sector-image-container">
-              <img src={vipImg} alt="VIP Lounge" className="sector-image" />
-              <div className="sector-tag-chip premium">VIP</div>
-            </div>
-            <div className="sector-content">
-              <div className="sector-meta">
-                <span className="sector-code">02 / TIER II</span>
-              </div>
-              <h3 className="sector-name">VIP Lounge</h3>
-              <p className="sector-desc">
-                Step up to private pods, ultra-tier mechanical interfaces, extreme refresh displays, and ergonomic seating.
+
+          {/* Row 2: VIP (Right Image, Left Text) */}
+          <article className="showcase-row right-image">
+            <div className="showcase-content-wrapper">
+              <span className="showcase-meta-code">02 / TIER II</span>
+              <h3 className="showcase-row-title">VIP Lounge</h3>
+              <p className="showcase-row-description">
+                Step up to private pods, ultra-tier mechanical interfaces, extreme refresh displays, and ergonomic seating. Engineered for competitive players seeking maximum gaming performance.
               </p>
-              <div className="sector-tags">
-                <span className="sector-spec">RTX 4090 / 4080</span>
-                <span className="sector-spec">360Hz Display</span>
-                <span className="sector-spec">Hi-Fi Audio</span>
-                <span className="sector-spec">Ergo Seats</span>
+              <div className="showcase-row-tags">
+                <span className="showcase-tag-item">RTX 4090 / 4080</span>
+                <span className="showcase-tag-item">360Hz Display</span>
+                <span className="showcase-tag-item">Hi-Fi Audio</span>
+                <span className="showcase-tag-item">Ergo Seats</span>
               </div>
+            </div>
+            <div className="showcase-image-wrapper">
+              <img src={vipImg} alt="VIP Lounge" className="showcase-row-image" />
+              <div className="showcase-badge-overlay premium">VIP</div>
             </div>
           </article>
- 
-          {/* Card 3: VIP Room */}
-          <article className="sector-card squad">
-            <div className="sector-image-container">
-              <img src={privateImg} alt="VIP Room" className="sector-image" />
-              <div className="sector-tag-chip special">ROOM</div>
+
+          {/* Row 3: VIP Room (Left Image, Right Text) */}
+          <article className="showcase-row left-image">
+            <div className="showcase-image-wrapper">
+              <img src={privateImg} alt="VIP Room" className="showcase-row-image" />
+              <div className="showcase-badge-overlay special">ROOM</div>
             </div>
-            <div className="sector-content">
-              <div className="sector-meta">
-                <span className="sector-code">03 / SPECIAL</span>
-              </div>
-              <h3 className="sector-name">VIP Room</h3>
-              <p className="sector-desc">
-                Soundproof team rooms configured for local multiplayer clustering, team practice sessions, or streamers.
+            <div className="showcase-content-wrapper">
+              <span className="showcase-meta-code">03 / SPECIAL</span>
+              <h3 className="showcase-row-title">VIP Room</h3>
+              <p className="showcase-row-description">
+                Soundproof team rooms configured for local multiplayer clustering, team practice sessions, or streamers. Secure a private battle station for you and your squad to coordinate.
               </p>
-              <div className="sector-tags">
-                <span className="sector-spec">2-PC / 5-PC Suites</span>
-                <span className="sector-spec">Sound Isolated</span>
-                <span className="sector-spec">Giga LAN</span>
-                <span className="sector-spec">Squad Comms</span>
+              <div className="showcase-row-tags">
+                <span className="showcase-tag-item">2-PC / 5-PC Suites</span>
+                <span className="showcase-tag-item">Sound Isolated</span>
+                <span className="showcase-tag-item">Giga LAN</span>
+                <span className="showcase-tag-item">Squad Comms</span>
               </div>
             </div>
           </article>

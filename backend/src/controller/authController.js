@@ -143,6 +143,41 @@ const addCredits = async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Server error" }); }
 };
 
+const forgotPassword = async (req, res) => {
+    const { email, username, newPassword } = req.body;
+    if (!email || !username || !newPassword) {
+        return res.status(400).json({ message: 'Provide email, username, and new password' });
+    }
 
+    try {
+        const emailLower = email.toLowerCase().trim();
+        const usernameLower = username.toLowerCase().trim();
 
-module.exports = { userRegister, userLogin, userProfile, userLogout, updateProfile, changePassword, addCredits };
+        // Verify if a user with both email and username exists
+        const user = await pool.query(
+            'SELECT * FROM users WHERE LOWER(email) = $1 AND LOWER(username) = $2',
+            [emailLower, usernameLower]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(400).json({ message: 'Invalid email or username combination' });
+        }
+
+        const userId = user.rows[0].id;
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password in database
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+
+        return res.status(200).json({ message: 'Password reset successful. Please sign in.' });
+    } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Forgot Password Error:", error);
+        }
+        return res.status(500).json({ message: "Server error during password reset" });
+    }
+};
+
+module.exports = { userRegister, userLogin, userProfile, userLogout, updateProfile, changePassword, addCredits, forgotPassword };
