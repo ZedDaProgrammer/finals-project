@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logoImg from '../assets/logo.png';
-import { useFeedback } from '../context/feedbackContext';
+import { useFeedback } from '../context/FeedbackContext';
 import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, CheckSquare, Laptop, AlertCircle, Play, Trash2, CheckCircle, Monitor, RefreshCw } from 'lucide-react';
 
 const AdminPanel = () => {

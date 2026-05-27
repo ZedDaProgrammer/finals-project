@@ -1,14 +1,14 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Protected from './protectedRoute';
+import Protected from './components/ProtectedRoute';
 
-const LandingPage = lazy(() => import('./components/landingPage'));
-const AuthPage = lazy(() => import('./components/authPage'));
-const Dashboard = lazy(() => import('./components/dashboard'));
-const ReservationPage = lazy(() => import('./components/reservationPage'));
-const Settings = lazy(() => import('./components/settingsPage'));
-const ProfilePage = lazy(() => import('./components/profilePage'));
-const AdminPanel = lazy(() => import('./components/adminPanel'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ReservationPage = lazy(() => import('./pages/ReservationPage'));
+const Settings = lazy(() => import('./pages/SettingsPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 
 function App() {
     const isAuthenticated = !!localStorage.getItem('token');
