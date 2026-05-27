@@ -84,7 +84,7 @@ const SettingsPage = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         logout();
-        navigate('/', { replace: true });
+        navigate('/login', { replace: true });
     };
 
     return (
