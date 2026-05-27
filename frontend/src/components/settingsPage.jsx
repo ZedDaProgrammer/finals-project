@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/feedbackContext';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
-import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Moon, KeyRound, Laptop } from 'lucide-react';
 
 const SettingsPage = () => {
     const { user, token, logout } = useAuth();
@@ -14,7 +14,16 @@ const SettingsPage = () => {
     const BASE_URL = `${API_URL}/api`;
 
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
-    const [ticket, setTicket] = useState({ station_id: '', subject: '', description: '' });
+    const [selectedPcType, setSelectedPcType] = useState('standard');
+    const [ticket, setTicket] = useState({ station_id: '1', subject: '', description: '' });
+
+    const handlePcTypeChange = (type) => {
+        setSelectedPcType(type);
+        setTicket(prev => ({
+            ...prev,
+            station_id: type === 'standard' ? '1' : '21'
+        }));
+    };
 
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('darkMode') === 'true';
@@ -66,7 +75,7 @@ const SettingsPage = () => {
 
         if (res.ok) {
             showFeedback('success', "Support ticket submitted! An admin will review it shortly.");
-            setTicket({ station_id: '', subject: '', description: '' });
+            setTicket({ station_id: selectedPcType === 'standard' ? '1' : '21', subject: '', description: '' });
         } else {
             showFeedback('error', "Failed to submit ticket. Try again later.");
         }
@@ -75,7 +84,7 @@ const SettingsPage = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
     };
 
     return (
@@ -101,24 +110,23 @@ const SettingsPage = () => {
             </aside>
 
             <main className="dashboard-content">
-                <div className="settings-container" style={{ maxWidth: '850px', margin: '0 auto', padding: '20px 0' }}>
-                    <header className="dashboard-header" style={{ marginBottom: '40px' }}>
+                <div className="settings-container-layout">
+                    <header className="dashboard-header">
                         <div>
                             <h1>Settings & Preferences</h1>
-                            <p>Manage your system visibility, security configurations, and support details.</p>
+                            <p>Manage system theme visibility, update security credentials, or file support tickets.</p>
                         </div>
                     </header>
 
-                    <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-
+                    <div className="settings-grid-layout">
                         {/* Appearance / Dark Mode */}
-                        <section className="settings-card" style={{ margin: 0 }}>
-                            <h3>🖥️ Appearance</h3>
-                            <p style={{ marginBottom: '20px', color: '#6c757d' }}>Customize the workspace presentation interface on your desktop workstation.</p>
+                        <section className="settings-card appearance-card">
+                            <h3><Moon size={20} className="card-header-icon" /> System Presentation</h3>
+                            <p className="settings-card-desc">Customize the visual theme of your member workstation portal interface.</p>
                             <div className="theme-switch-wrapper">
-                                <div>
-                                    <strong style={{ display: 'block', fontSize: '15px' }}>Dark Mode Theme</strong>
-                                    <span style={{ fontSize: '12px', color: '#888' }}>Reduces eye fatigue during high-intensity sessions.</span>
+                                <div className="theme-details">
+                                    <strong>Dark Mode Theme</strong>
+                                    <span>Enhance display contrast and reduce eye fatigue.</span>
                                 </div>
                                 <label className="theme-switch" htmlFor="checkbox">
                                     <input type="checkbox" id="checkbox" checked={isDarkMode} onChange={() => setIsDarkMode(!isDarkMode)} />
@@ -128,49 +136,74 @@ const SettingsPage = () => {
                         </section>
 
                         {/* Password Change */}
-                        <section className="settings-card" style={{ margin: 0 }}>
-                            <h3>🔒 Security & Credentials</h3>
-                            <p style={{ marginBottom: '25px', color: '#6c757d' }}>Update your authentication passphrase regularly to protect user account data.</p>
-                            <form onSubmit={handleChangePassword} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                                    <label>Current Account Password</label>
+                        <section className="settings-card security-card">
+                            <h3><KeyRound size={20} className="card-header-icon" /> Security & Credentials</h3>
+                            <p className="settings-card-desc">Update your passphrase periodically to enforce account authentication integrity.</p>
+                            <form onSubmit={handleChangePassword} className="security-settings-form">
+                                <div className="form-group-full">
+                                    <label>Current Passphrase</label>
                                     <input type="password" className="form-input" value={passwords.current} onChange={e => setPasswords({ ...passwords, current: e.target.value })} required />
                                 </div>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label>New Passphrase</label>
-                                    <input type="password" className="form-input" value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })} required />
+                                <div className="form-row">
+                                    <div className="form-group-half">
+                                        <label>New Passphrase</label>
+                                        <input type="password" className="form-input" value={passwords.new} onChange={e => setPasswords({ ...passwords, new: e.target.value })} required />
+                                    </div>
+                                    <div className="form-group-half">
+                                        <label>Confirm Passphrase</label>
+                                        <input type="password" className="form-input" value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} required />
+                                    </div>
                                 </div>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label>Confirm Passphrase Verification</label>
-                                    <input type="password" className="form-input" value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} required />
-                                </div>
-                                <button type="submit" className="settings-btn" style={{ gridColumn: '1 / -1', background: '#222', marginTop: '10px' }}>Update Secure Password</button>
+                                <button type="submit" className="settings-btn secondary-btn">Update Password</button>
                             </form>
                         </section>
 
                         {/* Support Ticket */}
-                        <section className="settings-card" style={{ margin: 0 }}>
-                            <h3>📞 Request Admin Technical Support</h3>
-                            <p style={{ marginBottom: '25px', color: '#6c757d' }}>Report any active hardware faults, component degradation, or peripheral layout issues.</p>
-                            <form onSubmit={handleSubmitTicket} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>PC Station ID</label>
-                                        <input type="number" className="form-input" placeholder="e.g. Node-12" value={ticket.station_id} onChange={e => setTicket({ ...ticket, station_id: e.target.value })} />
+                        <section className="settings-card support-card">
+                            <h3><Laptop size={20} className="card-header-icon" /> Admin Technical Support</h3>
+                            <p className="settings-card-desc">File a fault ticket for terminal hardware issues, disconnected peripherals, or network faults.</p>
+                            <form onSubmit={handleSubmitTicket} className="support-settings-form">
+                                <div className="form-row">
+                                    <div className="form-group-half">
+                                        <label>PC Type</label>
+                                        <select 
+                                            className="form-input" 
+                                            value={selectedPcType} 
+                                            onChange={e => handlePcTypeChange(e.target.value)}
+                                        >
+                                            <option value="standard">Standard</option>
+                                            <option value="vip">VIP</option>
+                                        </select>
                                     </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Fault Classification (Subject)</label>
-                                        <input type="text" className="form-input" placeholder="e.g. Peripheral Disconnected" value={ticket.subject} onChange={e => setTicket({ ...ticket, subject: e.target.value })} required />
+                                    <div className="form-group-half">
+                                        <label>PC Station Number</label>
+                                        <select 
+                                            className="form-input" 
+                                            value={ticket.station_id} 
+                                            onChange={e => setTicket({ ...ticket, station_id: e.target.value })}
+                                        >
+                                            {selectedPcType === 'standard' 
+                                                ? Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                                                    <option key={num} value={num}>Standard PC {num}</option>
+                                                  ))
+                                                : Array.from({ length: 55 }, (_, i) => i + 21).map(num => (
+                                                    <option key={num} value={num}>VIP PC {num}</option>
+                                                  ))
+                                            }
+                                        </select>
                                     </div>
                                 </div>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label>Detailed System Diagnostics Description</label>
-                                    <textarea className="form-input" placeholder="Specify failure context, error codes, or hardware symptoms..." value={ticket.description} onChange={e => setTicket({ ...ticket, description: e.target.value })} required style={{ height: '100%', minHeight: '135px', resize: 'none' }} />
+                                <div className="form-group-full">
+                                    <label>Fault Classification Subject</label>
+                                    <input type="text" className="form-input" placeholder="e.g. Mouse Left-Click Unresponsive" value={ticket.subject} onChange={e => setTicket({ ...ticket, subject: e.target.value })} required />
                                 </div>
-                                <button type="submit" className="settings-btn" style={{ gridColumn: '1 / -1', background: '#e94560', marginTop: '10px' }}>Dispatch Support Ticket</button>
+                                <div className="form-group-full textarea-group">
+                                    <label>System Diagnostics Description</label>
+                                    <textarea className="form-input text-area" placeholder="Describe context, symptoms, hardware issues, or peripheral faults..." value={ticket.description} onChange={e => setTicket({ ...ticket, description: e.target.value })} required style={{ minHeight: '140px' }} />
+                                </div>
+                                <button type="submit" className="settings-btn primary-btn">Dispatch Ticket</button>
                             </form>
                         </section>
-
                     </div>
                 </div>
             </main>

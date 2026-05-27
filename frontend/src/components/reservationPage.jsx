@@ -262,7 +262,7 @@ const ReservationPage = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
     };
 
     return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, Plus, X, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
+import { Wallet, Plus, X, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Award, CreditCard, Cpu, Sparkles, Mail } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 
 const ProfilePage = () => {
@@ -19,12 +19,44 @@ const ProfilePage = () => {
     const points = user?.points || 0;
     const credits = user?.credits || 0;
 
-    const evaluatePoints = (points) => {
-        if (points >= 350) return 'Radiant';
-        if (points >= 175) return 'Platinum';
-        if (points >= 75) return 'Gold';
-        if (points >= 25) return 'Silver';
-        return 'Bronze';
+    const getRankProgress = (pts) => {
+        let currentTier = 'Bronze';
+        let nextTier = 'Silver';
+        let minPts = 0;
+        let maxPts = 25;
+
+        if (pts >= 350) {
+            currentTier = 'Radiant';
+            nextTier = null;
+            minPts = 350;
+            maxPts = 350;
+        } else if (pts >= 175) {
+            currentTier = 'Platinum';
+            nextTier = 'Radiant';
+            minPts = 175;
+            maxPts = 350;
+        } else if (pts >= 75) {
+            currentTier = 'Gold';
+            nextTier = 'Platinum';
+            minPts = 75;
+            maxPts = 175;
+        } else if (pts >= 25) {
+            currentTier = 'Silver';
+            nextTier = 'Gold';
+            minPts = 25;
+            maxPts = 75;
+        } else {
+            currentTier = 'Bronze';
+            nextTier = 'Silver';
+            minPts = 0;
+            maxPts = 25;
+        }
+
+        const range = maxPts - minPts;
+        const progress = range > 0 ? Math.min(100, Math.max(0, ((pts - minPts) / range) * 100)) : 100;
+        const ptsNeeded = nextTier ? maxPts - pts : 0;
+
+        return { currentTier, nextTier, progress, ptsNeeded };
     };
 
     useEffect(() => {
@@ -80,13 +112,14 @@ const ProfilePage = () => {
         }
     };
 
-    const rank = evaluatePoints(points);
+    const { currentTier, nextTier, progress, ptsNeeded } = getRankProgress(points);
+    const rank = currentTier;
     const visibleHistory = history;
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         logout();
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
     };
 
     return (
@@ -122,48 +155,111 @@ const ProfilePage = () => {
                 </header>
 
                 <div className="profile-container">
-                    <div className="profile-card">
-                        <div className="profile-avatar">
-                            {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <div className="profile-details">
-                            <h2>{user?.username}</h2>
-                            <p>{user?.email}</p>
-                            <div className="rank-container" style={{ marginTop: '12px' }}>
-                                <strong style={{ marginRight: '8px' }}>Rank:</strong>
-                                <span className={`rank-${rank.toLowerCase()}`}>{rank}</span>
+                    <div className="profile-details-card">
+                        <div className="profile-card-header">
+                            <div className="avatar-wrapper">
+                                <div className="profile-avatar-large">
+                                    {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                                <span className={`rank-badge-pill rank-${rank.toLowerCase()}`}>
+                                    <Award size={14} style={{ marginRight: '4px' }} />
+                                    {rank}
+                                </span>
+                            </div>
+                            <div className="profile-user-info">
+                                <h2>{user?.username}</h2>
+                                <p className="profile-email"><Mail size={14} style={{ marginRight: '6px' }} /> {user?.email}</p>
+                                <div className="points-display">
+                                    <Sparkles size={16} className="pts-icon" style={{ marginRight: '6px' }} />
+                                    <span className="points-count">{points}</span>
+                                    <span className="points-label">Loyalty Points</span>
+                                </div>
                             </div>
                         </div>
+                        
+                        {nextTier ? (
+                            <div className="loyalty-progress-section">
+                                <div className="progress-labels">
+                                    <span className="current-milestone">{currentTier}</span>
+                                    <span className="next-milestone-text">{ptsNeeded} pts to {nextTier}</span>
+                                    <span className="next-milestone">{nextTier}</span>
+                                </div>
+                                <div className="progress-bar-track">
+                                    <div className="progress-bar-fill" style={{ width: `${progress}%` }}>
+                                        <div className="progress-glow"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="loyalty-progress-section max-tier">
+                                <div className="progress-labels">
+                                    <span className="current-milestone">{currentTier} (Max Rank)</span>
+                                    <span className="next-milestone-text">Congratulations, you have reached the maximum rank!</span>
+                                </div>
+                                <div className="progress-bar-track">
+                                    <div className="progress-bar-fill" style={{ width: '100%' }}>
+                                        <div className="progress-glow"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="wallet-card">
-                        <div className="wallet-header">
-                            <Wallet size={20} style={{ marginRight: '8px' }} />
-                            <span className="wallet-label">BlackByte Wallet</span>
-                        </div>
-                        <div className="wallet-content">
-                            <div className="credits-display">
-                                <span className="credits-amount">{credits}</span>
-                                <span className="credits-label">Credits Available</span>
+                    <div className="cyber-credit-card">
+                        <div className="card-bg-glow"></div>
+                        <div className="card-top">
+                            <div className="card-brand">
+                                <Cpu size={30} className="card-chip" />
+                                <span className="brand-text">BlackByte VIP</span>
                             </div>
-                            <button className="wallet-topup-btn" onClick={() => setShowWalletModal(true)}>
-                                <Plus size={18} /> Top Up
-                            </button>
+                            <div className="card-logo-container">
+                                <CreditCard size={24} className="card-type-logo" />
+                            </div>
                         </div>
+                        <div className="card-middle">
+                            <span className="card-number">
+                                **** **** **** {user?.id ? String(user.id).padStart(4, '0').slice(-4) : '1337'}
+                            </span>
+                        </div>
+                        <div className="card-bottom">
+                            <div className="card-holder-info">
+                                <span className="holder-label">Card Holder</span>
+                                <span className="holder-name">{user?.username ? user.username.toUpperCase() : 'MEMBER'}</span>
+                            </div>
+                            <div className="card-balance-info">
+                                <span className="balance-label">Balance</span>
+                                <span className="balance-value">{Number(credits).toFixed(2)} CR</span>
+                            </div>
+                        </div>
+                        <button className="card-topup-btn" onClick={() => setShowWalletModal(true)}>
+                            <Plus size={16} /> Top Up Wallet
+                        </button>
                     </div>
 
                     <div className="history-section">
-                        <div className="panel-header"><h3>Reservation History</h3></div>
+                        <div className="panel-header">
+                            <CalendarDays size={20} className="panel-header-icon" style={{ marginRight: '8px' }} />
+                            <h3>Reservation History</h3>
+                        </div>
                         <div className="table-container">
                             {isLoading ? (
-                                <p style={{ textAlign: 'center', padding: '20px' }}>Loading history...</p>
+                                <div className="history-loading">
+                                    <p>Loading history...</p>
+                                </div>
                             ) : visibleHistory.length === 0 ? (
-                                <p style={{ textAlign: 'center', padding: '20px' }}>You have no reservation history.</p>
+                                <div className="history-empty">
+                                    <CalendarDays size={48} className="empty-icon" />
+                                    <p>You have no reservation history.</p>
+                                </div>
                             ) : (
                                 <table className="activity-table">
                                     <thead>
                                         <tr>
-                                            <th>ID</th><th>PC Type</th><th>Date & Time</th><th>Duration</th><th>Status</th>
+                                            <th>ID</th>
+                                            <th>PC Type</th>
+                                            <th>Date & Time</th>
+                                            <th>Duration</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -200,7 +296,9 @@ const ProfilePage = () => {
                                             return (
                                                 <tr key={res.reservation_id}>
                                                     <td className="fw-bold">#RES-{res.reservation_id}</td>
-                                                    <td>{(res.computer_type || 'Unknown').toUpperCase()} PC</td>
+                                                    <td className="pc-type-cell">
+                                                        <span className="pc-badge">{(res.computer_type || 'Unknown').toUpperCase()}</span>
+                                                    </td>
                                                     <td>{start.toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                                     <td>{durationHrs} hour(s)</td>
                                                     <td><span className={`status-badge ${badgeClass}`}>{displayStatus}</span></td>
