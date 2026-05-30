@@ -25,7 +25,7 @@ router.get('/check', checkAvailability);
 router.post('/book', createBooking);
 router.get('/history', getHistory);
 router.delete('/cancel/:id', deleteBooking);
-router.post('/filter', filterComputers);
+router.get('/filter', filterComputers);
 router.post('/purchase', upgradeMembership);
 router.post('/group-booking', groupBooking);
 router.post('/ticket', createTicket); 

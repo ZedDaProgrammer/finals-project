@@ -23,7 +23,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Updated to use /api/
 app.use('/api/auth', authRouter);
 app.use('/api/reservation', authReservation);
 app.use('/api/admin', adminRouter);
@@ -39,6 +38,14 @@ app.get('/', async (req, res) =>{
         console.error("Database connection error:", error.message);
         res.status(500).json({ error: "Database connection failed" });
     }
+});
+
+// OPTIMIZATION #19: Global error handler to catch unhandled errors
+app.use((err, req, res, next) => {
+    if (process.env.NODE_ENV === 'development') {
+        console.error('Unhandled error:', err.stack);
+    }
+    res.status(500).json({ message: 'Internal server error' });
 });
 
 app.listen(PORT, () => {

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { CheckCircle2, AlertOctagon, X } from 'lucide-react';
 
 const FeedbackContext = createContext();
@@ -28,7 +28,6 @@ const ToastItem = ({ id, type, message, onConfirm, onRemove }) => {
 
     const handleClose = () => {
         onRemove(id);
-        if (onConfirm) onConfirm();
     };
 
     return (
@@ -56,7 +55,7 @@ export const FeedbackProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
     // Call this from any page to show a stacked toast
-    const showFeedback = (type, message, onConfirm = null) => {
+    const showFeedback = useCallback((type, message, onConfirm = null) => {
         setToasts(prev => {
             const newToast = {
                 id: Date.now() + Math.random(),
@@ -71,11 +70,11 @@ export const FeedbackProvider = ({ children }) => {
             }
             return updated;
         });
-    };
+    }, []);
 
-    const removeToast = (id) => {
+    const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    }, []);
 
     return (
         <FeedbackContext.Provider value={{ showFeedback }}>

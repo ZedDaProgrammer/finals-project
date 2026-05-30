@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { API_URL } from '../config';
 import logoImg from '../assets/logo.png';
 import bgImg from '../assets/landingpage.jpg';
 
@@ -29,8 +30,6 @@ const AuthPage = () => {
     newPassword: ''
   });
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -57,13 +56,24 @@ const AuthPage = () => {
       }
 
     } catch (error) {
-      console.error("Error connecting to API:", error);
+      if (import.meta.env.DEV) console.error("Error connecting to API:", error);
       showFeedback('error', "Server is down. Try again later.");
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // QA CHECK: Validate username and email are not empty, and password is at least 6 characters.
+    // This provides immediate client-side feedback and prevents redundant API traffic.
+    if (!registerData.name.trim() || !registerData.email.trim()) {
+      showFeedback('error', "Username and email fields are required.");
+      return;
+    }
+    if (registerData.password.length < 6) {
+      showFeedback('error', "Password must be at least 6 characters long.");
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -87,13 +97,24 @@ const AuthPage = () => {
         showFeedback('error', data.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Error connecting to API:", error);
+      if (import.meta.env.DEV) console.error("Error connecting to API:", error);
       showFeedback('error', "Server is down. Try again later.");
     }
   };
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
+
+    // QA CHECK: Validate username, email are not empty, and new password is at least 6 characters.
+    // Enforces client-side validation before sending data to the server reset endpoint.
+    if (!forgotData.username.trim() || !forgotData.email.trim()) {
+      showFeedback('error', "Username and email fields are required.");
+      return;
+    }
+    if (forgotData.newPassword.length < 6) {
+      showFeedback('error', "New password must be at least 6 characters long.");
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
@@ -119,14 +140,18 @@ const AuthPage = () => {
         showFeedback('error', data.message || "Password reset failed");
       }
     } catch (error) {
-      console.error("Error connecting to API:", error);
+      if (import.meta.env.DEV) console.error("Error connecting to API:", error);
       showFeedback('error', "Server is down. Try again later.");
     }
   };
 
   return (
     <div className="auth-page-wrapper" style={{
-      backgroundImage: `radial-gradient(circle at center, rgba(10, 10, 20, 0.75) 0%, rgba(6, 6, 12, 0.96) 100%), url(${bgImg})`,
+      // OPTIMIZATION: Replaced linear-gradient overlay with solid background color + multiply blend mode.
+      // This applies a clean, flat dark-neutral tint (rgba(8, 8, 16, 0.88)) to keep text high contrast and readable.
+      backgroundColor: 'rgba(8, 8, 16, 0.88)',
+      backgroundImage: `url(${bgImg})`,
+      backgroundBlendMode: 'multiply',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'

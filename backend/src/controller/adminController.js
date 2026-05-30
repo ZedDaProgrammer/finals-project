@@ -1,7 +1,3 @@
-const express = require('express');
-const router = express.Router();
-const isAdmin = require('../middleware/authMiddleware').isAdmin;
-const token = require('../middleware/authMiddleware').token;
 const pool = require('../database/db');
 
 const getBookings = async (req, res) => {
@@ -34,6 +30,7 @@ const getBookings = async (req, res) => {
             end: b.end,
             status: b.status,
             username: b.username,
+            station_id: b.station_id,
             station_name: `PC-${b.station_id}`
         }));
 
@@ -59,12 +56,41 @@ const updateReservationStatus = async (req, res) => {
 
     const { status, start, end } = req.body;
 
+    const allowedStatuses = ['pending', 'active', 'completed', 'cancelled'];
+    if (status && !allowedStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+    }
+
     try {
         let query = `UPDATE reservations SET status = $1 WHERE reservation_id = $2 RETURNING *`;
         let values = [status, id];
 
         // Save the exact local times the frontend sent us!
         if (status === 'active' && start && end) {
+            if (isNaN(Date.parse(start)) || isNaN(Date.parse(end)) || new Date(start) >= new Date(end)) {
+                return res.status(400).json({ message: "Invalid start or end date." });
+            }
+
+            const bookingQuery = await pool.query('SELECT station_id FROM reservations WHERE reservation_id = $1', [id]);
+            if (bookingQuery.rows.length === 0) {
+                return res.status(404).json({ message: "Reservation not found" });
+            }
+            const station_id = bookingQuery.rows[0].station_id;
+
+            const overlapping = await pool.query(`
+                SELECT 1 FROM reservations
+                WHERE station_id = $1
+                AND reservation_id != $2
+                AND status != 'cancelled'
+                AND start < $4::timestamp
+                AND "end" > $3::timestamp
+                LIMIT 1
+            `, [station_id, id, start, end]);
+
+            if (overlapping.rows.length > 0) {
+                return res.status(400).json({ message: "This station is already booked during the selected time slot." });
+            }
+
             query = `
                 UPDATE reservations 
                 SET status = $1, start = $3, "end" = $4
@@ -159,17 +185,67 @@ const updateTicketStatus = async (req, res) => {
 
 const deleteReservation = async (req, res) => {
     const id = req.params.id;
+    const client = await pool.connect();
     try {
-        const deleteObj = await pool.query(`DELETE FROM reservations WHERE reservation_id = $1 RETURNING *`, [id]);
-        if (deleteObj.rows.length === 0) {
+        await client.query('BEGIN');
+
+        // LOGICAL BUG FIX: Lock the reservation and fetch PC rate details before deletion.
+        // Previously, raw DELETE simply deleted the database row without any credit refund or points revocation, 
+        // leaving the user with lost credits and unearned points.
+        const checkQuery = await client.query(
+            `SELECT r.*, c.pc_rate FROM reservations r
+             JOIN computers c ON r.station_id = c.id
+             WHERE r.reservation_id = $1
+             FOR UPDATE`, [id]
+        );
+
+        if (checkQuery.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ message: "Reservation not found" });
         }
-        res.status(200).json({ message: "Reservation deleted successfully" });
+
+        const booking = checkQuery.rows[0];
+
+        // Refund is only applicable for future/upcoming non-cancelled reservations
+        if (booking.status !== 'cancelled' && new Date(booking.start) > new Date()) {
+            const startTime = new Date(booking.start);
+            const endTime = new Date(booking.end);
+            const durationHours = Math.max(1, Math.ceil(Math.abs(endTime - startTime) / 36e5));
+            const originalCost = (booking.pc_rate || 0) * durationHours;
+
+            // Lock and fetch user points before recalculating their discount tier
+            const userQuery = await client.query('SELECT points FROM users WHERE id = $1 FOR UPDATE', [booking.user_id]);
+            if (userQuery.rows.length > 0) {
+                const currentPoints = userQuery.rows[0].points || 0;
+                const earnedPoints = durationHours;
+                const pointsBeforeBooking = Math.max(0, currentPoints - earnedPoints);
+
+                // Import helper directly to calculate the refund amount correctly
+                const { getDiscountTier } = require('./utils/discountHelper');
+                const { rate: discountRate } = getDiscountTier(pointsBeforeBooking);
+                const refundAmount = Math.round(originalCost * (1 - discountRate));
+
+                // Refund the user and revoke points (with a floor of 0)
+                await client.query(
+                    `UPDATE users 
+                     SET credits = credits + $1, points = GREATEST(0, points - $2) 
+                     WHERE id = $3`,
+                    [refundAmount, earnedPoints, booking.user_id]
+                );
+            }
+        }
+
+        await client.query(`DELETE FROM reservations WHERE reservation_id = $1`, [id]);
+        await client.query('COMMIT');
+        res.status(200).json({ message: "Reservation deleted and user refunded successfully" });
     } catch (error) {
+        await client.query('ROLLBACK');
         if (process.env.NODE_ENV === 'development') {
             console.error("Reservation deletion error:", error);
         }
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error during reservation deletion" });
+    } finally {
+        client.release();
     }
 };
 
@@ -188,6 +264,12 @@ const getComputers = async (req, res) => {
 const updateComputerStatus = async (req, res) => {
     const id = req.params.id;
     const { availability } = req.body;
+
+    const allowedAvailabilities = ['available', 'maintenance'];
+    if (!allowedAvailabilities.includes(availability)) {
+        return res.status(400).json({ message: "Invalid availability value" });
+    }
+
     try {
         const updateStatus = await pool.query(
             `UPDATE computers SET availability = $1 WHERE id = $2 RETURNING *`,

@@ -8,8 +8,12 @@ pg.types.setTypeParser(1114, (stringValue) => {
 
 const { Pool } = pg;
 
+// OPTIMIZATION #15: Configured pool limits to prevent exhausting free-tier DB connections
 const poolConfig = {
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
 };
 
 if (process.env.NODE_ENV === 'production') {

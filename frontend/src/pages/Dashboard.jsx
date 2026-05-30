@@ -1,18 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Monitor, Star, Calendar, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut } from 'lucide-react';
-import logoImg from '../assets/logo.png';
+import { Monitor, Star, Calendar, LayoutDashboard } from 'lucide-react';
+import { API_URL } from '../config';
+import Sidebar from '../components/Sidebar';
+
+// OPTIMIZATION #9: Module-level constant instead of per-render-tick allocation
+const GRACE_PERIOD_MS = 30 * 60 * 1000;
 
 const Dashboard = () => {
     const { user, token, logout } = useAuth();
     const navigate = useNavigate();
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [dashboardData, setDashboardData] = useState({ availablePCs: 0, availableVipPCs: 0, userTotalBooked: 0, orderHistory: 0 });
     const [rawSessions, setRawSessions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchDashboardData = async () => {
+    // OPTIMIZATION #10: Wrapped in useCallback to stabilize reference
+    const fetchDashboardData = useCallback(async () => {
         try {
             const BASE_URL = `${API_URL}/api/reservation`;
             const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -48,40 +52,16 @@ const Dashboard = () => {
             if (import.meta.env.DEV) console.error("Error fetching data:", error);
             setIsLoading(false);
         }
-    };
+    }, [token, logout]);
 
     useEffect(() => {
         document.title = "BlackByte | Dashboard";
         if (token) fetchDashboardData();
-    }, [token]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        logout();
-        navigate('/login', { replace: true });
-    };
+    }, [token, fetchDashboardData]);
 
     return (
         <div className="dashboard-layout">
-            <aside className="sidebar">
-                <div className="sidebar-brand">
-                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
-                </div>
-                <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item active"><LayoutDashboard size={18} /> Dashboard</a>
-                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}
-                    </div>
-                    <div className="nav-section account-section">
-                        <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
-                        <a href="/settings" className="nav-item"><Settings size={18} /> Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
-                    </div>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="dashboard-content">
                 <div className="dashboard-grid-container">
@@ -107,6 +87,10 @@ const Dashboard = () => {
                             <div className="table-container">
                                 {isLoading ? (
                                     <table className="activity-table">
+                                        {/* OPTIMIZATION: Matching thead headers added to shimmer state so the table layout remains stable before/after loading (eliminates CLS) */}
+                                        <thead>
+                                            <tr><th>Reservation ID</th><th>PC Details</th><th>Reserved Time</th><th>Duration / Time Left</th><th>Status</th></tr>
+                                        </thead>
                                         <tbody>
                                             {[1, 2].map(n => (
                                                 <tr key={n}>
@@ -175,7 +159,8 @@ const Dashboard = () => {
     );
 };
 
-const ActiveSessionsTable = ({ rawSessions }) => {
+// OPTIMIZATION #7: Wrapped in memo to prevent re-renders from parent state changes
+const ActiveSessionsTable = memo(({ rawSessions }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -187,7 +172,6 @@ const ActiveSessionsTable = ({ rawSessions }) => {
 
     const activeSessions = rawSessions.filter(res => {
         const end = new Date(res.end);
-        const GRACE_PERIOD_MS = 30 * 60 * 1000;
         
         if (res.status === 'pending') {
             return end > currentTime;
@@ -218,7 +202,6 @@ const ActiveSessionsTable = ({ rawSessions }) => {
                     let displayTimeStr = "";
                     const durationHours = Math.round((end - start) / 3600000);
                     const allottedTimeStr = `${durationHours} Hour${durationHours > 1 ? 's' : ''}`;
-                    const GRACE_PERIOD_MS = 30 * 60 * 1000;
                     const timeOverMs = now - end;
                     const isInGracePeriod = timeOverMs > 0 && timeOverMs <= GRACE_PERIOD_MS;
 
@@ -269,6 +252,8 @@ const ActiveSessionsTable = ({ rawSessions }) => {
             </tbody>
         </table>
     );
-};
+});
+
+ActiveSessionsTable.displayName = 'ActiveSessionsTable';
 
 export default Dashboard;

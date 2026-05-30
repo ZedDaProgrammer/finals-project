@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import Protected from './components/ProtectedRoute';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -10,8 +11,18 @@ const Settings = lazy(() => import('./pages/SettingsPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 
+const LoadingSpinner = () => (
+    <div className="loading-fallback">
+        <div className="spinner-content">
+            <h2>Loading Workspace...</h2>
+            <p>Configuring terminal environment options...</p>
+        </div>
+    </div>
+);
+
 function App() {
-    const isAuthenticated = !!localStorage.getItem('token');
+    const { token } = useAuth();
+    const isAuthenticated = !!token;
 
     useEffect(() => {
         if (localStorage.getItem('darkMode') === 'true') {
@@ -20,15 +31,6 @@ function App() {
             document.body.classList.remove('dark-mode');
         }
     }, []);
-
-    const LoadingSpinner = () => (
-        <div className="loading-fallback">
-            <div className="spinner-content">
-                <h2>Loading Workspace...</h2>
-                <p>Configuring terminal environment options...</p>
-            </div>
-        </div>
-    );
 
     return (
         <Suspense fallback={<LoadingSpinner />}>

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import logoImg from '../assets/logo.png';
+import { API_URL } from '../config';
+import Sidebar from '../components/Sidebar';
 import { useFeedback } from '../context/FeedbackContext';
-import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, CheckSquare, Laptop, AlertCircle, Play, Trash2, CheckCircle, Monitor, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Laptop, AlertCircle, Play, Trash2, CheckCircle } from 'lucide-react';
 
 const AdminPanel = () => {
-    const { token, user, logout } = useAuth();
+    const { token, user } = useAuth();
     const navigate = useNavigate();
     const { showFeedback } = useFeedback();
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const BASE_URL = `${API_URL}/api/admin`;
 
     const [activeTab, setActiveTab] = useState('reservations');
@@ -32,11 +32,7 @@ const AdminPanel = () => {
         }
     }, [user, navigate]);
 
-    useEffect(() => {
-        if (token) fetchData();
-    }, [token, activeTab, bookingsPage, ticketsPage]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             if (activeTab === 'reservations') {
                 const res = await fetch(`${BASE_URL}/bookings?page=${bookingsPage}&limit=20`, { headers: { Authorization: `Bearer ${token}` } });
@@ -59,17 +55,21 @@ const AdminPanel = () => {
             } else if (activeTab === 'analytics') {
                 setLoadingAnalytics(true);
                 try {
-                    const res = await fetch(`${API_URL}/api/admin/analytics`, { headers: { Authorization: `Bearer ${token}` } });
+                    const res = await fetch(`${BASE_URL}/analytics`, { headers: { Authorization: `Bearer ${token}` } });
                     const data = await res.json();
                     if (data) setAnalytics(data);
                 } catch (err) {
-                    console.error("Error fetching analytics:", err);
+                    if (import.meta.env.DEV) console.error("Error fetching analytics:", err);
                 } finally {
                     setLoadingAnalytics(false);
                 }
             }
-        } catch (err) { console.error("Error fetching data:", err); }
-    };
+        } catch (err) { if (import.meta.env.DEV) console.error("Error fetching data:", err); }
+    }, [activeTab, bookingsPage, ticketsPage, token, BASE_URL]);
+
+    useEffect(() => {
+        if (token) fetchData();
+    }, [token, fetchData]);
 
     const handleStartBooking = async (id) => {
         const booking = bookings.find(b => b.id === id);
@@ -125,33 +125,9 @@ const AdminPanel = () => {
         else { showFeedback('error', 'Failed to resolve support ticket.'); }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        logout();
-        navigate('/login', { replace: true });
-    };
-
     return (
         <div className="dashboard-layout">
-            <aside className="sidebar">
-                <div className="sidebar-brand">
-                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
-                </div>
-                <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
-                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item active"><Shield size={18} /> Admin Panel</a>}
-                    </div>
-                    <div className="nav-section account-section">
-                        <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
-                        <a href="/settings" className="nav-item"><Settings size={18} /> Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
-                    </div>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="dashboard-content">
                 <div className="admin-panel-container">
@@ -182,9 +158,24 @@ const AdminPanel = () => {
                                         </thead>
                                         <tbody>
                                             {bookings.map(b => {
-                                                const isActive = b.status === 'active';
-                                                const isPending = b.status === 'pending';
                                                 const isExpired = new Date(b.end) < new Date();
+                                                const isActive = b.status === 'active' && !isExpired;
+                                                const isPending = b.status === 'pending' && !isExpired;
+                                                
+                                                let displayStatus = b.status;
+                                                let badgeClass = 'completed';
+                                                
+                                                if (isActive) {
+                                                    displayStatus = 'active';
+                                                    badgeClass = 'active';
+                                                } else if (isPending) {
+                                                    displayStatus = 'pending';
+                                                    badgeClass = 'pending';
+                                                } else if ((b.status === 'active' || b.status === 'pending') && isExpired) {
+                                                    displayStatus = 'expired';
+                                                    badgeClass = 'completed';
+                                                }
+                                                
                                                 return (
                                                     <tr key={b.id}>
                                                         <td className="fw-bold">#RES-{b.id}</td>
@@ -193,13 +184,13 @@ const AdminPanel = () => {
                                                         <td>{new Date(b.start).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                                         <td>{new Date(b.end).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                                         <td>
-                                                            <span className={`status-badge ${isActive ? 'active' : (isPending ? (isExpired ? 'completed' : 'pending') : 'completed')}`}>
-                                                                {isPending && isExpired ? 'expired' : b.status}
+                                                            <span className={`status-badge ${badgeClass}`}>
+                                                                {displayStatus}
                                                             </span>
                                                         </td>
                                                         <td>
                                                             <div className="table-action-row">
-                                                                {isPending && !isExpired && (
+                                                                {isPending && (
                                                                     <button onClick={() => handleStartBooking(b.id)} className="table-action-btn start">
                                                                         <Play size={12} /> Start
                                                                     </button>

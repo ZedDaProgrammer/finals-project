@@ -38,7 +38,11 @@ const LandingPage = () => {
 
       {/* Full-bleed Centered Hero Section */}
       <header className="landing-hero-fullscreen" style={{
-        backgroundImage: `radial-gradient(circle at center, rgba(10, 10, 20, 0.72) 0%, rgba(6, 6, 12, 0.95) 100%), url(${bgImg})`,
+        // OPTIMIZATION: Removed linear-gradient overlay in favor of a solid background color (rgba(10, 10, 20, 0.85)) 
+        // with multiply blend mode to deliver a flat color backdrop tint for high legibility.
+        backgroundColor: 'rgba(10, 10, 20, 0.85)',
+        backgroundImage: `url(${bgImg})`,
+        backgroundBlendMode: 'multiply',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
@@ -47,7 +51,8 @@ const LandingPage = () => {
           <div className="hero-badge">Esports-Grade Arena</div>
           <h1 className="hero-title-centered">
             THE ULTIMATE <br />
-            <span className="gradient-text-centered">GAMING SANCTUARY</span>
+            {/* OPTIMIZATION: Renamed gradient-text-centered class to reflect flat style modernization */}
+            <span className="highlight-text-centered">GAMING SANCTUARY</span>
           </h1>
           <p className="hero-description-centered">
             Experience gaming at its absolute peak. Reserve elite battle stations configured for competitive gaming, solo performance, and tactical team play.

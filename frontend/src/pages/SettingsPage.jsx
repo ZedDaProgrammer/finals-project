@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/FeedbackContext';
-import { useNavigate } from 'react-router-dom';
-import logoImg from '../assets/logo.png';
-import { LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Moon, KeyRound, Laptop } from 'lucide-react';
+
+import { API_URL } from '../config';
+import Sidebar from '../components/Sidebar';
+import { Moon, KeyRound, Laptop } from 'lucide-react';
 
 const SettingsPage = () => {
-    const { user, token, logout } = useAuth();
+    const { token } = useAuth();
     const { showFeedback } = useFeedback();
-    const navigate = useNavigate();
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
     const BASE_URL = `${API_URL}/api`;
 
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
@@ -45,69 +45,72 @@ const SettingsPage = () => {
 
     const handleChangePassword = async (e) => {
         e.preventDefault();
+        
+        // QA CHECK: Validate password length and ensure fields aren't whitespace-only.
+        if (!passwords.current.trim() || !passwords.new.trim()) {
+            showFeedback('error', "Password fields cannot be empty or spaces only.");
+            return;
+        }
+        if (passwords.new.length < 6) {
+            showFeedback('error', "New password must be at least 6 characters long.");
+            return;
+        }
         if (passwords.new !== passwords.confirm) {
             showFeedback('error', "Passwords do not match");
             return;
         }
 
-        const res = await fetch(`${BASE_URL}/auth/change-password`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
-        });
+        try {
+            const res = await fetch(`${BASE_URL}/auth/change-password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new })
+            });
 
-        if (res.ok) {
-            showFeedback('success', "Password changed successfully!");
-            setPasswords({ current: '', new: '', confirm: '' });
-        } else {
-            const data = await res.json();
-            showFeedback('error', data.message || "Failed to change password");
+            if (res.ok) {
+                showFeedback('success', "Password changed successfully!");
+                setPasswords({ current: '', new: '', confirm: '' });
+            } else {
+                const data = await res.json();
+                showFeedback('error', data.message || "Failed to change password");
+            }
+        } catch (error) {
+            if (import.meta.env.DEV) console.error("Password change error:", error);
+            showFeedback('error', "Network error. Please try again later.");
         }
     };
 
     const handleSubmitTicket = async (e) => {
         e.preventDefault();
-        const res = await fetch(`${BASE_URL}/reservation/ticket`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(ticket)
-        });
 
-        if (res.ok) {
-            showFeedback('success', "Support ticket submitted! An admin will review it shortly.");
-            setTicket({ station_id: selectedPcType === 'standard' ? '1' : '21', subject: '', description: '' });
-        } else {
-            showFeedback('error', "Failed to submit ticket. Try again later.");
+        // QA CHECK: Validate subject and description are not empty or whitespace-only to prevent blank tickets.
+        if (!ticket.subject.trim() || !ticket.description.trim()) {
+            showFeedback('error', "Subject and description fields cannot be empty or only spaces.");
+            return;
         }
-    };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        logout();
-        navigate('/login', { replace: true });
+        try {
+            const res = await fetch(`${BASE_URL}/reservation/ticket`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(ticket)
+            });
+
+            if (res.ok) {
+                showFeedback('success', "Support ticket submitted! An admin will review it shortly.");
+                setTicket({ station_id: selectedPcType === 'standard' ? '1' : '21', subject: '', description: '' });
+            } else {
+                showFeedback('error', "Failed to submit ticket. Try again later.");
+            }
+        } catch (error) {
+            if (import.meta.env.DEV) console.error("Ticket submission error:", error);
+            showFeedback('error', "Network error. Please try again later.");
+        }
     };
 
     return (
         <div className="dashboard-layout">
-            <aside className="sidebar">
-                <div className="sidebar-brand">
-                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
-                </div>
-                <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
-                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>}
-                    </div>
-                    <div className="nav-section account-section">
-                        <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item"><User size={18} /> Profile</a>
-                        <a href="/settings" className="nav-item active"><Settings size={18} /> Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
-                    </div>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="dashboard-content">
                 <div className="settings-container-layout">

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Wallet, Plus, X, LayoutDashboard, CalendarDays, Shield, User, Settings, LogOut, Award, CreditCard, Cpu, Sparkles, Mail } from 'lucide-react';
-import logoImg from '../assets/logo.png';
+import { useFeedback } from '../context/FeedbackContext';
+
+import { API_URL } from '../config';
+import { getRankProgress } from '../utils/rankHelper';
+import { Plus, X, Award, CreditCard, Cpu, Sparkles, Mail, CalendarDays } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
 
 const ProfilePage = () => {
-    const { user, token, logout, refreshUser } = useAuth();
-    const navigate = useNavigate();
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const { user, token, refreshUser } = useAuth();
+    const { showFeedback } = useFeedback();
     const BASE_URL = `${API_URL}/api/reservation`;
 
     const [history, setHistory] = useState([]);
@@ -19,45 +21,6 @@ const ProfilePage = () => {
     const points = user?.points || 0;
     const credits = user?.credits || 0;
 
-    const getRankProgress = (pts) => {
-        let currentTier = 'Bronze';
-        let nextTier = 'Silver';
-        let minPts = 0;
-        let maxPts = 25;
-
-        if (pts >= 350) {
-            currentTier = 'Radiant';
-            nextTier = null;
-            minPts = 350;
-            maxPts = 350;
-        } else if (pts >= 175) {
-            currentTier = 'Platinum';
-            nextTier = 'Radiant';
-            minPts = 175;
-            maxPts = 350;
-        } else if (pts >= 75) {
-            currentTier = 'Gold';
-            nextTier = 'Platinum';
-            minPts = 75;
-            maxPts = 175;
-        } else if (pts >= 25) {
-            currentTier = 'Silver';
-            nextTier = 'Gold';
-            minPts = 25;
-            maxPts = 75;
-        } else {
-            currentTier = 'Bronze';
-            nextTier = 'Silver';
-            minPts = 0;
-            maxPts = 25;
-        }
-
-        const range = maxPts - minPts;
-        const progress = range > 0 ? Math.min(100, Math.max(0, ((pts - minPts) / range) * 100)) : 100;
-        const ptsNeeded = nextTier ? maxPts - pts : 0;
-
-        return { currentTier, nextTier, progress, ptsNeeded };
-    };
 
     useEffect(() => {
         document.title = "BlackByte | My Profile";
@@ -86,6 +49,12 @@ const ProfilePage = () => {
     }, [token, BASE_URL]);
 
     const handleAddCredits = async () => {
+        // QA CHECK: Validate slider inputs to prevent console injection of out-of-bound numbers.
+        if (isNaN(creditSlider) || creditSlider < 20 || creditSlider > 1000) {
+            showFeedback('error', "Amount must be between 20 and 1000 CR.");
+            return;
+        }
+
         setIsAddingCredits(true);
         try {
             const response = await fetch(`${API_URL}/api/auth/add-credits`, {
@@ -102,11 +71,11 @@ const ProfilePage = () => {
                 setCreditSlider(20);
                 if (refreshUser) await refreshUser();
             } else {
-                alert('Failed to add credits');
+                showFeedback('error', 'Failed to add credits');
             }
         } catch (error) {
             if (import.meta.env.DEV) console.error("Credit addition error:", error);
-            alert('Error adding credits');
+            showFeedback('error', 'Error adding credits');
         } finally {
             setIsAddingCredits(false);
         }
@@ -115,36 +84,13 @@ const ProfilePage = () => {
     const { currentTier, nextTier, progress, ptsNeeded } = getRankProgress(points);
     const rank = currentTier;
     const visibleHistory = history;
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        logout();
-        navigate('/login', { replace: true });
-    };
+    // OPTIMIZATION: Declaring reference Date once here per render instead of inside the map loop.
+    // This prevents garbage collection thrashing when rendering large reservation history lists.
+    const now = new Date();
 
     return (
         <div className="dashboard-layout">
-            <aside className="sidebar">
-                <div className="sidebar-brand">
-                    <img src={logoImg} alt="BlackByte Logo" className="brand-logo" style={{ margin: '0 auto' }} />
-                </div>
-                <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Main Menu</span>
-                        <a href="/dashboard" className="nav-item"><LayoutDashboard size={18} /> Dashboard</a>
-                        <a href="/booking" className="nav-item"><CalendarDays size={18} /> Reservation</a>
-                        {user?.role === 'admin' && (
-                            <a href="/admin" className="nav-item admin-item"><Shield size={18} /> Admin Panel</a>
-                        )}
-                    </div>
-                    <div className="nav-section account-section">
-                        <span className="nav-section-title">Account</span>
-                        <a href="/profile" className="nav-item active"><User size={18} /> Profile</a>
-                        <a href="/settings" className="nav-item"><Settings size={18} /> Settings</a>
-                        <button onClick={handleLogout} className="nav-item logout-btn"><LogOut size={18} /> Logout</button>
-                    </div>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="dashboard-content">
                 <header className="dashboard-header">
@@ -206,7 +152,6 @@ const ProfilePage = () => {
                     </div>
 
                     <div className="cyber-credit-card">
-                        <div className="card-bg-glow"></div>
                         <div className="card-top">
                             <div className="card-brand">
                                 <Cpu size={30} className="card-chip" />
@@ -266,7 +211,6 @@ const ProfilePage = () => {
                                         {visibleHistory.map((res) => {
                                             const start = new Date(res.start);
                                             const end = new Date(res.end);
-                                            const now = new Date();
                                             const durationHrs = Math.round(Math.abs(end - start) / 36e5);
 
                                             let displayStatus = 'UPCOMING';
@@ -330,8 +274,8 @@ const ProfilePage = () => {
                                 </div>
                                 <div className="credit-breakdown">
                                     <div className="breakdown-item"><span>Amount:</span><span className="amount">{creditSlider} CR</span></div>
-                                    <div className="breakdown-item"><span>Current Balance:</span><span className="balance">{credits} CR</span></div>
-                                    <div className="breakdown-item total"><span>New Balance:</span><span className="new-balance">{credits + creditSlider} CR</span></div>
+                                    <div className="breakdown-item"><span>Current Balance:</span><span className="balance">{Number(credits).toFixed(2)} CR</span></div>
+                                    <div className="breakdown-item total"><span>New Balance:</span><span className="new-balance">{(Number(credits) + creditSlider).toFixed(2)} CR</span></div>
                                 </div>
                             </div>
                             <div className="modal-footer">
