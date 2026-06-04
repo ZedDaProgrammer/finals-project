@@ -1,1 +1,0 @@
-var e=`/assets/landingpage-B0TE8Tqb.jpg`;export{e as t};
