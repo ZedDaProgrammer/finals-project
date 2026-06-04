@@ -4,7 +4,7 @@ A comprehensive, production-ready, full-stack cybercafe reservation and manageme
 
 ---
 
-## 🗄️ Database Used: Supabase PostgreSQL
+##  Database Used: Supabase PostgreSQL
 
 The application uses **Supabase PostgreSQL** as its primary cloud relational database. The database is already configured and running in the cloud. The system connects using connection pooling (`pg.Pool`) configured with SSL security options optimized for serverless environments.
 
@@ -17,7 +17,7 @@ The database schema consists of the following relational tables:
 
 ---
 
-## 🛡️ Chosen Advanced Feature: Role-Based Access Control (RBAC) & Secure Route Guarding
+##  Chosen Advanced Feature: Role-Based Access Control (RBAC) & Secure Route Guarding
 
 The primary advanced technical feature implemented within this system is **Granular Role-Based Access Control (RBAC)** coupled with **Strict Route Guards** across both application layers:
 
@@ -33,7 +33,7 @@ The primary advanced technical feature implemented within this system is **Granu
 
 ---
 
-## ⚙️ Server Setup Instructions
+##  Server Setup Instructions
 
 Follow these steps to run the backend server locally and connect it to the cloud database.
 
